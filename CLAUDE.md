@@ -27,17 +27,13 @@ En código y reportes nuevos se usa **hub** y **nodo**, no A y B. Los archivos h
 
 ---
 
-## 2. Estado actual (23-oct-2026)
+## 2. Estado actual
 
-| Elemento | Estado | Dónde está |
-|---|---|---|
-| Experimento 0 (jitter de sincronización) | **Aprobado:** σ = 168 µs, REQ-NF-02 pide ≤ 5 ms | `experimentos/exp0/` |
-| Smoke test y barrido del VL53L1X | Completados (11-oct-2026). **Sin reporte propio en el repo:** los resultados viven en la sección 9.2 del Documento Maestro | `experimentos/sensor_vl53l1x/` |
-| Corrida larga de IMP = 25 ms apuntando al cielo | En curso (≥ 1000 muestras, sección 19) | — |
-| Experimento 0b (jitter con el hub sirviendo la página) | Pendiente — plan en `docs/experimento0b_contexto.md` | `experimentos/exp0b/` (por crear) |
-| Página web local (`webapp/`) | **Tarea actual** (el Documento Maestro 1.1 aún la marca "No iniciada") | `webapp/` (por crear) |
-| Esquemático de PCB | Siguiente | `hardware/` (por crear) |
-| Firmware de producto | No iniciado | `firmware/` (por crear) |
+**El estado vivo está en `docs/ESTADO.md`** (qué se está haciendo, qué sigue, criterio de cierre de cada tarea, decisiones abiertas). Leerlo al empezar una sesión y actualizarlo al cerrar una tarea. Aquí solo va lo estable:
+
+- Experimento 0: **aprobado**, σ = 168 µs (REQ-NF-02 pide ≤ 5 ms).
+- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026); resultados solo en la sección 9.2 del Documento Maestro. El **barrido v5 (arranque en frío) está pendiente** y decide si el ADR-011 (IMP = 25 ms) se sostiene: su evidencia viene del v3, que tenía estado heredado. El v4 no está en el repo.
+- Pendientes grandes: Experimento 0b, webapp (prototipo con datos simulados), PCB, firmware de producto.
 
 ---
 
@@ -76,7 +72,9 @@ cloud/         (fase posterior)
 ```
 
 Reglas:
-- Un sketch vive en una carpeta con **el mismo nombre que su `.ino`** (arduino-cli lo exige).
+- Un sketch vive en una carpeta con **el mismo nombre que su `.ino`** (arduino-cli lo exige). El `.ino` es solo el punto de entrada: el resto puede ser `.cpp`/`.h` en la misma carpeta o en `src/`, y arduino-cli los compila juntos.
+- Experimentos: un `.ino` autocontenido (cambios mínimos y fáciles de comparar contra la versión validada).
+- Firmware de producto: `.ino` de pocas líneas y la lógica en `.cpp`/`.h`. La lógica pura (offset, emparejamiento por proximidad, splits) no incluye `Arduino.h`, para poder probarla con `g++` en WSL sin placa.
 - Un script que solo sirve a un experimento va en la carpeta del experimento; si lo usan dos o más, se mueve a `tools/`.
 - Antes de mover o borrar archivos existentes, preguntar al usuario.
 
@@ -139,7 +137,18 @@ El entorno es **WSL2 sobre Windows**. Las placas USB solo las ve Windows, así q
 | Librerías instaladas relevantes | `VL53L1X` (Pololu) 1.3.1. Faltan ESPAsyncWebServer y AsyncTCP |
 | Python con pyserial (Windows) | `/mnt/c/Users/aagus/AppData/Local/Programs/Python/Python311/python.exe` (pyserial 3.5) |
 | Python de WSL | `python3` sin pyserial ni matplotlib (instalar en un venv antes de graficar) |
+| esptool 5.3.1 (viene con el core) | `/mnt/c/Users/aagus/AppData/Local/Arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool.exe` |
 | Puertos vistos | COM3, COM4, COM11, COM12 (todos "Unknown"; no se sabe cuál es hub o nodo sin leer la MAC) |
+
+Scripts de banco (`tools/`):
+
+| Script | Corre con | Qué hace |
+|---|---|---|
+| `identificar_puertos.py` | `python3` (WSL) | Lee la MAC de fábrica de cada COM con esptool y dice si es hub o nodo. **Reinicia las placas.** |
+| `logger_serial.py` | Python de **Windows** | Guarda el serial crudo a un archivo; termina con el marcador `--fin`, `--max-s` o `--idle-s`. Rutas con `wslpath -w` |
+| `resumen_corrida.py` | `python3` (WSL) | σ, media, eventos y pérdidas de un CSV tipo Exp. 0/0b, en 4–5 líneas |
+
+Compilar (verificado, ~20 s): `"$CLI" compile --fqbn esp32:esp32:esp32 "$(wslpath -w <carpeta_del_sketch>)"`.
 
 Notas:
 - arduino-cli.exe recibe rutas de Windows. Para compilar un sketch del repo, pasarle la ruta con `wslpath -w <carpeta_del_sketch>`.
