@@ -58,7 +58,7 @@
 #define N_DESCARTE  10
 #define N_MEDIR     120
 
-#define MAGIC       0xDA5HC001
+#define MAGIC       0xDA5AC001   // valor arbitrario; la v5 original traia una H (no es hex) y no compilaba
 
 // IMP a barrer, de menor a mayor. La zona 10-16 es la que interesa.
 const uint32_t cfgImp[] = { 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 25 };
