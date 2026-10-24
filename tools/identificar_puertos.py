@@ -10,7 +10,7 @@ REINICIA la placa (entra y sale del bootloader). No usar a media corrida.
 Corre con el Python de WSL; llama a los .exe de Windows.
 
 Uso:  python3 tools/identificar_puertos.py [COM11 COM12 ...]
-      (sin argumentos prueba todos los que lista arduino-cli)
+      (sin argumentos prueba los COM USB que lista arduino-cli)
 """
 import json, re, subprocess, sys
 
@@ -29,8 +29,11 @@ ROLES = {
 def puertos_detectados():
     out = subprocess.run([CLI, "board", "list", "--json"],
                          capture_output=True, text=True, timeout=60).stdout
+    # Solo los "Serial Port (USB)": los demas COM de esta maquina son
+    # Bluetooth/virtuales, no responden a esptool y cada uno cuesta ~30 s
     return [p["port"]["address"] for p in json.loads(out).get("detected_ports", [])
-            if p["port"].get("protocol") == "serial"]
+            if p["port"].get("protocol") == "serial"
+            and "USB" in p["port"].get("protocol_label", "")]
 
 
 def leer_mac(puerto):
