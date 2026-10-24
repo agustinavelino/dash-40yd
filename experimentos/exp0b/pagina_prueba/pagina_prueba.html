@@ -1,0 +1,78 @@
+<!doctype html>
+<!-- DASH - Experimento 0b - pagina de PRUEBA (no es la de producto: esa vive en webapp/).
+     Lo que importa aqui es la CARGA sobre el hub, no el diseno:
+       - tamano realista: generar_pagina.py inserta ~300 KB de lastre incompresible
+       - WebSocket /ws recibiendo un JSON por evento
+       - ?estres=1 recarga la pagina completa cada 1 s (escenario S3)
+     Sin recursos externos: el telefono en el SoftAP no tiene internet. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DASH 0b</title>
+<style>
+  body { font: 15px system-ui, sans-serif; margin: 0; padding: 12px 16px; background: #fff; color: #1a1a1a; }
+  h1 { font-size: 18px; margin: 0 0 8px; }
+  .fila { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .dato { background: #f1f5f9; border-radius: 6px; padding: 6px 10px; }
+  .dato b { display: block; font-size: 20px; }
+  .ok { color: #0f6f6a; } .mal { color: #c2410c; }
+  button, a.boton { font: inherit; padding: 10px 14px; border-radius: 6px; border: 1px solid #94a3b8; background: #fff; color: #1a1a1a; text-decoration: none; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  td, th { text-align: right; padding: 3px 6px; border-bottom: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+<h1>DASH · Experimento 0b <span id="modo"></span></h1>
+<div class="fila">
+  <div class="dato">WebSocket<b id="ws" class="mal">—</b></div>
+  <div class="dato">Eventos recibidos<b id="n">0</b></div>
+  <div class="dato">Recargas<b id="rec">0</b></div>
+  <div class="dato">Página<b id="kb">—</b></div>
+</div>
+<div class="fila">
+  <button id="iniciar">Iniciar corrida</button>
+  <a class="boton" id="cambiar" href="#"></a>
+</div>
+<table>
+  <thead><tr><th>seq</th><th>resultado µs</th><th>rtt µs</th><th>pongs</th></tr></thead>
+  <tbody id="tabla"></tbody>
+</table>
+<script>
+  var estres = location.search.indexOf("estres=1") >= 0;
+  var $ = function (id) { return document.getElementById(id); };
+  $("modo").textContent = estres ? "· ESTRÉS (recarga cada 1 s)" : "· escucha";
+  $("cambiar").textContent = estres ? "Pasar a escucha" : "Pasar a estrés";
+  $("cambiar").href = estres ? "/" : "/?estres=1";
+
+  // contador de recargas que sobrevive a location.reload()
+  var rec = 0;
+  try { rec = +(sessionStorage.getItem("rec") || 0) + 1; sessionStorage.setItem("rec", rec); } catch (e) {}
+  $("rec").textContent = rec;
+
+  var ws, n = 0;
+  function conectar() {
+    ws = new WebSocket("ws://" + location.host + "/ws");
+    ws.onopen = function () { $("ws").textContent = "conectado"; $("ws").className = "ok"; };
+    ws.onclose = function () { $("ws").textContent = "caído"; $("ws").className = "mal"; setTimeout(conectar, 1000); };
+    ws.onmessage = function (e) {
+      var d = JSON.parse(e.data);
+      $("n").textContent = ++n;
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + d.seq + "</td><td>" + d.res_us + "</td><td>" + d.rtt_us + "</td><td>" + d.pongs + "</td>";
+      var t = $("tabla");
+      t.insertBefore(tr, t.firstChild);
+      while (t.children.length > 20) t.removeChild(t.lastChild);
+    };
+  }
+  conectar();
+  $("iniciar").onclick = function () { if (ws && ws.readyState === 1) ws.send("iniciar"); };
+
+  window.addEventListener("load", function () {
+    $("kb").textContent = Math.round(document.documentElement.outerHTML.length / 1024) + " KB";
+    if (estres) setTimeout(function () { location.reload(); }, 1000);
+  });
+</script>
+<!--LASTRE-->
+</body>
+</html>
