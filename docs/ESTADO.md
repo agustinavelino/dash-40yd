@@ -10,20 +10,18 @@
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| I1 | Infraestructura de banco: `tools/identificar_puertos.py`, `logger_serial.py`, `resumen_corrida.py` | `identificar_puertos` dice qué COM es hub y cuál nodo; `resumen_corrida` sobre `exp0_datos.csv` da σ = 168 µs | En curso |
-| S1 | **Barrido v5** (arranque en frío) | El logger captura la tabla `RESUMEN DEL BARRIDO EN FRIO` con las 11 configuraciones; decisión sobre ADR-011 escrita (ver abajo) | Listo para correr (ya compila) |
+| I2 | Agente de banco (`.claude/agents/banco.md`) | Corre el Exp. 0 completo sin intervención en la conversación y devuelve σ ≤ 250 µs con 200/200 eventos | Siguiente en hacerse |
+| I3 | Skill `documentar` | Genera el reporte del sensor (smoke test + barridos v3/v5) con el formato del Exp. 0 | Pendiente |
+| I4 | Hooks (datos crudos protegidos, webapp sin URLs externas) y permisos | Un intento de editar un `.csv` o `.txt` crudo de `experimentos/` queda bloqueado | Pendiente |
 
 ## Siguiente
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
-| I2 | Agente de banco (`.claude/agents/banco.md`) | I1 | Corre el Exp. 0 completo sin intervención en la conversación y devuelve σ ≤ 250 µs con 200/200 eventos |
-| I3 | Skill `documentar` | — | Genera el reporte del sensor (smoke test + barridos) con el formato del Exp. 0 |
-| I4 | Hooks (datos crudos protegidos, webapp sin URLs externas) y permisos | — | Un intento de editar un `.csv` de `experimentos/` queda bloqueado |
-| S2 | Corrida larga IMP apuntando al cielo (≥ 1000 muestras, cruces intermitentes) | S1 | Tasa de intervalos anómalos en régimen inválido medida a la IMP vigente |
+| S2 | Corrida larga IMP = 25 ms apuntando al cielo (≥ 1000 muestras, cruces intermitentes) | — (S1 cerrada) | Tasa de intervalos anómalos en régimen inválido a IMP 25, y 0 saltos a 46.6 ms en régimen válido |
 | T1 | **Experimento 0b** (C0, S1, S2, S3) | I2 | 4 CSV; σ(S3) ≤ 1.5 × σ(C0) y 0 pérdidas, o hallazgo documentado |
 | W1 | Prototipo de `webapp/` con datos simulados | — (no necesita placas) | Abre en el navegador sin red, ≤ ~20 KB, muestra resultado simulado por WebSocket falso |
-| S3 | Experimento 1 (dos sensores, misma puerta) | S1, S2 | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms, o la que resulte de S1) |
+| S3 | Experimento 1 (dos sensores, misma puerta) | S2 | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
 ## Después
 
@@ -31,11 +29,12 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 
 ## Decisiones abiertas
 
-- **ADR-011 (IMP = 25 ms) depende del v5.** El ADR se validó con 51 muestras del barrido v3, que tenía estado heredado. En arranque en frío (smoke test y v4) todo dio 2 ranuras. En producción cada nodo arranca en frío.
-  - Si v5 da **1 ranura** a IMP 25 → ADR-011 se sostiene; seguir a S2.
-  - Si da **2 ranuras** (~46.6 ms) → la cuantización por sensor sube de 6.72 a ~13.4 ms, la predicción del Exp. 1 cambia y hace falta un ADR nuevo y la v2.2 del Documento Maestro. Ver qué IMP de la zona 10–16 ms da el menor periodo real.
-  - **Predicción:** escribirla aquí ANTES de correr el v5.
+- **¿IMP = 12 ms en lugar de 25 ms?** (hallazgo del v5, ver abajo). IMP 12 da 22.41 ms de periodo (2 ranuras) contra 23.31 ms de IMP 25: 0.9 ms menos, lo que baja la cuantización por sensor de 6.73 a 6.47 ms (−4 %). A cambio, su margen hacia el siguiente salto es menor (≥ 0 ms contra ≥ 0.94 ms de IMP 25). **Recomendación: quedarse en IMP 25** hasta que S2 mida si el margen se agota en régimen inválido; la ganancia de IMP 12 no mueve el presupuesto de error. Es decisión del usuario.
 - **Orden 0b vs webapp:** se llevan en paralelo; el 0b decide si el hub puede servir la página.
+- **Cambios pendientes para el Documento Maestro v2.2** (no se editan aquí; se juntan para una sola revisión):
+  - 9.2: el ADR-011 queda confirmado en arranque en frío (antes solo se tenía con estado heredado del v3).
+  - 9.2: el "margen de 3.3 ms" supone que la medición dura lo mismo que el budget (20.02 ms). El v5 acota la duración real T a 20.48 < T ≤ 22.34 ms, así que el margen real a IMP 25 está entre **0.94 y 2.8 ms**, no 3.3 ms.
+  - 9.2: el jitter de cadencia de 10.6 µs ("firme") no se reprodujo: el v5 midió 49–266 µs según la configuración (235 µs a IMP 25). Sigue siendo ~1 % de la ranura e irrelevante frente a 6.7 ms de cuantización, pero la firmeza debe bajar a "varía entre corridas".
 
 ## Hecho
 
@@ -43,4 +42,36 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 |---|---|---|
 | 20-sep-2026 | Experimento 0 aprobado: σ = 168 µs | `experimentos/exp0/experimento0_resultados.md` |
 | 11-oct-2026 | Smoke test y barridos v3/v4 del VL53L1X | Documento Maestro 9.2 (falta reporte propio) |
-| 23-oct-2026 | Repo reorganizado, CLAUDE.md alineado, v5 corregido (no compilaba) | commits `a1c3931`, `b705d4e` y el de la corrección del v5 |
+| 23-oct-2026 | Repo reorganizado, CLAUDE.md alineado | commits `a1c3931`, `b705d4e` |
+| 23-oct-2026 | I1: scripts de banco funcionando desde WSL2 (compilar, flashear, identificar por MAC, logger, resumen) | `tools/`; COM7 = hub; resumen reproduce σ = 168 µs |
+| 23-oct-2026 | **S1: barrido v5 en arranque en frío. IMP 25 → 1.001 ranuras (23.31 ms). ADR-011 se sostiene.** | `experimentos/sensor_vl53l1x/barrido_v5_frio_2026-10-23.txt` |
+
+### Detalle de S1 (barrido v5, 23-oct-2026)
+
+Placa hub (COM7), cartulina fija a 1105 mm, budget 20 ms, 120 muestras por configuración, un arranque en frío por configuración.
+
+**Predicción escrita antes de correr:** el usuario no hizo predicción numérica; la evidencia previa apuntaba a 2 ranuras. **Resultado: 1 ranura.** La hipótesis de que "en frío todo da 2 ranuras" queda refutada.
+
+| IMP (ms) | Ranura (ms) | Periodo (ms) | Ranuras | Jitter (µs) | Anómalos |
+|---|---|---|---|---|---|
+| 10 | 9.31 | 28.011 | 3.009 | 265.8 | 0/119 |
+| 11 | 10.24 | 30.804 | 3.008 | 175.9 | 0/119 |
+| 12 | 11.17 | **22.405** | 2.006 | 64.7 | 0/119 |
+| 13 | 12.10 | 24.265 | 2.005 | 105.0 | 0/119 |
+| 14 | 13.03 | 26.128 | 2.005 | 185.8 | 0/119 |
+| 15 | 13.97 | 27.991 | 2.004 | 241.7 | 0/119 |
+| 16 | 14.90 | 29.849 | 2.004 | 266.1 | 0/119 |
+| 18 | 16.76 | 33.568 | 2.003 | 71.3 | 0/119 |
+| 20 | 18.62 | 37.288 | 2.003 | 56.9 | 0/119 |
+| 22 | 20.48 | 41.011 | 2.002 | 48.4 | 0/119 |
+| 25 | 23.28 | **23.308** | 1.001 | 235.2 | 0/119 |
+
+Lectura:
+- El periodo siempre es un número entero de ranuras (IMP × 0.931): el modelo de la 9.2 se confirma en 11 configuraciones.
+- El chip usa el **mínimo número de ranuras que alcanza a cubrir la medición**. De ahí sale la duración real T: no cabe en 20.48 ms (IMP 22 da 2 ranuras) y sí cabe en 2 × 11.17 = 22.34 ms (IMP 12).
+- 1320/1320 muestras válidas, 0 anómalos, distancia estable (1104–1105 mm): el blanco no se movió.
+- Limitación: todo esto es en **régimen válido** (blanco fijo). El régimen inválido (cielo) es S2.
+
+Incidencias resueltas:
+- `MAGIC 0xDA5HC001` no es hexadecimal: el v5 no compilaba.
+- `RTC_DATA_ATTR` se reinicializa con `ESP.restart()`: el primer intento quedó en un bucle infinito en la config 1. Se cambió a `RTC_NOINIT_ATTR`. Ese intento se conserva en `barrido_v5_intento1_bucle_2026-10-23.txt`: 97 arranques en frío a IMP 10, todos entre 27.996 y 28.006 ms.

@@ -32,7 +32,7 @@ En código y reportes nuevos se usa **hub** y **nodo**, no A y B. Los archivos h
 **El estado vivo está en `docs/ESTADO.md`** (qué se está haciendo, qué sigue, criterio de cierre de cada tarea, decisiones abiertas). Leerlo al empezar una sesión y actualizarlo al cerrar una tarea. Aquí solo va lo estable:
 
 - Experimento 0: **aprobado**, σ = 168 µs (REQ-NF-02 pide ≤ 5 ms).
-- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026); resultados solo en la sección 9.2 del Documento Maestro. El **barrido v5 (arranque en frío) está pendiente** y decide si el ADR-011 (IMP = 25 ms) se sostiene: su evidencia viene del v3, que tenía estado heredado. El v4 no está en el repo.
+- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026; resultados en la sección 9.2 del Documento Maestro; el v4 no está en el repo). **Barrido v5 en arranque en frío hecho (23-oct-2026): IMP 25 → 23.31 ms (1 ranura); el ADR-011 se sostiene.** Falta la corrida larga apuntando al cielo (régimen inválido).
 - Pendientes grandes: Experimento 0b, webapp (prototipo con datos simulados), PCB, firmware de producto.
 
 ---
