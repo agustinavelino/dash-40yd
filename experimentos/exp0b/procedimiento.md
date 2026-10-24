@@ -10,7 +10,7 @@ Plan completo, criterios y trampas: `docs/experimento0b_contexto.md`. Aquí est�
    - **Datos móviles apagados.** Si no, Android/iOS ve que "DASH-0b no tiene internet" y se pasa a datos sin avisar.
    - Conectar una vez a la red **DASH-0b** (contraseña `dash0b2026`) y marcar "conectar automáticamente" / "mantener conexión aunque no tenga internet".
    - Pantalla siempre encendida mientras dura la corrida (desactivar el bloqueo automático).
-   - Página: `http://192.168.4.1/` (escucha) o `http://192.168.4.1/?estres=1` (recarga cada 1 s).
+   - Página: `http://192.168.4.1/` (escucha) o `http://192.168.4.1/?estres=1` (descarga la página completa en ciclo, hasta 1 por segundo; contadores "Descargas" y "Fallidas").
 4. Todas las corridas el **mismo día y con el mismo montaje**. C0 se repite ese día aunque ya exista el Exp. 0 (trampa 4).
 
 ## Binarios
@@ -31,7 +31,7 @@ Si se cambia la plantilla de la página: `python3 experimentos/exp0b/generar_pag
 | C0 | Nada. SoftAP apagado; el hub arranca sin espera | 0 |
 | S1 | Nada. SoftAP encendido, ningún teléfono conectado. El hub espera 60 s y arranca solo | 0 |
 | S2 | 1 teléfono en `http://192.168.4.1/` (escucha). Cuando diga "WebSocket conectado", tocar **Iniciar corrida** | 1 |
-| S3 | 1 teléfono en `/?estres=1` + 1–2 teléfonos en `/` (escucha). Cuando los de escucha estén conectados, tocar **Iniciar** en uno de ellos | ≥ 2 (fluctúa por las recargas) |
+| S3 | 1 teléfono en `/?estres=1` + 1–2 teléfonos en `/` (escucha). El de estrés: **abrir o recargar su página después de que el hub reinicie**, cuando el teléfono ya volvió a la red. Cuando "Descargas" esté subiendo y los de escucha digan conectado, tocar **Iniciar** en uno de escucha | ≥ 2. La carga se verifica con la columna `paginas` (≈ 1/s), no con `clientes_ws` |
 
 En S2 y S3, abrir el puerto serial reinicia el hub y el SoftAP se cae unos segundos: los teléfonos se reconectan solos y la página reintenta el WebSocket cada 1 s. El hub espera hasta 60 s o hasta que alguien toque **Iniciar**.
 
@@ -50,6 +50,7 @@ El nodo no se reflashea entre escenarios si ya tiene `prueba_0b_nodo`, pero **s�
 - Encabezado: `# exp0b hub | SOFTAP_ACTIVO=… | canal 1 | …`. Canal ≠ 1 → trampa 1.
 - `# fin de espera (boton|tiempo) | estaciones_ap N | clientes_ws M` coincide con el escenario.
 - 200/200 eventos; `clientes_ws` dentro de lo esperado.
+- S3: `resumen_corrida.py` imprime la tasa de descargas de la página. En el S3 del 23-oct (sin contador) `clientes_ws` se quedó en 3 aunque hubo ~70 recargas: ese número no sirve para medir la carga.
 - Líneas `R,…` presentes (round-trips de todas las ráfagas).
 - Cada línea de datos termina en `*HH` (checksum) y la tabla sale dos veces; `resumen_corrida.py` descarta las corruptas y usa la primera copia válida. Si reporta "lineas corruptas descartadas", es pérdida del serial, no del radio.
 

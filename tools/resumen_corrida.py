@@ -89,6 +89,11 @@ def main():
     if all(len(r) >= 6 for r in filas):
         cli = [r[5] for r in filas]
         print(f"clientes_ws  min {min(cli)}  max {max(cli)}  mediana {st.median(cli):.0f}")
+    # 0b: descargas acumuladas de la pagina (la carga real de S3)
+    if all(len(r) >= 7 for r in filas):
+        f = sorted(filas)
+        dp, ds = f[-1][6] - f[0][6], (f[-1][0] - f[0][0]) * 0.5   # un pulso cada 0.5 s
+        print(f"paginas      {dp} descargas en {ds:.0f} s de corrida = {dp / ds:.2f}/s (S3 nominal: 1/s)")
 
 
 if __name__ == "__main__":

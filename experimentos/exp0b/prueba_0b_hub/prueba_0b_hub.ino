@@ -9,7 +9,7 @@
 //   - SoftAP en canal fijo + servidor web asincrono + WebSocket (/ws)
 //   - JSON por cada evento procesado, enviado desde loop() (nunca en la
 //     ISR ni en el callback de ESP-NOW)
-//   - CSV extendido: seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws
+//   - CSV extendido: seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws,paginas
 //   - Al final, los round-trips de TODAS las rafagas (lineas "R,...")
 //   - Cada linea de datos con checksum "*HH" y la tabla impresa dos veces
 //   - Marcador de fin: la linea exacta "# fin" (usar --fin "^# fin$";
@@ -94,6 +94,7 @@ int      pongsActual = 0;                      // cuantos de los 7 pongs llegaro
 int64_t  rttLog[N_EVENTOS + 2];
 int8_t   pongsLog[N_EVENTOS + 2];
 uint8_t  clientesLog[N_EVENTOS + 2];
+uint32_t paginasLog[N_EVENTOS + 2];          // descargas acumuladas de la pagina al procesar cada evento
 bool     enviadoWS[N_EVENTOS + 2];
 int64_t  rttRafagas[MAX_RAFAGAS][BURST];       // -1 = ese pong no llego
 int      nRafagas = 0;
@@ -102,6 +103,10 @@ int      nRafagas = 0;
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 volatile bool iniciarYa = false;               // boton "Iniciar" de la pagina
+// Descargas de "/" (la carga real de S3). En S3 del 23-oct el conteo de clientes
+// WebSocket no reflejo las recargas; este contador las mide directo.
+volatile uint32_t nPaginas = 0;
+uint32_t paginasAlInicio = 0;
 bool     esperaTerminada = !SOFTAP_ACTIVO;
 uint32_t tArranqueMs = 0, ultimaLimpiezaMs = 0;
 
@@ -216,6 +221,7 @@ void setup() {
     r->addHeader("Content-Encoding", "gzip");
     r->addHeader("Cache-Control", "no-store");
     req->send(r);
+    nPaginas++;                                // [0b] solo cuenta; corre en la tarea de AsyncTCP
   });
   ws.onEvent(onWs);
   server.addHandler(&ws);
@@ -258,12 +264,13 @@ void imprimirResultados() {
   // recupera de la otra. Cuesta ~0.5 s despues de la corrida; no toca la medicion.
   for (int copia = 1; copia <= 2; copia++) {
     Serial.printf("# copia %d\n", copia);
-    Serial.println("seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws");   // [0b] columnas extra
+    Serial.println("seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws,paginas");   // [0b] columnas extra
     for (uint32_t i = 1; i <= N_EVENTOS; i++) {
       if (!tengoA[i] || !tengoB[i]) { snprintf(l, sizeof(l), "%lu,FALTA,", (unsigned long)i); lineaConChecksum(l); continue; }
       int64_t res = tEventoALog[i] - (tEventoB[i] - offsetLog[i]);
-      snprintf(l, sizeof(l), "%lu,%lld,%lld,%lld,%d,%u", (unsigned long)i, (long long)res,
-               (long long)offsetLog[i], (long long)rttLog[i], pongsLog[i], clientesLog[i]);
+      snprintf(l, sizeof(l), "%lu,%lld,%lld,%lld,%d,%u,%lu", (unsigned long)i, (long long)res,
+               (long long)offsetLog[i], (long long)rttLog[i], pongsLog[i], clientesLog[i],
+               (unsigned long)paginasLog[i]);
       lineaConChecksum(l);
     }
     // [0b] todos los round-trips, para ver si el WiFi sube el piso F.
@@ -275,6 +282,9 @@ void imprimirResultados() {
         lineaConChecksum(l);
       }
   }
+  Serial.printf("# paginas_servidas total %lu | durante_corrida %lu (%.0f KB gz)\n",
+                (unsigned long)nPaginas, (unsigned long)(nPaginas - paginasAlInicio),
+                (nPaginas - paginasAlInicio) * PAGINA_GZ_LEN / 1024.0);
   Serial.printf("# estaciones_ap_final %d | clientes_ws_final %u\n",
                 SOFTAP_ACTIVO ? WiFi.softAPgetStationNum() : 0, (unsigned)ws.count());
   Serial.println("# fin");
@@ -328,6 +338,7 @@ void loop() {
     ultimoFlanco = 0;
     attachInterrupt(digitalPinToInterrupt(PIN_EVENTO), isrEvento, RISING);
     ultimoPulso = esp_timer_get_time();
+    paginasAlInicio = nPaginas;                // [0b]
     Serial.println("# handshake listo, empiezan los pulsos");
     return;
   }
@@ -350,6 +361,7 @@ void loop() {
       rttLog[s]      = rttActual;               // [0b]
       pongsLog[s]    = pongsActual;             // [0b]
       clientesLog[s] = ws.count();              // [0b]
+      paginasLog[s]  = nPaginas;                // [0b]
     }
     if (s >= N_EVENTOS) { imprimirResultados(); terminado = true; return; }
   }

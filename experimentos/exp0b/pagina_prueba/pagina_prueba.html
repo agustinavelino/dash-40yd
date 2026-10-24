@@ -3,7 +3,10 @@
      Lo que importa aqui es la CARGA sobre el hub, no el diseno:
        - tamano realista: generar_pagina.py inserta ~300 KB de lastre incompresible
        - WebSocket /ws recibiendo un JSON por evento
-       - ?estres=1 recarga la pagina completa cada 1 s (escenario S3)
+       - ?estres=1 descarga la pagina completa (237 KB gz) en ciclo, una por segundo como
+         maximo (escenario S3). Con fetch y no con location.reload(): si una recarga fallaba
+         (hub reiniciando), el navegador mostraba su pagina de error y el estres se detenia
+         (S3 del 23-oct: ~70 recargas con atorones). Para el hub la carga es la misma.
      Sin recursos externos: el telefono en el SoftAP no tiene internet. -->
 <html lang="es">
 <head>
@@ -27,7 +30,8 @@
 <div class="fila">
   <div class="dato">WebSocket<b id="ws" class="mal">—</b></div>
   <div class="dato">Eventos recibidos<b id="n">0</b></div>
-  <div class="dato">Recargas<b id="rec">0</b></div>
+  <div class="dato">Descargas<b id="rec">0</b></div>
+  <div class="dato">Fallidas<b id="fal">0</b></div>
   <div class="dato">Página<b id="kb">—</b></div>
 </div>
 <div class="fila">
@@ -41,14 +45,20 @@
 <script>
   var estres = location.search.indexOf("estres=1") >= 0;
   var $ = function (id) { return document.getElementById(id); };
-  $("modo").textContent = estres ? "· ESTRÉS (recarga cada 1 s)" : "· escucha";
+  $("modo").textContent = estres ? "· ESTRÉS (descarga la página cada 1 s)" : "· escucha";
   $("cambiar").textContent = estres ? "Pasar a escucha" : "Pasar a estrés";
   $("cambiar").href = estres ? "/" : "/?estres=1";
 
-  // contador de recargas que sobrevive a location.reload()
-  var rec = 0;
-  try { rec = +(sessionStorage.getItem("rec") || 0) + 1; sessionStorage.setItem("rec", rec); } catch (e) {}
-  $("rec").textContent = rec;
+  // modo estres: baja la pagina completa en ciclo; un fallo solo se cuenta y se reintenta
+  var rec = 0, fal = 0;
+  function descargar() {
+    var t0 = Date.now();
+    fetch("/?d=" + t0, { cache: "no-store" })
+      .then(function (r) { return r.arrayBuffer(); })
+      .then(function () { $("rec").textContent = ++rec; })
+      .catch(function () { $("fal").textContent = ++fal; })
+      .then(function () { setTimeout(descargar, Math.max(0, 1000 - (Date.now() - t0))); });
+  }
 
   var ws, n = 0;
   function conectar() {
@@ -70,7 +80,7 @@
 
   window.addEventListener("load", function () {
     $("kb").textContent = Math.round(document.documentElement.outerHTML.length / 1024) + " KB";
-    if (estres) setTimeout(function () { location.reload(); }, 1000);
+    if (estres) descargar();
   });
 </script>
 <!--LASTRE-->
