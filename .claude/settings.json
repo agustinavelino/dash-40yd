@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tools/ard.sh compile:*)",
+      "Bash(tools/ard.sh boards)",
+      "Bash(python3 tools/resumen_corrida.py:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/proteger_datos.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/revisar_webapp.py\""
+          }
+        ]
+      }
+    ]
+  }
+}
