@@ -10,7 +10,7 @@
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| T1 | **Experimento 0b** (C0, S1, S2, S3) | 4 CSV; σ(S3) ≤ 1.5 × σ(C0 del día) y 0 pérdidas, o hallazgo documentado | Preparado y compilado (hub S/C0 y nodo, página de 237 KB gz). Falta: **predicción escrita** (abajo) y teléfonos. Procedimiento: `experimentos/exp0b/procedimiento.md` |
+| T1 | **Experimento 0b** (C0, S1, S2, S3 + prueba de ráfagas) | 4 CSV; σ(S3) ≤ 1.5 × σ(C0 del día) y 0 pérdidas, o hallazgo documentado | **Corridas completas (23–24 oct); falta el reporte** (skill `documentar`). Resumen abajo, en decisiones abiertas |
 | I5 | Sketch para S2 (corrida larga apuntando al cielo) | Compila y registra ≥ 1000 intervalos separados por régimen válido/inválido | **No existe aún** |
 
 ## Siguiente
@@ -29,6 +29,13 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 
 - **¿IMP = 12 ms en lugar de 25 ms?** (hallazgo del v5, ver abajo). IMP 12 da 22.41 ms de periodo (2 ranuras) contra 23.31 ms de IMP 25: 0.9 ms menos, lo que baja la cuantización por sensor de 6.73 a 6.47 ms (−4 %). A cambio, su margen hacia el siguiente salto es menor (≥ 0 ms contra ≥ 0.94 ms de IMP 25). **Recomendación: quedarse en IMP 25** hasta que S2 mida si el margen se agota en régimen inválido; la ganancia de IMP 12 no mueve el presupuesto de error. Es decisión del usuario.
 - **Predicción del Exp. 0b (escribirla ANTES de la primera corrida; no se ajusta después):** **el usuario no hace predicción** (registrado el 23-oct-2026, antes de la primera corrida). Rigen los criterios del plan (3.3). Prueba de ráfagas (agregada tras ver C0–S3, ver `experimentos/exp0b/procedimiento.md`): también **sin predicción**, registrado antes de correrla. Referencias: C0 de hoy ≈ repetición del Exp. 0 (σ = 87 µs, rtt filtrado del Exp. 0: mediana 2 483 µs, piso F = 2 332 µs).
+- **Exp. 0b, resultados en bruto (por documentar):**
+  - Criterio del plan: σ(S3) = 488 µs > 1.5 × σ(C0) = 395 µs → **no se cumple tal como se escribió**. Pero los dos C0 del día dieron 263 y 69 µs: con 4 ráfagas por corrida la σ depende de la suerte de una.
+  - Prueba de ráfagas (100 por condición): ráfagas lentas (> 3 ms) **14 % en C0 contra 30 % en S3** (p = 0.006); mejor rtt mediano 2 486 contra 2 729 µs (p < 0.001). **La carga del SoftAP sí degrada el resync de forma medible.**
+  - Error real del offset: σ 260 µs (C0) contra 217 µs (S3), máximo 1 147 contra 935 µs. Todos dentro de la cota (rtt − F)/2. Todo cumple REQ-NF-02 con margen ≥ 4× en el peor error individual.
+  - Ráfagas ≤ 3 ms: error σ 58 µs (C0) y 93 µs (S3). **Candidato a ADR:** descartar y repetir una ráfaga cuyo mejor rtt pase de ~3 ms; eliminaría el mecanismo dominante con o sin WiFi.
+  - **Energía:** bucle de 422 reinicios por brownout del hub bajo la carga de S3 (intento 1 de ráfagas), con la laptop conectada a la corriente y USB directo. Prioriza las capturas del riel de 3.3 V (DM 20) y el margen del regulador en la PCB.
+  - Serial: líneas corruptas solo con SoftAP activo (0 en los dos C0). Resuelto con checksum + tabla doble.
 - **Orden 0b vs webapp:** se llevan en paralelo; el 0b decide si el hub puede servir la página.
 - **Cambios pendientes para el Documento Maestro v2.2** (no se editan aquí; se juntan para una sola revisión):
   - 9.2: el ADR-011 queda confirmado en arranque en frío (antes solo se tenía con estado heredado del v3).
