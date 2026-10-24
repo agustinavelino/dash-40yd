@@ -152,3 +152,21 @@ La hipótesis de interferencia ambiental se probó y **se descartó con datos**.
 | `02_histograma.png` | Distribución del error |
 | `03_presupuesto_error.png` | Contexto en el presupuesto (escala log) |
 | `04_filtro_latencia.png` | Validación del filtro de latencia mínima |
+| `exp0_repeticion_2026-10-23.csv` | Repetición del 23-oct-2026 (sección 11) |
+| `exp0_repeticion_intento1_orden_flasheo_2026-10-23.csv` | Intento fallido de la repetición por orden de flasheo (sección 11) |
+
+## 11. Repetición (23-oct-2026)
+
+Corrida completa ejecutada por el agente runner desde WSL2, con los mismos sketches, el mismo montaje y las placas identificadas por MAC (hub COM7, nodo COM16).
+
+| Métrica | 20-sep-2026 | 23-oct-2026 |
+|---|---|---|
+| Eventos | 200/200 | 200/200 |
+| **σ** | **168 µs** | **87 µs** |
+| Media | −311 µs | −174 µs |
+| Deriva de cristal por bloque | 11.4–14.7 µs/s | 9.4–10.6 µs/s |
+| Resync en seq | 60, 120, 180 | 60, 120, 180 |
+
+El resultado se reproduce. La σ menor se explica por la deriva: con 9.4–10.6 µs/s la rampa entre resyncs es más corta y el diente de sierra tiene menos amplitud. La deriva entre dos cristales cambia de un día a otro (temperatura); por eso la cifra de referencia para el presupuesto sigue siendo la más conservadora, **168 µs**.
+
+**Incidencia:** el primer intento dio 193/200 (seq 1–7 como FALTA) y una media de +3.5 s. Causa: el nodo se flasheó antes que el hub. El hub recién flasheado mandó el handshake y generó 7 pulsos; al abrir el logger, el hub se reinició y su segundo handshake fue ignorado, porque el nodo solo acepta uno por arranque. El nodo quedó 7 pulsos adelantado (7 × 500 ms = 3.5 s). Solución de procedimiento, sin tocar el firmware: orden **hub → nodo → logger**, ya registrado en `.claude/agents/runner.md`.
