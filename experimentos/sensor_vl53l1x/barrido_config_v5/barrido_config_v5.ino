@@ -65,15 +65,19 @@ const uint32_t cfgImp[] = { 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 25 };
 const int N_CONFIGS = sizeof(cfgImp) / sizeof(cfgImp[0]);
 
 // --- memoria RTC: sobrevive a ESP.restart(), no a un corte de energia ---
-RTC_DATA_ATTR uint32_t rtcMagic   = 0;
-RTC_DATA_ATTR int      rtcIdx     = 0;
-RTC_DATA_ATTR float    rtcPer[16];     // periodo medio, ms
-RTC_DATA_ATTR float    rtcSd[16];      // jitter de los limpios, us
-RTC_DATA_ATTR float    rtcRanuras[16]; // periodo / ranura teorica
-RTC_DATA_ATTR int16_t  rtcAnom[16];    // intervalos anomalos
-RTC_DATA_ATTR int16_t  rtcNum[16];     // intervalos contados
-RTC_DATA_ATTR int16_t  rtcDist[16];    // distancia media, mm
-RTC_DATA_ATTR int16_t  rtcVal[16];     // muestras validas
+// RTC_NOINIT_ATTR y no RTC_DATA_ATTR: el bootloader reinicializa las
+// RTC_DATA_ATTR en todo reinicio que no sea despertar de deep sleep, y la
+// primera version del v5 se quedo en un bucle infinito en la config 1.
+// NOINIT no se toca nunca; al encender trae basura, por eso existe MAGIC.
+RTC_NOINIT_ATTR uint32_t rtcMagic;
+RTC_NOINIT_ATTR int      rtcIdx;
+RTC_NOINIT_ATTR float    rtcPer[16];     // periodo medio, ms
+RTC_NOINIT_ATTR float    rtcSd[16];      // jitter de los limpios, us
+RTC_NOINIT_ATTR float    rtcRanuras[16]; // periodo / ranura teorica
+RTC_NOINIT_ATTR int16_t  rtcAnom[16];    // intervalos anomalos
+RTC_NOINIT_ATTR int16_t  rtcNum[16];     // intervalos contados
+RTC_NOINIT_ATTR int16_t  rtcDist[16];    // distancia media, mm
+RTC_NOINIT_ATTR int16_t  rtcVal[16];     // muestras validas
 
 VL53L1X sensor;
 
