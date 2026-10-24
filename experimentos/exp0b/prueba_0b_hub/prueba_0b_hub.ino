@@ -11,6 +11,9 @@
 //     ISR ni en el callback de ESP-NOW)
 //   - CSV extendido: seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws
 //   - Al final, los round-trips de TODAS las rafagas (lineas "R,...")
+//   - Cada linea de datos con checksum "*HH" y la tabla impresa dos veces
+//   - Marcador de fin: la linea exacta "# fin" (usar --fin "^# fin$";
+//     "^# fin" tambien atrapa "# fin de espera")
 //
 // Escenarios (docs/experimento0b_contexto.md, 3.1):
 //   C0: compilar con -DSOFTAP_ACTIVO=0 (radio en el mismo canal, sin AP)
@@ -238,25 +241,40 @@ void setup() {
   Serial.println("# arrancando, primer resync...");
 }
 
+// [0b] Imprime una linea con checksum al final ("*HH", XOR de los bytes,
+// como NMEA). En S1 se corrompieron bytes del serial con el SoftAP activo
+// y una linea danada (rtt 2981 -> 981) paso como valida; con el checksum
+// resumen_corrida.py la descarta en vez de aceptarla.
+void lineaConChecksum(const char *s) {
+  uint8_t x = 0;
+  for (const char *p = s; *p; p++) x ^= (uint8_t)*p;
+  Serial.printf("%s*%02X\n", s, x);
+}
+
 void imprimirResultados() {
   delay(500);                                  // deja llegar reportes rezagados
-  Serial.println("seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws");   // [0b] columnas extra
-  for (uint32_t i = 1; i <= N_EVENTOS; i++) {
-    if (!tengoA[i] || !tengoB[i]) { Serial.print(i); Serial.println(",FALTA,"); continue; }
-    int64_t res = tEventoALog[i] - (tEventoB[i] - offsetLog[i]);
-    Serial.print(i);                       Serial.print(",");
-    Serial.print((long long)res);          Serial.print(",");
-    Serial.print((long long)offsetLog[i]); Serial.print(",");        // [0b]
-    Serial.print((long long)rttLog[i]);    Serial.print(",");        // [0b]
-    Serial.print(pongsLog[i]);             Serial.print(",");        // [0b]
-    Serial.println(clientesLog[i]);                                  // [0b]
+  char l[96];
+  // [0b] La tabla se imprime DOS veces: una linea corrupta en una copia se
+  // recupera de la otra. Cuesta ~0.5 s despues de la corrida; no toca la medicion.
+  for (int copia = 1; copia <= 2; copia++) {
+    Serial.printf("# copia %d\n", copia);
+    Serial.println("seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws");   // [0b] columnas extra
+    for (uint32_t i = 1; i <= N_EVENTOS; i++) {
+      if (!tengoA[i] || !tengoB[i]) { snprintf(l, sizeof(l), "%lu,FALTA,", (unsigned long)i); lineaConChecksum(l); continue; }
+      int64_t res = tEventoALog[i] - (tEventoB[i] - offsetLog[i]);
+      snprintf(l, sizeof(l), "%lu,%lld,%lld,%lld,%d,%u", (unsigned long)i, (long long)res,
+               (long long)offsetLog[i], (long long)rttLog[i], pongsLog[i], clientesLog[i]);
+      lineaConChecksum(l);
+    }
+    // [0b] todos los round-trips, para ver si el WiFi sube el piso F.
+    // Empiezan con "R" para que resumen_corrida.py no los confunda con eventos.
+    Serial.println("# rafagas: R,rafaga,ping,rtt_us (-1 = no llego)");
+    for (int r = 0; r < nRafagas; r++)
+      for (int i = 0; i < BURST; i++) {
+        snprintf(l, sizeof(l), "R,%d,%d,%lld", r + 1, i + 1, (long long)rttRafagas[r][i]);
+        lineaConChecksum(l);
+      }
   }
-  // [0b] todos los round-trips, para ver si el WiFi sube el piso F.
-  // Empiezan con "R" para que resumen_corrida.py no los confunda con eventos.
-  Serial.println("# rafagas: R,rafaga,ping,rtt_us (-1 = no llego)");
-  for (int r = 0; r < nRafagas; r++)
-    for (int i = 0; i < BURST; i++)
-      Serial.printf("R,%d,%d,%lld\n", r + 1, i + 1, (long long)rttRafagas[r][i]);
   Serial.printf("# estaciones_ap_final %d | clientes_ws_final %u\n",
                 SOFTAP_ACTIVO ? WiFi.softAPgetStationNum() : 0, (unsigned)ws.count());
   Serial.println("# fin");

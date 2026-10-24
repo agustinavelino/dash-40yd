@@ -39,7 +39,7 @@ En S2 y S3, abrir el puerto serial reinicia el hub y el SoftAP se cae unos segun
 
 1. Identificar puertos por MAC.
 2. Flashear **hub → nodo → logger en el hub**, sin pausas (`runner.md`, paso 5b).
-3. Logger: `--fin "^# fin" --max-s 400 --idle-s 300`. La impresión es diferida: durante la corrida no sale nada.
+3. Logger: `--fin "^# fin$" --max-s 450 --idle-s 300`. **Exacto con `$`**: `^# fin` también atrapa la línea `# fin de espera` y corta la captura a los 60 s (pasó en S1). La impresión es diferida: durante la corrida no sale nada.
 4. Archivo: `experimentos/exp0b/exp0b_<ID>_<YYYY-MM-DD>.csv`.
 5. Resumen: `python3 tools/resumen_corrida.py <archivo> --esperados 200`.
 
@@ -51,6 +51,7 @@ El nodo no se reflashea entre escenarios si ya tiene `prueba_0b_nodo`, pero **s�
 - `# fin de espera (boton|tiempo) | estaciones_ap N | clientes_ws M` coincide con el escenario.
 - 200/200 eventos; `clientes_ws` dentro de lo esperado.
 - Líneas `R,…` presentes (round-trips de todas las ráfagas).
+- Cada línea de datos termina en `*HH` (checksum) y la tabla sale dos veces; `resumen_corrida.py` descarta las corruptas y usa la primera copia válida. Si reporta "lineas corruptas descartadas", es pérdida del serial, no del radio.
 
 ## Criterios de éxito (plan, 3.3)
 

@@ -15,17 +15,44 @@ Uso:  python3 tools/resumen_corrida.py <archivo.csv> [--esperados 200]
 import argparse, csv, statistics as st, sys
 
 
+def checksum_ok(linea):
+    """Lineas del 0b en adelante: 'datos*HH' con HH = XOR de los bytes de datos.
+    Devuelve (datos, ok). Una linea sin '*' (formato del Exp. 0) se acepta tal cual."""
+    if "*" not in linea:
+        return linea, True
+    datos, _, hh = linea.rpartition("*")
+    x = 0
+    for c in datos.encode("latin-1", errors="replace"):
+        x ^= c
+    return datos, hh.strip().upper() == f"{x:02X}"
+
+
 def leer(ruta):
-    filas = []
-    with open(ruta, newline="") as f:
-        for row in csv.reader(f):
-            if len(row) < 2 or not row[0].strip().isdigit():
+    """Devuelve (filas, corruptas). Si la tabla viene repetida (0b: dos copias),
+    se queda con la primera copia VALIDA de cada seq."""
+    filas, vistos, corruptas = [], set(), 0
+    with open(ruta, encoding="latin-1", newline="") as f:
+        for linea in f:
+            linea = linea.strip()
+            if not linea[:1].isdigit():
                 continue
+            datos, ok = checksum_ok(linea)
+            row = datos.split(",")
             try:
-                filas.append([int(x) for x in row])
+                valores = [int(x) for x in row]
             except ValueError:
-                continue          # linea truncada o corrupta: se cuenta como perdida
-    return filas
+                if ok and len(row) >= 2 and row[1] == "FALTA":
+                    continue      # el hub no tuvo el evento: perdida real
+                corruptas += 1    # linea truncada o con basura
+                continue
+            if not ok:
+                corruptas += 1
+                continue
+            if valores[0] in vistos:
+                continue          # segunda copia de un seq ya leido
+            vistos.add(valores[0])
+            filas.append(valores)
+    return filas, corruptas
 
 
 def main():
@@ -34,7 +61,7 @@ def main():
     ap.add_argument("--esperados", type=int, default=200)
     a = ap.parse_args()
 
-    filas = leer(a.csv)
+    filas, corruptas = leer(a.csv)
     if not filas:
         print(f"SIN DATOS en {a.csv}")
         sys.exit(1)
@@ -46,7 +73,8 @@ def main():
     # pstdev, igual que graficar.py del Exp. 0, para que los numeros sean comparables
     print(f"archivo   {a.csv}")
     print(f"eventos   {len(seqs)}/{a.esperados}  perdidos {len(faltan)}"
-          + (f"  (seq {faltan[:10]}{'...' if len(faltan) > 10 else ''})" if faltan else ""))
+          + (f"  (seq {faltan[:10]}{'...' if len(faltan) > 10 else ''})" if faltan else "")
+          + (f"  | lineas corruptas descartadas {corruptas}" if corruptas else ""))
     print(f"sigma     {st.pstdev(res):.0f} us   media {st.mean(res):.0f} us"
           f"   min {min(res)}  max {max(res)} us")
     print(f"REQ-NF-02 (sigma <= 5 ms): {'CUMPLE' if st.pstdev(res) <= 5000 else 'NO CUMPLE'}")

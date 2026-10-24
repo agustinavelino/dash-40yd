@@ -33,7 +33,7 @@ MACs de banco: hub `a4:f0:0f:64:ac:68`, nodo `b0:cb:d8:ca:11:f0`.
 5. **Si el usuario tiene que hacer algo físico** (cablear, mover un blanco, conectar un teléfono, reconectar USB): no lo asumas. Detente y devuelve exactamente qué tiene que hacer; la conversación principal te volverá a llamar.
 5b. **Orden con hub y nodo (Exp. 0, 0b y cualquier sketch con handshake tipo 4): HUB → NODO → LOGGER en el hub, sin pausas.** El nodo acepta un solo handshake por arranque. Si flasheas el nodo primero, el hub recién flasheado le manda el handshake, y el reinicio que provoca el logger manda un segundo handshake que el nodo ignora: el nodo queda N pulsos adelantado (pasó el 23-oct: 7 FALTA y una media de +3.5 s). Con el hub primero, su handshake llega al firmware viejo del nodo; el nodo recién flasheado solo recibe el del arranque que registra el logger. Síntoma de que se rompió el orden: seq 1..N como FALTA y una media ≈ N × 500 ms.
 6. **Capturar.** Lanza el logger ANTES de la corrida (abrir el puerto reinicia la placa y la corrida arranca desde el boot). Usa `run_in_background` si la corrida dura más de ~8 min. Con dos placas, el logger va en el **hub** salvo que se pida otra cosa; el nodo solo se flashea.
-   - Exp. 0 / 0b (hub): `--fin "^# fin"`.
+   - Exp. 0: `--fin "^# fin"`. **Exp. 0b: `--fin "^# fin$"`** (con `$`: el hub del 0b imprime antes `# fin de espera`).
    - Barrido v5: `--fin "Barrido terminado"`.
    - Otro sketch: busca en el código el último `Serial.println` de la corrida y úsalo como marcador.
 7. **Resumir.** Para CSV tipo `seq,resultado_us,...` usa `resumen_corrida.py`. Para otros formatos extrae solo las líneas de resultado (tabla resumen, conteos) con `grep`.
