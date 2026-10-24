@@ -138,7 +138,7 @@ El entorno es **WSL2 sobre Windows**. Las placas USB solo las ve Windows, así q
 | Python con pyserial (Windows) | `/mnt/c/Users/aagus/AppData/Local/Programs/Python/Python311/python.exe` (pyserial 3.5) |
 | Python de WSL | `python3` sin pyserial ni matplotlib (instalar en un venv antes de graficar) |
 | esptool 5.3.1 (viene con el core) | `/mnt/c/Users/aagus/AppData/Local/Arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool.exe` |
-| Puertos vistos | COM3, COM4, COM11, COM12 (todos "Unknown"; no se sabe cuál es hub o nodo sin leer la MAC) |
+| Puertos vistos | COM3, COM4, COM11, COM12 no son ESP32 (no responden a esptool); las placas aparecen como otro COM al conectarlas |
 
 Scripts de banco (`tools/`):
 
@@ -147,8 +147,9 @@ Scripts de banco (`tools/`):
 | `identificar_puertos.py` | `python3` (WSL) | Lee la MAC de fábrica de cada COM con esptool y dice si es hub o nodo. **Reinicia las placas.** |
 | `logger_serial.py` | Python de **Windows** | Guarda el serial crudo a un archivo; termina con el marcador `--fin`, `--max-s` o `--idle-s`. Rutas con `wslpath -w` |
 | `resumen_corrida.py` | `python3` (WSL) | σ, media, eventos y pérdidas de un CSV tipo Exp. 0/0b, en 4–5 líneas |
+| `ard.sh` | bash (WSL) | `compile <sketch>`, `upload <sketch> <COMn>`, `boards`: arduino-cli con rutas convertidas y salida filtrada |
 
-Compilar (verificado, ~20 s): `"$CLI" compile --fqbn esp32:esp32:esp32 "$(wslpath -w <carpeta_del_sketch>)"`.
+Placa hub identificada en **COM7** (23-oct-2026); el número de COM puede cambiar al reconectar, por eso siempre se identifica por MAC.
 
 Notas:
 - arduino-cli.exe recibe rutas de Windows. Para compilar un sketch del repo, pasarle la ruta con `wslpath -w <carpeta_del_sketch>`.
@@ -187,7 +188,12 @@ Pendientes conocidos:
 
 ## 9. Herramientas de Claude Code en este proyecto
 
-Estado: **en diseño** (ver el plan acordado el 23-oct-2026). Cuando existan, se documentan aquí.
+| Pieza | Archivo | Qué hace |
+|---|---|---|
+| Agente **runner** | `.claude/agents/runner.md` | Toda compilación, flasheo y corrida en placa pasa por él. Identifica cada COM por MAC y solo flashea si coincide con el rol; captura a archivo y devuelve ~15 líneas (estado, archivo, σ/tabla). Si hace falta algo físico, se detiene y lo pide. No edita sketches ni hace commits. |
+| Skill **documentar** | `.claude/skills/documentar/SKILL.md` | "documenta" / "haz el reporte": reporte con el formato del Exp. 0, predicción contra resultado, y actualiza `docs/ESTADO.md` |
+| Hook **proteger_datos** | `.claude/hooks/proteger_datos.py` (PreToolUse) | Bloquea editar, truncar o borrar un `.csv`/`.txt` existente en `experimentos/`. Crear nuevos y renombrar con `mv` sí se permite |
+| Hook **revisar_webapp** | `.claude/hooks/revisar_webapp.py` (PostToolUse) | Tras editar `webapp/`, avisa si hay recursos externos o si pasa de 30 KB |
+| Permisos | `.claude/settings.json` | Compilar, `boards`, resumen y git de solo lectura sin pedir confirmación. Subir firmware sí la pide |
 
-- **Agente de banco** (`.claude/agents/`): compila, flashea, lee el serial y devuelve un resumen corto (estado, conteos, σ, archivo guardado), no la salida completa, para no saturar el contexto. Antes de flashear identifica cada puerto por su MAC y solo sube si coincide con el rol esperado; si hay duda, se detiene y pregunta.
-- **Skill de documentación** (`.claude/skills/`): cuando el usuario pide "documenta" o "haz el reporte", genera el reporte con el formato de `experimentos/exp0/experimento0_resultados.md`: línea de resultado al inicio, objetivo, principio, montaje, procedimiento, resultados con gráficas, contexto en el presupuesto de error, conclusiones numeradas, incidencias resueltas y tabla de archivos.
+Flujo normal: pedir la corrida → el runner la ejecuta y devuelve el resumen → "documenta" → commit.

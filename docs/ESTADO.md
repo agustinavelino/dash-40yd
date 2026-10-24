@@ -10,15 +10,15 @@
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| I2 | Agente de banco (`.claude/agents/banco.md`) | Corre el Exp. 0 completo sin intervención en la conversación y devuelve σ ≤ 250 µs con 200/200 eventos | Siguiente en hacerse |
-| I3 | Skill `documentar` | Genera el reporte del sensor (smoke test + barridos v3/v5) con el formato del Exp. 0 | Pendiente |
-| I4 | Hooks (datos crudos protegidos, webapp sin URLs externas) y permisos | Un intento de editar un `.csv` o `.txt` crudo de `experimentos/` queda bloqueado | Pendiente |
+| I2 | Agente **runner** (`.claude/agents/runner.md`) | Corre el Exp. 0 completo sin intervención en la conversación y devuelve σ ≤ 250 µs con 200/200 eventos | Escrito y probado en seco (identificar y compilar). Falta la prueba de cierre: necesita **las dos placas** y el cable del pulso del Exp. 0 |
+| I3 | Skill `documentar` | Genera el reporte del sensor (smoke test + barridos v3/v5) con el formato del Exp. 0 | Escrita; falta su primer uso (el reporte del sensor) |
+| I5 | Sketch para S2 (corrida larga apuntando al cielo) | Compila y registra ≥ 1000 intervalos separados por régimen válido/inválido | **No existe aún** |
 
 ## Siguiente
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
-| S2 | Corrida larga IMP = 25 ms apuntando al cielo (≥ 1000 muestras, cruces intermitentes) | — (S1 cerrada) | Tasa de intervalos anómalos en régimen inválido a IMP 25, y 0 saltos a 46.6 ms en régimen válido |
+| S2 | Corrida larga IMP = 25 ms apuntando al cielo (≥ 1000 muestras, cruces intermitentes) | I5 | Tasa de intervalos anómalos en régimen inválido a IMP 25, y 0 saltos a 46.6 ms en régimen válido |
 | T1 | **Experimento 0b** (C0, S1, S2, S3) | I2 | 4 CSV; σ(S3) ≤ 1.5 × σ(C0) y 0 pérdidas, o hallazgo documentado |
 | W1 | Prototipo de `webapp/` con datos simulados | — (no necesita placas) | Abre en el navegador sin red, ≤ ~20 KB, muestra resultado simulado por WebSocket falso |
 | S3 | Experimento 1 (dos sensores, misma puerta) | S2 | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
@@ -44,6 +44,7 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 | 11-oct-2026 | Smoke test y barridos v3/v4 del VL53L1X | Documento Maestro 9.2 (falta reporte propio) |
 | 23-oct-2026 | Repo reorganizado, CLAUDE.md alineado | commits `a1c3931`, `b705d4e` |
 | 23-oct-2026 | I1: scripts de banco funcionando desde WSL2 (compilar, flashear, identificar por MAC, logger, resumen) | `tools/`; COM7 = hub; resumen reproduce σ = 168 µs |
+| 23-oct-2026 | I4: hooks `proteger_datos` y `revisar_webapp` y permisos del proyecto | 13/13 casos de prueba correctos; el hook bloqueó en vivo un comando real |
 | 23-oct-2026 | **S1: barrido v5 en arranque en frío. IMP 25 → 1.001 ranuras (23.31 ms). ADR-011 se sostiene.** | `experimentos/sensor_vl53l1x/barrido_v5_frio_2026-10-23.txt` |
 
 ### Detalle de S1 (barrido v5, 23-oct-2026)
