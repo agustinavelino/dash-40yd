@@ -182,7 +182,8 @@ Pendientes conocidos:
 - `experimentos/exp0/experimento0_resultados.md` — Experimento 0 completo
 - `docs/experimento0b_contexto.md` — plan del Experimento 0b (escenarios C0, S1, S2, S3; CSV extendido; criterios de éxito; trampas de canal y MAC con SoftAP)
 - `experimentos/exp0/prueba_0_A/`, `prueba_0_B/` — firmware base del hub y del nodo
-- `experimentos/sensor_vl53l1x/` — smoke test y barridos del sensor
+- `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` — caracterización del sensor (smoke test, v3, v5): cadencia, IMP, margen
+- Gráficas: `.venv/bin/python <script>` (venv local con matplotlib, ignorado por git; recrear con `python3 -m venv .venv && .venv/bin/pip install matplotlib`)
 
 ---
 

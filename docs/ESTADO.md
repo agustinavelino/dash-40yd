@@ -11,7 +11,6 @@
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
 | I2 | Agente **runner** (`.claude/agents/runner.md`) | Corre el Exp. 0 completo sin intervención en la conversación y devuelve σ ≤ 250 µs con 200/200 eventos | Escrito y probado en seco (identificar y compilar). Falta la prueba de cierre: necesita **las dos placas** y el cable del pulso del Exp. 0 |
-| I3 | Skill `documentar` | Genera el reporte del sensor (smoke test + barridos v3/v5) con el formato del Exp. 0 | Escrita; falta su primer uso (el reporte del sensor) |
 | I5 | Sketch para S2 (corrida larga apuntando al cielo) | Compila y registra ≥ 1000 intervalos separados por régimen válido/inválido | **No existe aún** |
 
 ## Siguiente
@@ -34,16 +33,19 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 - **Cambios pendientes para el Documento Maestro v2.2** (no se editan aquí; se juntan para una sola revisión):
   - 9.2: el ADR-011 queda confirmado en arranque en frío (antes solo se tenía con estado heredado del v3).
   - 9.2: el "margen de 3.3 ms" supone que la medición dura lo mismo que el budget (20.02 ms). El v5 acota la duración real T a 20.48 < T ≤ 22.34 ms, así que el margen real a IMP 25 está entre **0.94 y 2.8 ms**, no 3.3 ms.
-  - 9.2: el jitter de cadencia de 10.6 µs ("firme") no se reprodujo: el v5 midió 49–266 µs según la configuración (235 µs a IMP 25). Sigue siendo ~1 % de la ranura e irrelevante frente a 6.7 ms de cuantización, pero la firmeza debe bajar a "varía entre corridas".
+  - 9.2: el jitter de cadencia de 10.6 µs ("firme") no se reprodujo: el v5 midió 48–266 µs según la configuración (235 µs a IMP 25), y 44–315 µs en la misma configuración entre arranques. Sigue siendo ≤ 1.4 % de la ranura e irrelevante frente a 6.7 ms de cuantización, pero la firmeza debe bajar a "varía entre corridas".
+  - 9.2: agregar el modelo periodo = ⌈T / ranura⌉ × ranura, confirmado en 11 configuraciones (desviación ≤ 0.009 ranuras).
+  - 1.1 y 19: el barrido en arranque en frío queda hecho; el siguiente paso del sensor es la corrida larga en régimen inválido.
 
 ## Hecho
 
 | Fecha | Qué | Evidencia |
 |---|---|---|
 | 20-sep-2026 | Experimento 0 aprobado: σ = 168 µs | `experimentos/exp0/experimento0_resultados.md` |
-| 11-oct-2026 | Smoke test y barridos v3/v4 del VL53L1X | Documento Maestro 9.2 (falta reporte propio) |
+| 11-oct-2026 | Smoke test y barridos v3/v4 del VL53L1X | Documento Maestro 9.2; ahora resumido en `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` |
 | 23-oct-2026 | Repo reorganizado, CLAUDE.md alineado | commits `a1c3931`, `b705d4e` |
 | 23-oct-2026 | I1: scripts de banco funcionando desde WSL2 (compilar, flashear, identificar por MAC, logger, resumen) | `tools/`; COM7 = hub; resumen reproduce σ = 168 µs |
+| 23-oct-2026 | I3: skill `documentar`; primer uso: reporte del sensor | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` |
 | 23-oct-2026 | I4: hooks `proteger_datos` y `revisar_webapp` y permisos del proyecto | 13/13 casos de prueba correctos; el hook bloqueó en vivo un comando real |
 | 23-oct-2026 | **S1: barrido v5 en arranque en frío. IMP 25 → 1.001 ranuras (23.31 ms). ADR-011 se sostiene.** | `experimentos/sensor_vl53l1x/barrido_v5_frio_2026-10-23.txt` |
 
@@ -75,4 +77,4 @@ Lectura:
 
 Incidencias resueltas:
 - `MAGIC 0xDA5HC001` no es hexadecimal: el v5 no compilaba.
-- `RTC_DATA_ATTR` se reinicializa con `ESP.restart()`: el primer intento quedó en un bucle infinito en la config 1. Se cambió a `RTC_NOINIT_ATTR`. Ese intento se conserva en `barrido_v5_intento1_bucle_2026-10-23.txt`: 97 arranques en frío a IMP 10, todos entre 27.996 y 28.006 ms.
+- `RTC_DATA_ATTR` se reinicializa con `ESP.restart()`: el primer intento quedó en un bucle infinito en la config 1. Se cambió a `RTC_NOINIT_ATTR`. Ese intento se conserva en `barrido_v5_intento1_bucle_2026-10-23.txt`: 97 arranques, de los cuales 92 completaron su medición a IMP 10: periodo entre 27.996 y 28.016 ms, σ entre arranques 4.0 µs (corregido por `graficar_sensor.py`; antes aquí decía 97 arranques y hasta 28.006 ms).
