@@ -57,6 +57,10 @@ def main():
         pongs = [r[4] for r in filas]
         print(f"rtt elegido  mediana {st.median(rtt):.0f} us (Exp. 0: 2483)"
               f"   pongs promedio {st.mean(pongs):.2f}/7")
+    # 0b: clientes WebSocket al procesar cada evento (verifica el escenario)
+    if all(len(r) >= 6 for r in filas):
+        cli = [r[5] for r in filas]
+        print(f"clientes_ws  min {min(cli)}  max {max(cli)}  mediana {st.median(cli):.0f}")
 
 
 if __name__ == "__main__":
