@@ -32,26 +32,32 @@ def leer(ruta):
     se queda con la primera copia VALIDA de cada seq."""
     filas, vistos, corruptas = [], set(), 0
     with open(ruta, encoding="latin-1", newline="") as f:
-        for linea in f:
-            linea = linea.strip()
-            if not linea[:1].isdigit():
-                continue
-            datos, ok = checksum_ok(linea)
-            row = datos.split(",")
-            try:
-                valores = [int(x) for x in row]
-            except ValueError:
-                if ok and len(row) >= 2 and row[1] == "FALTA":
-                    continue      # el hub no tuvo el evento: perdida real
-                corruptas += 1    # linea truncada o con basura
-                continue
-            if not ok:
-                corruptas += 1
-                continue
-            if valores[0] in vistos:
-                continue          # segunda copia de un seq ya leido
-            vistos.add(valores[0])
-            filas.append(valores)
+        lineas = [l.strip() for l in f]
+    # Si el archivo usa checksum, una linea sin '*' NO es formato viejo: es una
+    # linea que perdio su checksum por corrupcion (paso en S3 del 23-oct).
+    exigir = any("*" in l and checksum_ok(l)[1] for l in lineas if l[:1].isdigit())
+    for linea in lineas:
+        if not linea[:1].isdigit():
+            continue
+        if exigir and "*" not in linea:
+            corruptas += 1
+            continue
+        datos, ok = checksum_ok(linea)
+        row = datos.split(",")
+        try:
+            valores = [int(x) for x in row]
+        except ValueError:
+            if ok and len(row) >= 2 and row[1] == "FALTA":
+                continue      # el hub no tuvo el evento: perdida real
+            corruptas += 1    # linea truncada o con basura
+            continue
+        if not ok:
+            corruptas += 1
+            continue
+        if valores[0] in vistos:
+            continue          # segunda copia de un seq ya leido
+        vistos.add(valores[0])
+        filas.append(valores)
     return filas, corruptas
 
 
