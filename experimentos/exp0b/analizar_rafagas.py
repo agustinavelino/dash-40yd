@@ -75,6 +75,15 @@ def analizar(ruta):
     print(f"  cota error  mediana ±{(st.median(rtt) - F_US) / 2:.0f}  max ±{(max(rtt) - F_US) / 2:.0f} us")
     print(f"  error real del offset (residuo a la recta de deriva {m:.1f} us/s):"
           f"  sigma {st.pstdev(resid):.0f}  max |{max(abs(x) for x in resid):.0f}| us")
+    # Separacion por calidad de la rafaga. En R-C0 del 23-oct un ajuste de grado 2 y 3
+    # dio el mismo residuo que la recta: el residuo es error real, no curvatura de deriva.
+    buenas = [e for e, x in zip(resid, rtt) if x <= 3000]
+    malas = [e for e, x in zip(resid, rtt) if x > 3000]
+    dentro = sum(abs(e) <= (x - F_US) / 2 + 100 for e, x in zip(resid, rtt))   # +100 us: incertidumbre de la recta
+    print(f"  rafagas <= 3 ms: {len(buenas)}  error sigma {st.pstdev(buenas):.0f} us"
+          + (f"   |   > 3 ms: {len(malas)}  error sigma {st.pstdev(malas):.0f}  max |{max(map(abs, malas)):.0f}| us"
+             if len(malas) > 1 else ""))
+    print(f"  error dentro de la cota (rtt - F)/2 + 100 us: {dentro}/{len(r)}")
 
 
 for ruta in sys.argv[1:]:
