@@ -121,7 +121,7 @@ Requisitos (sección 13.3 y REQ-F-05, REQ-NF-08):
 
 Para el Experimento 0b se necesita además una **página de prueba pesada** (cientos de KB) con WebSocket y un **modo estrés que recarga cada 1 s**. Es distinta de la página de producto y vive en `experimentos/exp0b/`, no en `webapp/`; no mezclarlas.
 
-Servidor en el ESP32: ESPAsyncWebServer + AsyncTCP en su versión mantenida (organización ESP32Async en GitHub). **Aún no están instaladas**; verificar compatibilidad con core 3.3.x antes de fijar versión.
+Servidor en el ESP32: ESP Async WebServer 3.12.1 + Async TCP 3.5.0 (organización ESP32Async), fijadas el 23-oct-2026 y verificadas compilando el hub del 0b con core 3.3.11. Un hub con página pesada necesita `PartitionScheme=huge_app` (`ARD_OPCIONES` en `tools/ard.sh`).
 
 ---
 
@@ -134,7 +134,7 @@ El entorno es **WSL2 sobre Windows**. Las placas USB solo las ve Windows, así q
 | arduino-cli 1.5.1 (viene con el Arduino IDE) | `"/mnt/c/Users/aagus/AppData/Local/Programs/Arduino IDE/resources/app/lib/backend/resources/arduino-cli.exe"` |
 | Core | `esp32:esp32` **3.3.11**, FQBN `esp32:esp32:esp32` |
 | Carpeta de librerías (Windows) | `C:\Users\aagus\OneDrive\Documents\Arduino\libraries` |
-| Librerías instaladas relevantes | `VL53L1X` (Pololu) 1.3.1. Faltan ESPAsyncWebServer y AsyncTCP |
+| Librerías instaladas relevantes | `VL53L1X` (Pololu) 1.3.1 · **ESP Async WebServer 3.12.1** y **Async TCP 3.5.0** (ESP32Async; compilan con core 3.3.11) |
 | Python con pyserial (Windows) | `/mnt/c/Users/aagus/AppData/Local/Programs/Python/Python311/python.exe` (pyserial 3.5) |
 | Python de WSL | `python3` sin pyserial ni matplotlib (instalar en un venv antes de graficar) |
 | esptool 5.3.1 (viene con el core) | `/mnt/c/Users/aagus/AppData/Local/Arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool.exe` |

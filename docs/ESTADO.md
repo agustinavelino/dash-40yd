@@ -10,6 +10,7 @@
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
+| T1 | **Experimento 0b** (C0, S1, S2, S3) | 4 CSV; σ(S3) ≤ 1.5 × σ(C0 del día) y 0 pérdidas, o hallazgo documentado | Preparado y compilado (hub S/C0 y nodo, página de 237 KB gz). Falta: **predicción escrita** (abajo) y teléfonos. Procedimiento: `experimentos/exp0b/procedimiento.md` |
 | I5 | Sketch para S2 (corrida larga apuntando al cielo) | Compila y registra ≥ 1000 intervalos separados por régimen válido/inválido | **No existe aún** |
 
 ## Siguiente
@@ -17,7 +18,6 @@
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
 | S2 | Corrida larga IMP = 25 ms apuntando al cielo (≥ 1000 muestras, cruces intermitentes) | I5 | Tasa de intervalos anómalos en régimen inválido a IMP 25, y 0 saltos a 46.6 ms en régimen válido |
-| T1 | **Experimento 0b** (C0, S1, S2, S3) | I2 | 4 CSV; σ(S3) ≤ 1.5 × σ(C0) y 0 pérdidas, o hallazgo documentado |
 | W1 | Prototipo de `webapp/` con datos simulados | — (no necesita placas) | Abre en el navegador sin red, ≤ ~20 KB, muestra resultado simulado por WebSocket falso |
 | S3 | Experimento 1 (dos sensores, misma puerta) | S2 | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
@@ -28,6 +28,7 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 ## Decisiones abiertas
 
 - **¿IMP = 12 ms en lugar de 25 ms?** (hallazgo del v5, ver abajo). IMP 12 da 22.41 ms de periodo (2 ranuras) contra 23.31 ms de IMP 25: 0.9 ms menos, lo que baja la cuantización por sensor de 6.73 a 6.47 ms (−4 %). A cambio, su margen hacia el siguiente salto es menor (≥ 0 ms contra ≥ 0.94 ms de IMP 25). **Recomendación: quedarse en IMP 25** hasta que S2 mida si el margen se agota en régimen inválido; la ganancia de IMP 12 no mueve el presupuesto de error. Es decisión del usuario.
+- **Predicción del Exp. 0b (escribirla ANTES de la primera corrida; no se ajusta después):** _pendiente del usuario_. Referencias: C0 de hoy ≈ repetición del Exp. 0 (σ = 87 µs, rtt filtrado del Exp. 0: mediana 2 483 µs, piso F = 2 332 µs).
 - **Orden 0b vs webapp:** se llevan en paralelo; el 0b decide si el hub puede servir la página.
 - **Cambios pendientes para el Documento Maestro v2.2** (no se editan aquí; se juntan para una sola revisión):
   - 9.2: el ADR-011 queda confirmado en arranque en frío (antes solo se tenía con estado heredado del v3).
