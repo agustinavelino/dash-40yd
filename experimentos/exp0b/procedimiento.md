@@ -59,3 +59,17 @@ El nodo no se reflashea entre escenarios si ya tiene `prueba_0b_nodo`, pero **s�
 - σ(S3) ≤ ~1.5 × σ(C0 del mismo día) y 0 eventos perdidos.
 - σ ≤ 5 ms en todos (REQ-NF-02).
 - Señal temprana: mediana del rtt elegido muy por encima de ~2.5 ms, o pongs promedio < 7.
+
+## Prueba de ráfagas (agregada el 23-oct-2026, después de ver C0–S3)
+
+Motivo: con 200 pulsos hay solo 4 ráfagas de resync por corrida, y la σ la decide la suerte de una sola (los dos C0 del día dieron 263 y 69 µs con el mismo montaje). Esta prueba repite **la misma `hacerResync()`** 100 veces, una cada 3 s, sin pulsos ni handshake, para medir si la carga del SoftAP hace más frecuentes las ráfagas lentas.
+
+| Condición | Hub | Teléfonos |
+|---|---|---|
+| R-C0 | `ARD_FLAGS="-DSOFTAP_ACTIVO=0 -DMODO_RAFAGAS=1"` | ninguno |
+| R-S3 | `ARD_FLAGS=-DMODO_RAFAGAS=1` | los de S3: 1 en estrés + 1–2 en escucha |
+
+- El nodo es el mismo `prueba_0b_nodo` (solo responde pings; el handshake no hace falta).
+- Logger: `--fin "^# fin$" --max-s 600 --idle-s 500` (100 × 3 s = 300 s, más 60 s de espera con SoftAP).
+- Archivos: `exp0b_rafagas_C0_<fecha>.csv`, `exp0b_rafagas_S3_<fecha>.csv`.
+- Análisis: `python3 experimentos/exp0b/analizar_rafagas.py <archivos>`: mejor rtt por ráfaga (mediana, p90, máx, % > 3 ms), cota de error y error real del offset (residuo a la recta de deriva).

@@ -11,6 +11,7 @@
 //     ISR ni en el callback de ESP-NOW)
 //   - CSV extendido: seq,resultado_us,offset_us,rtt_us,pongs_recibidos,clientes_ws,paginas
 //   - Al final, los round-trips de TODAS las rafagas (lineas "R,...")
+//   - -DMODO_RAFAGAS=1: prueba de rafagas (100 resyncs, sin pulsos), ver MODO_RAFAGAS
 //   - Cada linea de datos con checksum "*HH" y la tabla impresa dos veces
 //   - Marcador de fin: la linea exacta "# fin" (usar --fin "^# fin$";
 //     "^# fin" tambien atrapa "# fin de espera")
@@ -46,7 +47,22 @@
 #define CANAL       1                          // mismo canal en hub y nodo (trampa 1)
 #define AP_SSID     "DASH-0b"
 #define AP_PASS     "dash0b2026"
+// [0b] Prueba de rafagas (-DMODO_RAFAGAS=1): sin pulsos ni handshake; repite
+// hacerResync() -la misma funcion, sin cambios- N_RAFAGAS_PRUEBA veces, una cada
+// PERIODO_RAFAGA_MS, y registra cada rafaga. Motivo: con 200 pulsos solo hay 4
+// rafagas por corrida y la sigma la decide la suerte de una sola (C0 del 23-oct:
+// 263 y 69 us con el mismo montaje). Con ~100 rafagas por condicion se ve si la
+// carga del SoftAP hace mas frecuentes las rafagas lentas.
+#ifndef MODO_RAFAGAS
+#define MODO_RAFAGAS 0
+#endif
+#define N_RAFAGAS_PRUEBA  100
+#define PERIODO_RAFAGA_MS 3000
+#if MODO_RAFAGAS
+#define MAX_RAFAGAS (N_RAFAGAS_PRUEBA + 2)
+#else
 #define MAX_RAFAGAS 64                         // ~5 rafagas por corrida; sobra
+#endif
 
 uint8_t macB[] = {0xB0, 0xCB, 0xD8, 0xCA, 0x11, 0xF0};  // MAC STA del nodo
 
@@ -98,6 +114,13 @@ uint32_t paginasLog[N_EVENTOS + 2];          // descargas acumuladas de la pagin
 bool     enviadoWS[N_EVENTOS + 2];
 int64_t  rttRafagas[MAX_RAFAGAS][BURST];       // -1 = ese pong no llego
 int      nRafagas = 0;
+// [0b] solo MODO_RAFAGAS: lo que quedo de cada rafaga
+int64_t  rafMejor[MAX_RAFAGAS];                // round-trip del ping elegido (-1 = ningun pong)
+int64_t  rafOffset[MAX_RAFAGAS];               // offset calculado por esa rafaga
+int8_t   rafPongs[MAX_RAFAGAS];
+uint32_t rafPaginas[MAX_RAFAGAS];
+uint8_t  rafClientes[MAX_RAFAGAS];
+uint32_t ultimaRafagaMs = 0, ultimoWsMs = 0;
 
 // [0b] --- servidor ---
 AsyncWebServer server(80);
@@ -290,6 +313,32 @@ void imprimirResultados() {
   Serial.println("# fin");
 }
 
+// [0b] Salida de MODO_RAFAGAS, con el mismo checksum y las dos copias.
+void imprimirRafagas() {
+  char l[96];
+  for (int copia = 1; copia <= 2; copia++) {
+    Serial.printf("# copia %d\n", copia);
+    Serial.println("# B,rafaga,mejor_rtt_us,pongs,offset_us,paginas,clientes_ws");
+    for (int r = 0; r < nRafagas; r++) {
+      snprintf(l, sizeof(l), "B,%d,%lld,%d,%lld,%lu,%u", r + 1, (long long)rafMejor[r], rafPongs[r],
+               (long long)rafOffset[r], (unsigned long)rafPaginas[r], rafClientes[r]);
+      lineaConChecksum(l);
+    }
+    Serial.println("# rafagas: R,rafaga,ping,rtt_us (-1 = no llego)");
+    for (int r = 0; r < nRafagas; r++)
+      for (int i = 0; i < BURST; i++) {
+        snprintf(l, sizeof(l), "R,%d,%d,%lld", r + 1, i + 1, (long long)rttRafagas[r][i]);
+        lineaConChecksum(l);
+      }
+  }
+  Serial.printf("# paginas_servidas total %lu | durante_corrida %lu (%.0f KB gz)\n",
+                (unsigned long)nPaginas, (unsigned long)(nPaginas - paginasAlInicio),
+                (nPaginas - paginasAlInicio) * PAGINA_GZ_LEN / 1024.0);
+  Serial.printf("# estaciones_ap_final %d | clientes_ws_final %u\n",
+                SOFTAP_ACTIVO ? WiFi.softAPgetStationNum() : 0, (unsigned)ws.count());
+  Serial.println("# fin");
+}
+
 // [0b] Manda por WebSocket los eventos ya completos (hub y nodo).
 // Corre en loop(): nunca en la ISR ni en el callback de ESP-NOW.
 void enviarPendientesWS() {
@@ -321,6 +370,36 @@ void loop() {
     Serial.printf("# fin de espera (%s) | estaciones_ap %d | clientes_ws %u\n",
                   iniciarYa ? "boton" : "tiempo", WiFi.softAPgetStationNum(), (unsigned)ws.count());
   }
+
+#if MODO_RAFAGAS
+  // [0b] --- Prueba de rafagas: solo resync repetido, sin pulsos ---
+  if (nRafagas == 0 && ultimaRafagaMs == 0) {
+    paginasAlInicio = nPaginas;
+    Serial.printf("# modo rafagas: %d rafagas, una cada %d ms\n", N_RAFAGAS_PRUEBA, PERIODO_RAFAGA_MS);
+  }
+  if (nRafagas >= N_RAFAGAS_PRUEBA) { imprimirRafagas(); terminado = true; return; }
+  if (ultimaRafagaMs == 0 || millis() - ultimaRafagaMs >= PERIODO_RAFAGA_MS) {
+    ultimaRafagaMs = millis();
+    int idx = nRafagas;                        // hacerResync() incrementa nRafagas
+    int64_t offPrevio = offsetActual;
+    rttActual = -1; pongsActual = 0;
+    hacerResync();
+    rafMejor[idx]    = rttActual;              // -1 si no llego ningun pong
+    rafOffset[idx]   = (rttActual >= 0) ? offsetActual : offPrevio;
+    rafPongs[idx]    = pongsActual;
+    rafPaginas[idx]  = nPaginas;
+    rafClientes[idx] = ws.count();
+  }
+  // misma carga de WebSocket que la corrida normal: un JSON cada 500 ms
+  if (millis() - ultimoWsMs >= 500 && ws.count() > 0) {
+    ultimoWsMs = millis();
+    char json[64];
+    snprintf(json, sizeof(json), "{\"seq\":%d,\"res_us\":0,\"off_us\":0,\"rtt_us\":%lld,\"pongs\":%d}",
+             nRafagas, (long long)rttActual, pongsActual);
+    ws.textAll(json);
+  }
+  return;
+#endif
 
   // --- 1. Primer resync + handshake de arranque ---
   if (!hayOffset) {
