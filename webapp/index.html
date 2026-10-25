@@ -14,6 +14,7 @@
    de seguridad) y solo para "armado"; rojo solo para fallos. */
 :root {
   --tinta: #000; --papel: #fff; --gris: #5c5c5c; --linea: #d6d6d6;
+  --radio: 10px; --radio-grande: 18px;   /* controles redondeados; la cancha y la tabla siguen rectas */
   --armado: #ffd400; --fallo: #c8102e;
   --num: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif-condensed, sans-serif;
   --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -34,7 +35,7 @@ section > h1 { font-size: 1.15rem; margin: 0 0 .75rem; }
 .atleta { display: flex; gap: .5rem; align-items: center; }
 .atleta label { color: var(--gris); }
 .atleta select { flex: 1; min-width: 0; font-size: 1.15rem; font-weight: 600; padding: .55rem .5rem;
-  border: 2px solid var(--tinta); border-radius: 0; background: var(--papel); }
+  border: 2px solid var(--tinta); border-radius: var(--radio); background: var(--papel); }
 
 /* La franja de cancha: cada puerta en su distancia real, el split encima de su linea. */
 .cancha { position: relative; height: 6.2rem; margin: 1.5rem .25rem .4rem; border-bottom: 4px solid var(--tinta); }
@@ -58,7 +59,7 @@ section > h1 { font-size: 1.15rem; margin: 0 0 .75rem; }
 @keyframes llega { from { background: var(--armado); } to { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .resultado.nueva .grande { animation: none; } }
 
-#armar { width: 100%; min-height: 4.5rem; border: 3px solid var(--tinta); border-radius: 0;
+#armar { width: 100%; min-height: 4.5rem; border: 3px solid var(--tinta); border-radius: var(--radio-grande);
   background: var(--tinta); color: var(--papel); font-size: 1.35rem; font-weight: 700; cursor: pointer; }
 #armar[aria-pressed="true"] { background: var(--armado); color: var(--tinta); }
 #armar:disabled { background: var(--papel); color: var(--gris); border-color: var(--linea); cursor: default; }
@@ -66,9 +67,9 @@ section > h1 { font-size: 1.15rem; margin: 0 0 .75rem; }
 .aviso { color: var(--fallo); margin: .5rem 0 0; min-height: 1.4em; }
 
 /* --- formularios y botones secundarios --- */
-input { border: 2px solid var(--tinta); border-radius: 0; padding: .55rem .5rem; background: var(--papel); min-width: 0; }
+input { border: 2px solid var(--tinta); border-radius: var(--radio); padding: .55rem .5rem; background: var(--papel); min-width: 0; }
 form button, .segmento button, #csv, .roster button { min-height: 2.9rem; padding: 0 1rem; border: 2px solid var(--tinta);
-  border-radius: 0; background: var(--papel); font-weight: 600; cursor: pointer; }
+  border-radius: var(--radio); background: var(--papel); font-weight: 600; cursor: pointer; }
 form button[type="submit"], #csv { background: var(--tinta); color: var(--papel); }
 button:disabled { opacity: .45; cursor: default; }
 .nota { color: var(--gris); font-size: .9rem; margin: .5rem 0; }
@@ -79,8 +80,10 @@ button:disabled { opacity: .45; cursor: default; }
 .controles { display: flex; gap: .5rem; flex-wrap: wrap; }
 .segmento { display: flex; }
 .segmento button + button { border-left: 0; }
+.segmento button:first-child { border-radius: var(--radio) 0 0 var(--radio); }
+.segmento button:last-child { border-radius: 0 var(--radio) var(--radio) 0; }
 .segmento button[aria-pressed="true"] { background: var(--tinta); color: var(--papel); }
-.controles select { flex: 1; min-width: 9rem; padding: .55rem .5rem; border: 2px solid var(--tinta); border-radius: 0; background: var(--papel); }
+.controles select { flex: 1; min-width: 9rem; padding: .55rem .5rem; border: 2px solid var(--tinta); border-radius: var(--radio); background: var(--papel); }
 .resumen { color: var(--gris); margin: .75rem 0 .25rem; }
 .tabla-caja { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 1.15rem; }
