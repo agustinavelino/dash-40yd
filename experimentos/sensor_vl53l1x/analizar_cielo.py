@@ -42,11 +42,12 @@ def leer(ruta):
                 continue
             datos, ok = checksum_ok(s)
             c = datos.split(",")
-            if "*" not in s or not ok or len(c) != 6:
+            if "*" not in s or not ok or len(c) not in (6, 7):
                 corruptas += 1
                 continue
-            k, t, st, d, marca = (int(x) for x in c[1:])
-            muestras.setdefault(k, (t, st, d, marca))
+            k, t, st, d, marca = (int(x) for x in c[1:6])
+            cue = int(c[6]) if len(c) == 7 else -1       # -1: captura sin columna cue
+            muestras.setdefault(k, (t, st, d, marca, cue))
     return imp, [muestras[k] for k in sorted(muestras)], sorted(muestras), corruptas
 
 
@@ -68,7 +69,7 @@ def main():
     excl = collections.Counter()
     grupos = collections.defaultdict(list)            # regimen -> [(dt, clase)]
     for i in range(1, len(m)):
-        (t0, s0, _, m0), (t1, s1, _, m1) = m[i - 1], m[i]
+        (t0, s0, _, m0, _), (t1, s1, _, m1, _) = m[i - 1], m[i]
         if ks[i] != ks[i - 1] + 1:
             excl["hueco por linea corrupta"] += 1
             continue
@@ -108,6 +109,12 @@ def main():
             exceso = sorted(round((dt - ranura) / 1000, 1) for dt, k in g if k == "anomalo")
             print(f"{'':<11}exceso de los anomalos sobre 1 ranura (ms): mediana {stat.median(exceso)}"
                   f"  min {exceso[0]}  max {exceso[-1]}")
+    if all(x[4] >= 0 for x in m):
+        dentro = [x[1] for x in m if x[4] == 1]; fuera = [x[1] for x in m if x[4] == 0]
+        vd = sum(s == 0 for s in dentro); vf = sum(s == 0 for s in fuera)
+        print(f"cue       validas con LED encendido {vd}/{len(dentro)} ({100 * vd / max(1, len(dentro)):.0f} %)"
+              f"   |   con LED apagado {vf}/{len(fuera)} ({100 * vf / max(1, len(fuera)):.1f} %)"
+              "   (apagado deberia ser ~0 %: si no, el fondo da retorno y no es regimen invalido)")
     inv = len(grupos.get("invalido", []))
     saltos = sum(1 for _, k in grupos.get("valido", []) if k == "2 ranuras")
     print(f"criterio  intervalos invalidos >= 1000: {'CUMPLE' if inv >= 1000 else 'NO CUMPLE'} ({inv})"

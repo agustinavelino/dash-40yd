@@ -27,11 +27,11 @@
 //      modo corto ya no alcanza). Nada en el haz.
 //   2. Arrancar el logger ANTES de energizar o reiniciar:
 //        --fin "^# fin$" --max-s 300
-//   3. El LED (GPIO2) parpadea mientras captura. Durante la captura
-//      (~2 min a IMP 25), cruzar la mano o una cartulina por el haz a
-//      0.3-1 m, de forma intermitente: cruces de ~1 s separados por
-//      varios segundos. La mayor parte del tiempo debe quedar en cielo.
-//   4. Al apagarse el LED, la placa imprime todo y termina.
+//   3. Durante la captura (~2 min a IMP 25) el LED (GPIO2 integrado y
+//      GPIO18 externo) se ENCIENDE 1 s cada 4 s: mientras esta encendido,
+//      cruzar la mano o una cartulina por el haz a 0.3-1 m. Apagado, dejar
+//      el haz libre. El estado del LED queda en la columna cue.
+//   4. Tras ~117 s (ultimo ciclo), la placa imprime todo y termina.
 //   Otro IMP (alternativa de la 9.2): compilar con -DIMP_MS=26, 27 o 28.
 //
 // CABLEADO (igual que el barrido v5)
@@ -48,7 +48,10 @@
 #define PIN_SCL     22
 #define PIN_INT     16
 #define PIN_XSHUT   17
-#define PIN_LED     2
+#define PIN_LED     2       // LED integrado
+#define PIN_CUE     18      // LED externo (anodo -> 330 ohm -> GPIO18, catodo -> GND)
+#define CUE_PERIODO_MS 4000 // cada 4 s ...
+#define CUE_ENCENDIDO_MS 1000 // ... el LED esta ENCENDIDO 1 s: CRUZA AHORA
 
 #ifndef IMP_MS
 #define IMP_MS      25      // ADR-011
@@ -75,6 +78,7 @@ void IRAM_ATTR isrINT() {
 int64_t  ts[N_MUESTRAS];
 uint16_t dist[N_MUESTRAS];
 uint8_t  st[N_MUESTRAS];             // range_status crudo de la libreria
+uint8_t  cue[N_MUESTRAS];            // 1 = el LED pedia cruzar en ese instante
 uint8_t  marca[N_MUESTRAS];          // 0 = ISR normal, 1 = rescate por nivel, 2 = la ISR vio > 1 flanco
 int      nCap = 0, nRescates = 0, nDobles = 0;
 
@@ -106,8 +110,8 @@ void lineaConChecksum(const char *s) {
 void setup() {
   Serial.begin(921600);
   delay(1000);
-  pinMode(PIN_LED, OUTPUT);
-  digitalWrite(PIN_LED, LOW);
+  pinMode(PIN_LED, OUTPUT); pinMode(PIN_CUE, OUTPUT);
+  digitalWrite(PIN_LED, LOW); digitalWrite(PIN_CUE, LOW);
 
   Wire.begin(PIN_SDA, PIN_SCL);
   Wire.setClock(100000);               // regla 10 (provisional)
@@ -145,10 +149,14 @@ void setup() {
   int desc = 0;
   uint32_t nIsrPrevio = 0;
   int64_t  tUltima = esp_timer_get_time();
-  uint32_t tLed = millis();
+  uint32_t tCue0 = millis();
+  uint8_t  cueAhora = 0;
 
   while (nCap < N_MUESTRAS) {
-    if (millis() - tLed > 250) { tLed = millis(); digitalWrite(PIN_LED, !digitalRead(PIN_LED)); }
+    // LED encendido = cruza el haz. Es la referencia: el analisis compara las
+    // muestras validas dentro y fuera de esa ventana.
+    cueAhora = ((millis() - tCue0) % CUE_PERIODO_MS) < CUE_ENCENDIDO_MS;
+    digitalWrite(PIN_LED, cueAhora); digitalWrite(PIN_CUE, cueAhora);
 
     uint8_t m;
     int64_t t;
@@ -175,22 +183,22 @@ void setup() {
     uint8_t  s = (uint8_t)sensor.ranging_data.range_status;
     if (desc < N_DESCARTE) { desc++; continue; }  // el arranque del continuo no cuenta
     if (m == 2) nDobles++;
-    ts[nCap] = t; dist[nCap] = d; st[nCap] = s; marca[nCap] = m;
+    ts[nCap] = t; dist[nCap] = d; st[nCap] = s; marca[nCap] = m; cue[nCap] = cueAhora;
     nCap++;
   }
 
   detachInterrupt(digitalPinToInterrupt(PIN_INT));
   sensor.stopContinuous();
-  digitalWrite(PIN_LED, LOW);
+  digitalWrite(PIN_LED, LOW); digitalWrite(PIN_CUE, LOW);
 
   // --- impresion diferida (regla 5) ---
   delay(200);
   Serial.printf("# capturadas %d | rescates %d | dobles %d | duracion %.1f s\n",
                 nCap, nRescates, nDobles, (ts[nCap - 1] - ts[0]) / 1e6);
-  Serial.println("# M,k,t_us,status,dist_mm,marca   (status 0 = RangeValid)");
+  Serial.println("# M,k,t_us,status,dist_mm,marca,cue   (status 0 = RangeValid; cue 1 = LED encendido)");
   char l[64];
   for (int k = 0; k < nCap; k++) {
-    snprintf(l, sizeof(l), "M,%d,%lld,%u,%u,%u", k, (long long)ts[k], st[k], dist[k], marca[k]);
+    snprintf(l, sizeof(l), "M,%d,%lld,%u,%u,%u,%u", k, (long long)ts[k], st[k], dist[k], marca[k], cue[k]);
     lineaConChecksum(l);
   }
   Serial.println("# fin");
