@@ -1,0 +1,273 @@
+<!doctype html>
+<!-- DASH - pagina del coach. La sirve el hub (nodo de 40 yd) por su SoftAP.
+     Contrato con el hub: PROTOCOLO.md. Cero recursos externos: el telefono
+     conectado al SoftAP no tiene internet (REQ-NF-08).
+     Desarrollo sin placas: abrir index.html?sim=1 (carga sim.js, que no se embebe). -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>DASH</title>
+<style>
+/* Tema claro fijo: se usa a pleno sol en la cancha. Un solo acento (amarillo
+   de seguridad) y solo para "armado"; rojo solo para fallos. */
+:root {
+  --tinta: #000; --papel: #fff; --gris: #5c5c5c; --linea: #d6d6d6;
+  --armado: #ffd400; --fallo: #c8102e;
+  --num: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", sans-serif-condensed, sans-serif;
+  --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--papel); color: var(--tinta); }
+body { font: 16px/1.4 var(--ui); padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }
+.num { font-family: var(--num); font-variant-numeric: tabular-nums; font-stretch: condensed; }
+
+#conexion { background: var(--fallo); color: #fff; padding: .6rem 1rem; font-weight: 600;
+  padding-top: calc(.6rem + env(safe-area-inset-top, 0px)); }
+main { max-width: 34rem; margin: 0 auto; padding: 1rem; }
+section > h1 { font-size: 1.15rem; margin: 0 0 .75rem; }
+
+/* --- En vivo --- */
+.atleta { display: flex; gap: .5rem; align-items: center; }
+.atleta label { color: var(--gris); }
+.atleta select { flex: 1; min-width: 0; font-size: 1.15rem; font-weight: 600; padding: .55rem .5rem;
+  border: 2px solid var(--tinta); border-radius: 0; background: var(--papel); }
+
+/* La franja de cancha: cada puerta en su distancia real, el split encima de su linea. */
+.cancha { position: relative; height: 6.2rem; margin: 1.5rem .25rem .4rem; border-bottom: 4px solid var(--tinta); }
+.yarda { position: absolute; top: 1.9rem; bottom: 0; width: 0; border-left: 4px solid var(--tinta); }
+.yarda .t { position: absolute; top: -1.9rem; transform: translateX(-50%); font-size: 1.35rem; font-weight: 700; white-space: nowrap; }
+.yarda.meta .t { transform: translateX(-100%); }
+.yarda .t.sin { color: var(--fallo); }
+.marcas { position: relative; height: 2.6rem; margin: 0 .25rem; }
+.marca { position: absolute; top: .35rem; transform: translateX(-50%); text-align: center; font-size: .85rem; line-height: 1.15; white-space: nowrap; }
+.marca:first-child { transform: none; text-align: left; }
+.marca:last-child { transform: translateX(-100%); text-align: right; }
+.marca .yd { font-family: var(--num); font-weight: 700; font-size: 1rem; }
+.marca .mal { color: var(--fallo); font-weight: 600; }
+
+.resultado { margin: 1rem 0 1.25rem; }
+.resultado .grande { font-size: clamp(5rem, 30vw, 9rem); font-weight: 700; line-height: .9; letter-spacing: -.02em; }
+.resultado .grande small { font-size: .3em; font-weight: 400; margin-left: .15em; letter-spacing: 0; }
+.resultado .grande.vacio { color: var(--linea); font-weight: 400; }
+.resultado .quien { color: var(--gris); margin-top: .35rem; }
+.resultado.nueva .grande { animation: llega .6s ease-out; }
+@keyframes llega { from { background: var(--armado); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .resultado.nueva .grande { animation: none; } }
+
+#armar { width: 100%; min-height: 4.5rem; border: 3px solid var(--tinta); border-radius: 0;
+  background: var(--tinta); color: var(--papel); font-size: 1.35rem; font-weight: 700; cursor: pointer; }
+#armar[aria-pressed="true"] { background: var(--armado); color: var(--tinta); }
+#armar:disabled { background: var(--papel); color: var(--gris); border-color: var(--linea); cursor: default; }
+#armar small { display: block; font-size: .85rem; font-weight: 400; }
+.aviso { color: var(--fallo); margin: .5rem 0 0; min-height: 1.4em; }
+
+/* --- navegacion inferior --- */
+nav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: var(--papel);
+  border-top: 3px solid var(--tinta); padding-bottom: env(safe-area-inset-bottom, 0px); }
+nav button { flex: 1; min-height: 3.6rem; border: 0; background: none; cursor: pointer; font-size: .95rem; position: relative; }
+nav button[aria-current="page"] { font-weight: 700; box-shadow: inset 0 5px 0 var(--tinta); }
+nav button .punto { position: absolute; top: .55rem; right: 22%; width: .6rem; height: .6rem; background: var(--fallo); }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="conexion" role="status" hidden>Sin conexión con el sistema. Reintentando…</div>
+<main>
+  <section id="vivo">
+    <div class="atleta">
+      <label for="sel">Atleta</label>
+      <select id="sel"><option value="">Cargando…</option></select>
+    </div>
+
+    <div class="cancha" id="cancha" aria-hidden="true"></div>
+    <div class="marcas" id="marcas"></div>
+
+    <div class="resultado" id="resultado" aria-live="polite">
+      <div class="grande num vacio" id="grande">0.00</div>
+      <div class="quien" id="quien">Elige un atleta y arma el sistema para la primera corrida.</div>
+    </div>
+
+    <button id="armar" type="button" aria-pressed="false" disabled>Armar</button>
+    <p class="aviso" id="aviso"></p>
+  </section>
+
+  <section id="sesion" hidden><h1>Sesión</h1></section>
+  <section id="atletas" hidden><h1>Atletas</h1></section>
+  <section id="ajustes" hidden><h1>Ajustes</h1></section>
+</main>
+
+<nav>
+  <button type="button" data-ir="vivo" aria-current="page">En vivo<span class="punto" hidden></span></button>
+  <button type="button" data-ir="sesion">Sesión</button>
+  <button type="button" data-ir="atletas">Atletas</button>
+  <button type="button" data-ir="ajustes">Ajustes</button>
+</nav>
+
+<script>
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+var S = { estado: null, roster: [], config: { yd: [10, 20, 40] }, corridas: [], ultima: null, ws: null, conectado: false };
+
+// --- utilidades ---
+function seg(ms) { return ms == null ? null : (ms / 1000).toFixed(2); }   // centesimas (Maestro 6.1)
+function atleta(id) { for (var i = 0; i < S.roster.length; i++) if (S.roster[i].id === id) return S.roster[i]; return null; }
+function nombre(id) { var a = atleta(id); return a ? a.nombre + " (" + a.num + ")" : "Atleta borrado"; }
+function el(tag, attrs, texto) {
+  var e = document.createElement(tag);
+  for (var k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+  if (texto != null) e.textContent = texto;
+  return e;
+}
+function api(ruta, metodo, cuerpo) {
+  var f = window.DASH_FETCH || fetch.bind(window);
+  return f(ruta, { method: metodo || "GET", headers: cuerpo ? { "Content-Type": "application/json" } : undefined,
+                   body: cuerpo ? JSON.stringify(cuerpo) : undefined })
+    .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.msg || r.status); return d; }); });
+}
+
+// --- conexion con el hub ---
+var latido = null;
+function conectar() {
+  var WS = window.DASH_WS || WebSocket;
+  var ws = new WS("ws://" + (location.host || "192.168.4.1") + "/ws");
+  S.ws = ws;
+  ws.onopen = function () {
+    S.conectado = true;
+    ws.send(JSON.stringify({ c: "hora", epoch: Math.round(Date.now() / 1000) }));
+    vigilar();
+    cargarSesion();
+    pintarConexion();
+  };
+  ws.onclose = function () {
+    if (S.ws !== ws) return;
+    S.conectado = false; S.ws = null; clearTimeout(latido);
+    pintarConexion(); pintarVivo();
+    setTimeout(conectar, 1000);
+  };
+  ws.onmessage = function (e) {
+    var m; try { m = JSON.parse(e.data); } catch (x) { return; }
+    vigilar();
+    if (m.t === "estado") { S.estado = m; pintarVivo(); }
+    else if (m.t === "corrida") { delete m.t; agregarCorrida(m, true); }
+    else if (m.t === "error") { $("aviso").textContent = "El sistema rechazó la orden: " + m.msg + "."; }
+  };
+}
+// El hub manda estado cada 5 s; 12 s de silencio = conexion muerta aunque el socket no lo sepa.
+function vigilar() {
+  clearTimeout(latido);
+  latido = setTimeout(function () { if (S.ws) S.ws.close(); }, 12000);
+}
+function mandar(o) { if (S.ws && S.ws.readyState === 1) S.ws.send(JSON.stringify(o)); }
+
+function cargarSesion() {
+  api("/api/sesion").then(function (d) { d.corridas.forEach(function (c) { agregarCorrida(c, false); }); }).catch(function () {});
+}
+function agregarCorrida(c, enVivo) {
+  for (var i = 0; i < S.corridas.length; i++) if (S.corridas[i].id === c.id) return;
+  S.corridas.push(c);
+  S.corridas.sort(function (a, b) { return a.id - b.id; });
+  if (!S.ultima || c.id >= S.ultima.id) S.ultima = c;
+  pintarVivo(enVivo);
+  if (enVivo && pantalla !== "vivo") document.querySelector('[data-ir="vivo"] .punto').hidden = false;
+  window.ultimoDibujo = performance.now();   // verificacion de REQ-F-05 con el simulador
+}
+
+// --- En vivo ---
+function pintarConexion() { $("conexion").hidden = S.conectado; }
+
+function pintarCancha(yd, splits) {
+  var max = yd[yd.length - 1];
+  var pos = function (d) { return (d / max) * 100 + "%"; };
+  var cancha = $("cancha"), marcas = $("marcas");
+  cancha.textContent = ""; marcas.textContent = "";
+  var puertas = S.estado ? S.estado.puertas : null;
+  [0].concat(yd).forEach(function (d, i) {
+    var linea = el("div", { "class": "yarda" + (i === yd.length ? " meta" : ""), style: "left:" + pos(d) });
+    if (i > 0 && splits) {
+      var t = seg(splits[i - 1]);
+      linea.appendChild(el("span", { "class": "t num" + (t ? "" : " sin") }, t || "—"));
+    }
+    cancha.appendChild(linea);
+    var p = puertas && puertas[i];
+    var marca = el("div", { "class": "marca", style: "left:" + pos(d) });
+    marca.appendChild(el("div", { "class": "yd" }, d + "\u00a0yd"));
+    if (p && !p.ok) marca.appendChild(el("div", { "class": "mal" }, "sin señal"));
+    marcas.appendChild(marca);
+  });
+}
+
+function pintarVivo(nueva) {
+  var e = S.estado, u = S.ultima;
+  pintarCancha(u ? u.yd : S.config.yd, u ? u.splits_ms : null);
+
+  if (u) {
+    var final = seg(u.splits_ms[u.splits_ms.length - 1]);
+    $("grande").innerHTML = ""; $("grande").classList.remove("vacio");
+    $("grande").appendChild(document.createTextNode(final || "—"));
+    if (final) $("grande").appendChild(el("small", null, "s"));
+    var faltan = u.splits_ms.map(function (t, i) { return t == null ? u.yd[i] + "\u00a0yd" : null; }).filter(Boolean);
+    $("quien").textContent = nombre(u.atleta) + ", corrida " + u.id +
+      (faltan.length ? ". Sin detección en " + faltan.join(" y ") + "." : ".");
+    if (nueva) { var r = $("resultado"); r.classList.remove("nueva"); void r.offsetWidth; r.classList.add("nueva"); }
+  }
+
+  var b = $("armar"), armado = !!(e && e.armado), sel = +$("sel").value || null;
+  b.setAttribute("aria-pressed", armado);
+  b.disabled = !S.conectado || (!armado && !sel);
+  b.innerHTML = "";
+  if (!S.conectado) b.textContent = "Armar";
+  else if (armado) { b.textContent = "Armado. Esperando la salida"; b.appendChild(el("small", null, "Toca para desarmar")); }
+  else { b.textContent = "Armar"; if (!sel) b.appendChild(el("small", null, "Elige un atleta primero")); }
+  $("sel").disabled = armado;
+  if (e && e.atleta && armado) $("sel").value = e.atleta;
+}
+
+$("armar").onclick = function () {
+  $("aviso").textContent = "";
+  if (S.estado && S.estado.armado) mandar({ c: "desarmar" });
+  else mandar({ c: "armar", atleta: +$("sel").value });
+};
+$("sel").onchange = function () { pintarVivo(); };
+
+function pintarSelector() {
+  var sel = $("sel"), antes = sel.value;
+  sel.textContent = "";
+  sel.appendChild(el("option", { value: "" }, S.roster.length ? "Elige…" : "Agrega atletas en la pestaña Atletas"));
+  S.roster.slice().sort(function (a, b) { return a.nombre.localeCompare(b.nombre); }).forEach(function (a) {
+    sel.appendChild(el("option", { value: a.id }, a.nombre + " (" + a.num + ")"));
+  });
+  sel.value = atleta(+antes) ? antes : "";
+}
+
+// --- navegacion ---
+var pantalla = "vivo";
+document.querySelectorAll("nav button").forEach(function (b) {
+  b.onclick = function () {
+    pantalla = b.getAttribute("data-ir");
+    document.querySelectorAll("main > section").forEach(function (s) { s.hidden = s.id !== pantalla; });
+    document.querySelectorAll("nav button").forEach(function (x) {
+      if (x === b) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current");
+    });
+    if (pantalla === "vivo") document.querySelector('[data-ir="vivo"] .punto').hidden = true;
+  };
+});
+
+// --- arranque ---
+function iniciar() {
+  api("/api/roster").then(function (r) { S.roster = r; pintarSelector(); pintarVivo(); }).catch(function () {});
+  api("/api/config").then(function (c) { S.config = c; pintarVivo(); }).catch(function () {});
+  conectar();
+  pintarVivo();
+}
+if (/[?&]sim=1/.test(location.search)) {
+  var s = document.createElement("script");
+  s.src = "sim.js"; s.onload = iniciar;
+  document.head.appendChild(s);
+} else iniciar();
+</script>
+</body>
+</html>
