@@ -33,7 +33,8 @@ En código y reportes nuevos se usa **hub** y **nodo**, no A y B. Los archivos h
 
 - Experimento 0: **aprobado**, σ = 168 µs (REQ-NF-02 pide ≤ 5 ms).
 - Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026; resultados en la sección 9.2 del Documento Maestro; el v4 no está en el repo). **Barrido v5 en arranque en frío hecho (23-oct-2026): IMP 25 → 23.31 ms (1 ranura); el ADR-011 se sostiene.** Falta la corrida larga apuntando al cielo (régimen inválido).
-- Pendientes grandes: Experimento 0b, webapp (prototipo con datos simulados), PCB, firmware de producto.
+- Experimento 0b: **hallazgo** (24-oct-2026). El hub puede servir la página: σ ≤ 488 µs con SoftAP + 3 teléfonos (REQ-NF-02 con 10×), 0 pérdidas. Pero la carga sube las ráfagas de resync lentas (mejor rtt > 3 ms) de 14 % a 30 %; el error lo explica la cota (rtt − F)/2. ADR candidato abierto: reintentar ráfagas lentas. Hubo brownout del hub por USB bajo carga.
+- Pendientes grandes: webapp (prototipo con datos simulados), PCB, firmware de producto.
 
 ---
 
@@ -62,7 +63,7 @@ experimentos/
     smoke_test_vl53l1x/
     barrido_config_v3/               estado heredado entre configs
     barrido_config_v5/               arranque en frío, una config por arranque (vigente)
-  exp0b/                             (siguiente) prueba_0b_hub/, prueba_0b_nodo/, pagina_prueba/
+  exp0b/                             Experimento 0b — HALLAZGO (experimento0b_resultados.md)
 firmware/      (por crear) binario único con selección de rol
 webapp/        (por crear) página de producto embebida en el flash del hub
 hardware/      (por crear) PCB, gerbers, BOM, gabinete
