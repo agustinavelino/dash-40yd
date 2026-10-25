@@ -115,6 +115,17 @@ def main():
         print(f"cue       validas con LED encendido {vd}/{len(dentro)} ({100 * vd / max(1, len(dentro)):.0f} %)"
               f"   |   con LED apagado {vf}/{len(fuera)} ({100 * vf / max(1, len(fuera)):.1f} %)"
               "   (apagado deberia ser ~0 %: si no, el fondo da retorno y no es regimen invalido)")
+        # El primer segundo tras apagarse el LED es la mano saliendo (reaccion humana).
+        # Despues de eso, una muestra valida solo puede venir del fondo.
+        fondo, n_fondo, apagado = 0, 0, None
+        for i, x in enumerate(m):
+            if x[4] == 0 and (i == 0 or m[i - 1][4] == 1):
+                apagado = x[0]
+            if x[4] == 0 and apagado is not None and x[0] - apagado > 1_000_000:
+                n_fondo += 1
+                fondo += x[1] == 0
+        print(f"fondo     validas con LED apagado hace > 1 s: {fondo}/{n_fondo}"
+              f" ({100 * fondo / max(1, n_fondo):.2f} %)   (es la prueba de que el fondo no da retorno)")
     inv = len(grupos.get("invalido", []))
     saltos = sum(1 for _, k in grupos.get("valido", []) if k == "2 ranuras")
     print(f"criterio  intervalos invalidos >= 1000: {'CUMPLE' if inv >= 1000 else 'NO CUMPLE'} ({inv})"

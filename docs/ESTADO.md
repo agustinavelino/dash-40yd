@@ -10,14 +10,13 @@
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| I5/S2 | Corrida larga al cielo a IMP 25 con LED de cruce | ≥ 1000 intervalos inválidos; válidas ≈ 100 % con LED encendido y ≈ 0 % apagado; 0 saltos a 46.6 ms en válido | Intento 1 no válido; falta repetir con LED externo en GPIO18 |
 
 ## Siguiente
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
 | W1 | Prototipo de `webapp/` con datos simulados | — (no necesita placas) | Abre en el navegador sin red, ≤ ~20 KB, muestra resultado simulado por WebSocket falso |
-| S3 | Experimento 1 (dos sensores, misma puerta) | S2 (repetir) | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
+| S3 | Experimento 1 (dos sensores, misma puerta) | S2 (hecha) | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
 ## Después
 
@@ -31,7 +30,10 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 - **Energía del hub (Exp. 0b):** 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
 - **Predicción de S2 (corrida al cielo, IMP 25): el usuario no hace predicción** (registrado el 24-oct-2026, antes de correr). Fondo: cortina a ~2 m (más allá del alcance del modo corto, 1.38 m). Referencia: a IMP 20 el régimen inválido dio 13.7 % de anómalos; en régimen válido a IMP 25, 0 saltos en 51 + 119 intervalos.
 - **Orden 0b vs webapp:** resuelto: el 0b dice que el hub sí puede servir la página (σ ≤ 488 µs con carga, REQ-NF-02 con 10×).
-- **Cambios pendientes para el Documento Maestro v2.3:** ninguno confirmado. Esperar la repetición de S2 con `cue` antes de tocar 9.2 (la observación del intento 1 — anómalos simétricos ±9.5 ms que suman 2 ranuras — se confirma o se descarta ahí).
+- **Cambios pendientes para el Documento Maestro v2.3** (se juntan para una sola revisión):
+  - 9.2 y 0.3: la corrida larga a IMP 25 queda hecha (fondo de vidrio a ~2 m, no cielo): 0 saltos a 46.6 ms en 1054 intervalos válidos. La nota provisional de la 9.2 se cierra en su punto 1.
+  - 9.2: en régimen inválido a IMP 25, 3.3 % de intervalos anómalos (no 13.7 %), y son de fase: el INT se adelanta ~9.5 ms sin blanco y regresa al entrar uno, sin perder ranuras. El modelo de "ventanas de ancho variable" (σ 7.54 ms, predicción del Exp. 1 de 10.7 ms) se escribió para intervalos +9.3 ms: hay que revisarlo. Hipótesis sin verificar: sin retorno la medición aborta antes (como ya dice la 9.2 para IMP 20) y el INT sale antes.
+  - 16.3: en el cruce (transición) el 47 % de los intervalos lleva el +9.5 ms; el Exp. 1 medirá si eso agrega error al instante del cruce.
 - **¿Mover `DASH_Documento_Maestro_v2.1.docx` a `docs/history/`?** La v2.2 la declara SUPERSEDED; sigue en `docs/` hasta que el usuario lo autorice.
 
 ## Hecho
@@ -45,6 +47,7 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 | 23-oct-2026 | **I2: runner cerrado.** Repitió el Exp. 0 completo: 200/200 eventos, σ = 87 µs, media −174 µs (original 168 / −311 µs). Deriva 9.4–10.6 µs/s (original 11.4–14.7): menos deriva, menos diente de sierra | `experimentos/exp0/exp0_repeticion_2026-10-23.csv`; intento 1 fallido por orden de flasheo en `exp0_repeticion_intento1_orden_flasheo_2026-10-23.csv` |
 | 23-oct-2026 | I3: skill `documentar`; primer uso: reporte del sensor | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` |
 | 23-oct-2026 | I4: hooks `proteger_datos` y `revisar_webapp` y permisos del proyecto | 13/13 casos de prueba correctos; el hook bloqueó en vivo un comando real |
+| 24-oct-2026 | **I5 + S2 cerradas (intento 3): corrida larga a IMP 25 con LED de cruce, ADR-011 se sostiene.** Fondo: vidrio a ~2 m (status 4 fuera de rango), no cielo. 4995/5000 muestras en 116 s (el logger cortó a 300 s imprimiendo las últimas 5), 31 cruces. **Régimen válido: 1054 intervalos, 0 anómalos, 0 saltos a 46.6 ms.** Fondo limpio: 1/2473 válidas con el LED apagado hace > 1 s (las válidas del primer segundo son la mano saliendo, ~40 cm). Régimen inválido: 3878 intervalos, 3.3 % anómalos (intento 1: 8.8 %; smoke test a IMP 20: 13.7 %, solo largos). Los anómalos no son ranuras perdidas: 78 cortos (−9.5 ms) y 78 largos (+9.5 ms), casi nunca seguidos; sin blanco el INT se adelanta ~9.5 ms y regresa a su fase al entrar un blanco (transiciones: 47 % anómalos, mediana +9.5 ms). Periodo medio 23.284 ms | `experimentos/sensor_vl53l1x/corrida_cielo_IMP25_2026-10-24_3.txt`; intento 2 cortado a mano (GND del LED) sin muestras: `…_2.txt` |
 | 24-oct-2026 | **I5 + S2, intento 1: NO VÁLIDO como medición.** Sin referencia visible: el LED integrado (GPIO2) no se vio parpadear y los cruces fueron pocos e irregulares. Solo 12.7 % de las muestras fue válido (633/5000), así que no se puede distinguir cruces de lecturas intermitentes de la cortina. Los números (0 saltos, 8.8 % anómalos de ±9.5 ms) quedan como **observación sin confirmar**, no como resultado. Se repite con LED externo en GPIO18 que se enciende 1 s cada 4 s y columna `cue` | `experimentos/sensor_vl53l1x/corrida_cielo_IMP25_2026-10-24.txt` |
 | 24-oct-2026 | Documento Maestro v2.2: barrido v5, Exp. 0b (nueva 16.2; Exps. 1–4 pasan a 16.3–16.6), margen real de IMP 25, riesgos y ADR candidato | `docs/DASH_Documento_Maestro_v2.2.docx` (0.3 lista los cambios) |
 | 24-oct-2026 | **T1: Experimento 0b — HALLAZGO.** σ(S3) 488 µs (REQ-NF-02 con 10×), 0 pérdidas en 1 200 pulsos. Criterio 3.3 no se cumple, pero la σ de 4 ráfagas no es repetible (C0: 263 y 69 µs). Prueba de ráfagas: lentas 14 % → 30 % con carga (p = 0.010), piso F sin cambio, error del offset dentro de la cota 200/200 | `experimentos/exp0b/experimento0b_resultados.md` |
