@@ -15,13 +15,13 @@ p { margin: 0 0 2.5mm; }
 ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
 li { margin-bottom: 1mm; }
 .sub { color: var(--gris); font-size: 11pt; margin-bottom: 5mm; }
-table { width: 100%; border-collapse: collapse; margin: 1.5mm 0 4mm; font-size: 9.5pt; break-inside: auto; }
+table { width: 100%; border-collapse: collapse; margin: 1.5mm 0 4mm; font-size: 9.5pt; }
 th { text-align: left; border-bottom: 2px solid var(--tinta); padding: 1.2mm 1.5mm; font-size: 9pt; }
 td { border-bottom: 1px solid var(--linea); padding: 1.2mm 1.5mm; vertical-align: top; }
 tr { break-inside: avoid; }
 code, .m { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 9pt; }
 .e { display: inline-block; font-size: 7.5pt; font-weight: 700; padding: .2mm 1.4mm; border-radius: 2mm; border: 1px solid; white-space: nowrap; }
-.e.f { color: var(--firme); } .e.p { color: var(--prop); } .e.x { color: var(--pend); }
+.e.f { color: var(--firme); } .e.a { color: #1d4ed8; } .e.p { color: var(--prop); } .e.x { color: var(--pend); }
 .caja { border: 1.5px solid var(--tinta); border-radius: 2.5mm; padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; }
 .caja.ojo { border-color: var(--pend); }
 .caja h3 { margin-top: 0; }
@@ -35,237 +35,237 @@ svg { width: 100%; height: auto; display: block; margin: 2mm 0 1mm; }
 <body>
 
 <h1>Guía del esquemático — placa de nodo DASH</h1>
-<div class="sub">Para dibujarlo en KiCad 8 · 24 de octubre de 2026 · Fuente: Documento Maestro v2.2, secciones 11.2, 12 y 15.1</div>
+<div class="sub">Para dibujarlo en KiCad 8 · versión 2, 24 de octubre de 2026 · Fuente: Documento Maestro v2.2 (11.2, 12, 15.1) y ADR-013 (módulo soldado, ensamblado por el fabricante)</div>
 
-<p>Esta guía te lleva bloque por bloque para dibujar el esquemático de la única placa del sistema: la misma para las 4 puertas, con el rol elegido por jumpers (ADR-009). El objetivo de esta etapa es tener el <b>esquemático completo y revisado</b>. El ruteo de la PCB y la fabricación esperan a las mediciones pendientes de la sección 8.</p>
+<p>Esta guía te lleva bloque por bloque para dibujar el esquemático de la única placa del sistema: la misma para las 4 puertas, con el rol elegido por jumpers (ADR-009). El objetivo de esta etapa es tener el <b>esquemático completo y revisado</b>. El ruteo, la cotización y la fabricación vienen después y esperan a las mediciones de la sección 10.</p>
 
-<p>Cada decisión lleva una etiqueta con su firmeza, igual que en el Maestro:</p>
+<p>Cada decisión lleva una etiqueta con su firmeza:</p>
 <ul>
   <li><span class="e f">MAESTRO</span> lo pide el Documento Maestro. No se cambia sin un ADR.</li>
-  <li><span class="e p">PROPUESTA</span> lo propongo yo para completar el diseño. Puedes cambiarlo; si lo cambias, anótalo.</li>
-  <li><span class="e x">PENDIENTE</span> depende de una medición o compra que aún no se hace. Se dibuja, pero no se cierra.</li>
+  <li><span class="e a">ADR-013</span> sale de la decisión de soldar el módulo y mandar a ensamblar (<code>docs/adr/ADR-013-modulo-soldado-pcba.md</code>).</li>
+  <li><span class="e p">PROPUESTA</span> la propongo yo para completar el diseño. Puedes cambiarla; si la cambias, anótalo.</li>
+  <li><span class="e x">PENDIENTE</span> depende de una medición, una hoja de datos o una cotización. Se dibuja, pero no se cierra.</li>
 </ul>
+<div class="caja">
+  <h3>Regla de oro para los valores</h3>
+  <p>Para cada integrado (TP4056, DW01A, TPS63021, CH340C), <b>copia el circuito típico de su hoja de datos</b> (la sección "Typical Application"). Los valores que pongo aquí son los habituales para orientarte; si alguno no coincide con la hoja de datos de la pieza que vas a comprar, <b>manda la hoja de datos</b>. Para el ESP32, la referencia es el esquemático público de la ESP32-DevKitC de Espressif.</p>
+</div>
 
 <h2>1. Qué es esta placa</h2>
-<p>Es una <b>placa portadora</b>: la tarjeta de desarrollo ESP32 (con su USB, su programador y su conector de antena) se enchufa en headers hembra y nunca se suelda <span class="e f">MAESTRO</span>. La placa aporta todo lo demás: batería, protección, carga, regulador de 3.3 V, conector del sensor, LED, buzzer, jumpers de rol y test points.</p>
+<p>El <b>módulo ESP32-WROOM-32UE va soldado</b> <span class="e a">ADR-013</span>. Es la pieza metálica que ya trae el chip, la memoria flash, el cristal y el conector U.FL para la antena externa. Alrededor van: un USB-C para <b>cargar y programar</b>, el cargador con protección de la celda, el buck-boost de 3.3 V, el conector del sensor, el LED, el buzzer, los jumpers de rol y los test points. Todo lo SMD en una sola cara, para que el fabricante lo ensamble.</p>
 
-<svg viewBox="0 0 760 330" role="img" aria-label="Diagrama de bloques">
+<svg viewBox="0 0 760 360" role="img" aria-label="Diagrama de bloques">
   <defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
   <g font-family="Noto Sans, Arial" font-size="12" fill="#111">
     <g stroke="#111" stroke-width="1.6" fill="#fff">
-      <rect x="10" y="20" width="110" height="56" rx="8"/>
-      <rect x="150" y="20" width="130" height="56" rx="8"/>
-      <rect x="310" y="20" width="130" height="56" rx="8"/>
-      <rect x="470" y="20" width="110" height="56" rx="8"/>
-      <rect x="610" y="20" width="140" height="56" rx="8"/>
+      <rect x="10" y="20" width="120" height="56" rx="8"/>
+      <rect x="160" y="20" width="140" height="56" rx="8"/>
+      <rect x="330" y="20" width="130" height="56" rx="8"/>
+      <rect x="490" y="20" width="110" height="56" rx="8"/>
+      <rect x="630" y="20" width="120" height="56" rx="8"/>
+      <rect x="10" y="110" width="120" height="56" rx="8"/>
+      <rect x="160" y="110" width="140" height="56" rx="8"/>
       <rect x="470" y="130" width="280" height="110" rx="8" stroke-width="2.4"/>
-      <rect x="10" y="130" width="200" height="56" rx="8"/>
-      <rect x="240" y="130" width="200" height="56" rx="8"/>
-      <rect x="10" y="215" width="200" height="56" rx="8"/>
-      <rect x="240" y="215" width="200" height="56" rx="8"/>
-      <rect x="470" y="262" width="280" height="50" rx="8" stroke-dasharray="5 4"/>
+      <rect x="10" y="200" width="200" height="56" rx="8"/>
+      <rect x="240" y="200" width="200" height="56" rx="8"/>
+      <rect x="10" y="280" width="200" height="56" rx="8"/>
+      <rect x="240" y="280" width="200" height="56" rx="8"/>
+      <rect x="470" y="282" width="280" height="54" rx="8" stroke-dasharray="5 4"/>
     </g>
-    <text x="65" y="44" text-anchor="middle" font-weight="700">Celda 18650</text><text x="65" y="62" text-anchor="middle" font-size="10.5">conector polarizado</text>
-    <text x="215" y="44" text-anchor="middle" font-weight="700">Protección</text><text x="215" y="62" text-anchor="middle" font-size="10.5">PTC · P-MOSFET · TVS</text>
-    <text x="375" y="44" text-anchor="middle" font-weight="700">Cargador + DW01</text><text x="375" y="62" text-anchor="middle" font-size="10.5">módulo, entrada USB-C</text>
-    <text x="525" y="44" text-anchor="middle" font-weight="700">Encendido</text><text x="525" y="62" text-anchor="middle" font-size="10.5">interruptor</text>
-    <text x="680" y="44" text-anchor="middle" font-weight="700">Buck-boost 3.3 V</text><text x="680" y="62" text-anchor="middle" font-size="10.5">módulo TPS63020</text>
-    <text x="610" y="160" text-anchor="middle" font-weight="700" font-size="13">Tarjeta ESP32 (en headers)</text>
-    <text x="610" y="180" text-anchor="middle" font-size="10.5">riel 3V3: bulk 470 µF + 1 µF + 100 nF</text>
+    <text x="70" y="44" text-anchor="middle" font-weight="700">Celda 18650</text><text x="70" y="62" text-anchor="middle" font-size="10.5">conector polarizado</text>
+    <text x="230" y="44" text-anchor="middle" font-weight="700">Protección</text><text x="230" y="62" text-anchor="middle" font-size="10">PTC · MOSFET · TVS · DW01A</text>
+    <text x="395" y="44" text-anchor="middle" font-weight="700">Encendido</text><text x="395" y="62" text-anchor="middle" font-size="10.5">interruptor del gabinete</text>
+    <text x="545" y="44" text-anchor="middle" font-weight="700">Buck-boost</text><text x="545" y="62" text-anchor="middle" font-size="10.5">TPS63021 → 3V3</text>
+    <text x="690" y="44" text-anchor="middle" font-weight="700">Riel 3V3</text><text x="690" y="62" text-anchor="middle" font-size="10.5">bulk 470 µF</text>
+    <text x="70" y="134" text-anchor="middle" font-weight="700">USB-C</text><text x="70" y="152" text-anchor="middle" font-size="10.5">cargar y programar</text>
+    <text x="230" y="134" text-anchor="middle" font-weight="700">Cargador TP4056</text><text x="230" y="152" text-anchor="middle" font-size="10.5">5 V del USB → celda</text>
+    <text x="610" y="160" text-anchor="middle" font-weight="700" font-size="13">ESP32-WROOM-32UE (soldado)</text>
+    <text x="610" y="180" text-anchor="middle" font-size="10.5">EN e IO0 con botones · antena U.FL → SMA</text>
     <text x="610" y="198" text-anchor="middle" font-size="10.5">I2C 21/22 · INT 16 · XSHUT 17</text>
-    <text x="610" y="216" text-anchor="middle" font-size="10.5">USB de la tarjeta: solo datos (ver 4.2)</text>
-    <text x="110" y="154" text-anchor="middle" font-weight="700">Conector del sensor</text><text x="110" y="172" text-anchor="middle" font-size="10.5">6 vías · load switch</text>
-    <text x="340" y="154" text-anchor="middle" font-weight="700">Interfaz</text><text x="340" y="172" text-anchor="middle" font-size="10.5">LED · buzzer (hub) · botones</text>
-    <text x="110" y="239" text-anchor="middle" font-weight="700">Jumpers de rol</text><text x="110" y="257" text-anchor="middle" font-size="10.5">2 bits → 4 roles</text>
-    <text x="340" y="239" text-anchor="middle" font-weight="700">Medición de batería</text><text x="340" y="257" text-anchor="middle" font-size="10.5">divisor → GPIO34</text>
-    <text x="610" y="285" text-anchor="middle" font-weight="700">Test points</text><text x="610" y="302" text-anchor="middle" font-size="10.5">3V3 · GND · SDA · SCL · INT · XSHUT · VBAT</text>
+    <text x="610" y="216" text-anchor="middle" font-size="10.5">UART0 ↔ CH340C (USB-serial + auto-reset)</text>
+    <text x="110" y="224" text-anchor="middle" font-weight="700">Conector del sensor</text><text x="110" y="242" text-anchor="middle" font-size="10.5">6 vías · load switch</text>
+    <text x="340" y="224" text-anchor="middle" font-weight="700">Interfaz</text><text x="340" y="242" text-anchor="middle" font-size="10.5">LED · buzzer (hub) · botones</text>
+    <text x="110" y="304" text-anchor="middle" font-weight="700">Jumpers de rol</text><text x="110" y="322" text-anchor="middle" font-size="10.5">2 bits → 4 roles</text>
+    <text x="340" y="304" text-anchor="middle" font-weight="700">Medición de batería</text><text x="340" y="322" text-anchor="middle" font-size="10.5">divisor → GPIO34</text>
+    <text x="610" y="305" text-anchor="middle" font-weight="700">Test points</text><text x="610" y="323" text-anchor="middle" font-size="10.5">VBUS · BATP · VSYS · 3V3 · GND · I2C · INT · XSHUT</text>
     <g stroke="#111" stroke-width="1.6" fill="none" marker-end="url(#fl)">
-      <path d="M120,48 H148"/><path d="M280,48 H308"/><path d="M440,48 H468"/><path d="M580,48 H608"/>
-      <path d="M680,76 V128"/>
-      <path d="M210,158 H238" marker-end="none"/><path d="M468,158 H440" marker-start="url(#fl)" marker-end="none"/>
-      <path d="M210,243 H238" marker-end="none"/><path d="M468,225 H440" marker-start="url(#fl)" marker-end="none"/>
+      <path d="M130,48 H158"/><path d="M300,48 H328"/><path d="M460,48 H488"/><path d="M600,48 H628"/>
+      <path d="M690,76 V128"/>
+      <path d="M130,138 H158"/><path d="M230,110 V78"/>
+      <path d="M210,228 H238" marker-end="none"/><path d="M468,228 H440" marker-start="url(#fl)" marker-end="none"/>
+      <path d="M210,308 H238" marker-end="none"/>
     </g>
+    <g stroke="#111" stroke-width="1.4" fill="none" stroke-dasharray="4 3"><path d="M70,166 V182 H468"/></g>
+    <text x="300" y="177" font-size="10" fill="#555">D+/D− del USB al CH340C</text>
   </g>
 </svg>
-<p class="leyenda">Flujo de energía arriba (izquierda a derecha) y señales abajo. La línea punteada son puntos de prueba, no un circuito.</p>
+<p class="leyenda">Flechas: camino de la energía. Los 5 V del USB solo alimentan el cargador; el ESP32 siempre se alimenta de la celda a través del buck-boost. La línea punteada son los datos del USB.</p>
 
 <h2>2. Antes de abrir KiCad</h2>
 <ol>
-  <li><b>Identifica la tarjeta ESP32 exacta que vas a usar</b> (la de 38 pines tipo DevKitC o la de 30 pines). Cambia el número de pines y, sobre todo, la <b>separación entre las dos filas</b> (puede ser 22.86 mm o 25.4 mm). Mídela con calibrador antes de elegir el footprint <span class="e x">PENDIENTE</span>.</li>
-  <li>Comprueba que los GPIO de la tabla de la sección 3 existen en tu tarjeta. La de 30 pines no los tiene todos.</li>
-  <li>Junta las hojas de datos o fotos de los módulos genéricos: cargador (TP4056 + DW01), buck-boost TPS63020 y breakout del VL53L1X. Necesitas saber qué pines expone cada uno y si el del sensor ya trae pull-ups.</li>
-  <li>Crea el proyecto en <code>hardware/dash_nodo/</code> dentro del repo (KiCad crea la carpeta). Así el esquemático queda versionado junto al resto.</li>
+  <li><b>Descarga las hojas de datos</b>: ESP32-WROOM-32UE, TP4056, DW01A, FS8205A, TPS63021, CH340C y la del VL53L1X (o la de tu breakout). Más el esquemático de la ESP32-DevKitC (Espressif lo publica).</li>
+  <li><b>Revisa la huella del WROOM-32UE</b>: mide 18 × 19.2 mm, más corta que el WROOM-32 normal (18 × 25.5 mm), porque no lleva antena impresa. Si KiCad no trae esa huella exacta, hazla desde la hoja de datos; no uses la del WROOM-32 <span class="e x">PENDIENTE</span>.</li>
+  <li><b>Busca cada pieza en el catálogo del fabricante</b> (en JLCPCB: la sección de piezas, que es el inventario de LCSC). Anota su código LCSC y si es "Basic" o "Extended": las Extended cobran una tarifa por cada tipo de pieza distinta. Si alguna no está, elige una equivalente <span class="e x">PENDIENTE</span>.</li>
+  <li>Crea el proyecto en <code>hardware/dash_nodo/</code> dentro del repo, para que quede versionado.</li>
 </ol>
 
 <h3>Organización en KiCad</h3>
-<p>Usa una hoja raíz con 5 hojas jerárquicas, una por bloque. Así cada parte se revisa por separado y el diagrama de la sección 1 corresponde con el archivo:</p>
 <table>
   <tr><th>Hoja</th><th>Contenido</th></tr>
-  <tr><td>1_energia</td><td>Batería, protección, cargador, interruptor, buck-boost, bulk, medición de batería</td></tr>
-  <tr><td>2_esp32</td><td>Headers de la tarjeta ESP32, desacoplo, jumpers de rol</td></tr>
-  <tr><td>3_sensor</td><td>Conector de 6 vías, resistencias serie I2C, load switch, pull-ups opcionales</td></tr>
-  <tr><td>4_interfaz</td><td>LED, buzzer, botones</td></tr>
-  <tr><td>5_prueba</td><td>Test points y serigrafía (logo, versión, tabla de jumpers)</td></tr>
+  <tr><td>1_energia</td><td>Batería, protección, interruptor, buck-boost, bulk, medición de batería</td></tr>
+  <tr><td>2_usb_carga</td><td>USB-C, protección ESD, cargador TP4056, CH340C y auto-reset</td></tr>
+  <tr><td>3_esp32</td><td>Módulo, desacoplo, EN e IO0, jumpers de rol</td></tr>
+  <tr><td>4_sensor</td><td>Conector de 6 vías, resistencias serie I2C, load switch, pull-ups opcionales</td></tr>
+  <tr><td>5_interfaz_prueba</td><td>LED, buzzer, botones, test points, notas de serigrafía</td></tr>
 </table>
-<p>Nombra las redes con etiquetas globales y nombres fijos: <code>VBAT</code>, <code>VBAT_PROT</code>, <code>VSYS</code> (tras el interruptor), <code>3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>, <code>SENS_VIN</code>, <code>SENS_EN</code>, <code>LED</code>, <code>BUZZ</code>, <code>ROL0</code>, <code>ROL1</code>, <code>BTN_A</code>, <code>BTN_B</code>, <code>VBAT_ADC</code>.</p>
+<p>Redes con etiquetas globales y nombres fijos: <code>VBUS</code>, <code>VBAT</code> (celda), <code>BATP</code> (tras la protección), <code>VSYS</code> (tras el interruptor), <code>3V3</code>, <code>GND</code> (tierra del sistema), <code>BAT-</code> (negativo de la celda), <code>USB_DP</code>, <code>USB_DN</code>, <code>TXD0</code>, <code>RXD0</code>, <code>EN</code>, <code>IO0</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>, <code>SENS_VIN</code>, <code>SENS_EN</code>, <code>LED</code>, <code>BUZZ</code>, <code>ROL0</code>, <code>ROL1</code>, <code>BTN_A</code>, <code>BTN_B</code>, <code>VBAT_ADC</code>.</p>
 
 <h2>3. Asignación de pines del ESP32</h2>
-<p>Los del sensor ya están validados en banco. El resto son una propuesta que evita los pines conflictivos del ESP32: 0, 2, 5, 12 y 15 (de arranque), 6–11 (memoria flash), 1 y 3 (el puerto serial del USB) y los ADC2 (no funcionan con WiFi encendido).</p>
+<p>Los del sensor ya están validados en banco. El resto evita los pines conflictivos: 2, 5, 12 y 15 (deciden el modo de arranque y se dejan <b>sin conectar</b>), 6–11 (memoria flash interna del módulo) y los ADC2 (no funcionan con WiFi encendido). <b>El GPIO12 nunca debe tener pull-up</b>: si arranca en alto, el módulo configura mal el voltaje de la flash y no arranca.</p>
 <table>
   <tr><th>GPIO</th><th>Red</th><th>Dirección</th><th>Notas</th><th></th></tr>
+  <tr><td class="m">EN</td><td>EN</td><td>Entrada</td><td>Reset. 10 kΩ a 3V3 + 1 µF a GND + botón RESET a GND + auto-reset</td><td><span class="e a">ADR-013</span></td></tr>
+  <tr><td class="m">0</td><td>IO0</td><td>Entrada</td><td>Arranque. 10 kΩ a 3V3 + botón BOOT a GND + auto-reset</td><td><span class="e a">ADR-013</span></td></tr>
+  <tr><td class="m">1 / 3</td><td>TXD0 / RXD0</td><td>UART0</td><td>Al CH340C (cruzados: TX con RX)</td><td><span class="e a">ADR-013</span></td></tr>
   <tr><td class="m">21</td><td>SDA</td><td>E/S</td><td>I2C, 100 kHz validado en protoboard</td><td><span class="e f">MAESTRO</span></td></tr>
   <tr><td class="m">22</td><td>SCL</td><td>Salida</td><td>I2C</td><td><span class="e f">MAESTRO</span></td></tr>
-  <tr><td class="m">16</td><td>SENS_INT</td><td>Entrada</td><td>INT del VL53L1X: activo en bajo y latcheado; ISR por flanco de bajada</td><td><span class="e f">MAESTRO</span></td></tr>
+  <tr><td class="m">16</td><td>SENS_INT</td><td>Entrada</td><td>INT del VL53L1X: activo en bajo y latcheado</td><td><span class="e f">MAESTRO</span></td></tr>
   <tr><td class="m">17</td><td>SENS_XSHUT</td><td>Salida OD</td><td>Se suelta en alta impedancia, nunca se fuerza a alto</td><td><span class="e f">MAESTRO</span></td></tr>
   <tr><td class="m">27</td><td>SENS_EN</td><td>Salida</td><td>Load switch del sensor (en bajo = sensor encendido)</td><td><span class="e p">PROPUESTA</span></td></tr>
   <tr><td class="m">25</td><td>LED</td><td>Salida</td><td>LED indicador con 100 Ω</td><td><span class="e p">PROPUESTA</span></td></tr>
   <tr><td class="m">26</td><td>BUZZ</td><td>Salida PWM</td><td>Buzzer pasivo vía transistor; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">32</td><td>ROL0</td><td>Entrada</td><td>Jumper a GND; pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">33</td><td>ROL1</td><td>Entrada</td><td>Jumper a GND; pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">13</td><td>BTN_A</td><td>Entrada</td><td>Botón a GND; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">19</td><td>BTN_B</td><td>Entrada</td><td>Botón a GND; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">34</td><td>VBAT_ADC</td><td>Entrada analógica</td><td>ADC1 (sí funciona con WiFi). Solo entrada, sin pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">32 / 33</td><td>ROL0 / ROL1</td><td>Entrada</td><td>Jumpers a GND; pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">13 / 19</td><td>BTN_A / BTN_B</td><td>Entrada</td><td>Botones a GND; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">34</td><td>VBAT_ADC</td><td>Analógica</td><td>ADC1 (funciona con WiFi). Solo entrada</td><td><span class="e p">PROPUESTA</span></td></tr>
 </table>
-<p><b>Roles con 2 jumpers</b> <span class="e p">PROPUESTA</span>: jumper puesto = 0, quitado = 1.</p>
-<table>
-  <tr><th>ROL1</th><th>ROL0</th><th>Rol</th></tr>
-  <tr><td>0</td><td>0</td><td>Puerta de inicio, 0 yd (umbral "por encima")</td></tr>
-  <tr><td>0</td><td>1</td><td>Split 1, 10 yd</td></tr>
-  <tr><td>1</td><td>0</td><td>Split 2, 20 yd</td></tr>
-  <tr><td>1</td><td>1</td><td>Meta + hub, 40 yd (sin jumpers: es la unidad que más se usa sola en banco)</td></tr>
-</table>
+<p><b>Roles con 2 jumpers</b> <span class="e p">PROPUESTA</span>: interruptor cerrado = 0, abierto = 1. 00 = inicio (0 yd), 01 = split 10 yd, 10 = split 20 yd, 11 = meta + hub (40 yd; con todo abierto, porque es la unidad que más se usa sola en banco). Para que el fabricante lo ensamble, usa un DIP switch SMD de 2 posiciones en lugar de headers con jumper.</p>
 
-<h2 class="salto">4. Bloque por bloque</h2>
-
-<h3>4.1 Energía (hoja 1_energia)</h3>
+<h2 class="salto">4. Energía (hoja 1_energia)</h2>
+<p>El orden, desde la celda: conector → protección → (aquí se conecta el cargador) → interruptor → buck-boost → 3V3.</p>
 <ol>
-  <li><b>Conector de batería</b> <span class="e f">MAESTRO</span>: 2 pines polarizado (JST-PH o JST-XH). Red <code>VBAT</code> y <code>GND_BAT</code>.</li>
-  <li><b>Fusible PTC</b> en serie con <code>VBAT</code> <span class="e f">MAESTRO</span>. Corriente de sostén ~1 A <span class="e p">PROPUESTA</span>: cubre los picos del radio con margen; ajústalo con la medición de la sección 7.</li>
-  <li><b>MOSFET-P de polaridad inversa</b> <span class="e f">MAESTRO</span>: drain hacia la batería, source hacia la carga y gate a <code>GND_BAT</code> con 10 kΩ. Usa uno de umbral bajo (tipo AO3401 o Si2301): con la celda en 3.0 V aún debe conducir bien. Salida: <code>VBAT_PROT</code>.</li>
-  <li><b>TVS</b> entre <code>VBAT_PROT</code> y <code>GND_BAT</code> <span class="e f">MAESTRO</span>: unidireccional, de voltaje de bloqueo ~5 V (por ejemplo, SMAJ5.0A).</li>
-  <li><b>Módulo cargador con protección</b> (TP4056 + DW01) <span class="e f">MAESTRO</span>. Dibújalo como un símbolo propio con los pads del módulo: <code>IN+</code>, <code>IN-</code> (USB-C), <code>B+</code>, <code>B-</code> (batería), <code>OUT+</code>, <code>OUT-</code> (carga).</li>
-  <li><b>Interruptor</b> en serie con <code>OUT+</code> <span class="e f">MAESTRO</span>. Salida: <code>VSYS</code>.</li>
-  <li><b>Módulo buck-boost</b> TPS63020 <span class="e f">MAESTRO</span>: <code>VSYS</code> → <code>3V3</code>. Dibújalo con los pads del módulo que compres (VIN, GND, VOUT y EN si lo trae).</li>
-  <li><b>Bulk de 470 µF</b> en <code>3V3</code>, junto a los pines de la tarjeta ESP32 <span class="e f">MAESTRO</span>.</li>
-  <li><b>Medición de batería</b> <span class="e p">PROPUESTA</span>: divisor de 100 kΩ / 100 kΩ desde <code>VBAT_PROT</code> a <code>VBAT_ADC</code> (GPIO34), con 100 nF a GND en el punto medio. Un máximo de 4.2 V queda en 2.1 V, dentro del rango del ADC. Consume 21 µA. No lo pide el Maestro, pero sirve para REQ-NF-05 (autonomía) y para estudiar el brownout.</li>
+  <li><b>Conector de batería</b> <span class="e f">MAESTRO</span>: JST-PH de 2 pines SMD, polarizado. Redes <code>VBAT</code> y <code>BAT-</code>.</li>
+  <li><b>MOSFET-P de polaridad inversa</b> <span class="e f">MAESTRO</span>: drain a <code>VBAT</code>, source hacia la carga y gate a <code>BAT-</code> con 100 kΩ. De umbral bajo (tipo AO3401): a 3.0 V de celda debe conducir bien.</li>
+  <li><b>Fusible PTC</b> en serie <span class="e f">MAESTRO</span>, de sostén ~1.5 A <span class="e p">PROPUESTA</span>, con margen sobre los picos del radio. Se ajusta con la medición de la sección 8. Salida: <code>BATP</code>.</li>
+  <li><b>TVS</b> entre <code>BATP</code> y <code>BAT-</code> <span class="e f">MAESTRO</span>: unidireccional de 5 V (tipo SMAJ5.0A).</li>
+  <li><b>Protección de la celda</b>: DW01A + FS8205A (dos MOSFET-N en un encapsulado) en el <b>lado negativo</b>, entre <code>BAT-</code> y <code>GND</code> <span class="e a">ADR-013</span>. Circuito típico: VCC del DW01A a <code>BATP</code> por 100 Ω con 100 nF a <code>BAT-</code>; OD y OC a las dos compuertas del FS8205A; CS a <code>GND</code> por 1–2 kΩ. Corta la celda por sobrecarga, sobredescarga y cortocircuito.</li>
+  <li><b>Interruptor</b> <span class="e f">MAESTRO</span>: conector JST de 2 pines hacia el interruptor del gabinete, entre <code>BATP</code> y <code>VSYS</code>. El cargador queda <b>antes</b> del interruptor, así que la celda se carga con el sistema apagado. Eso evita el problema de cargar con el sistema encendido (sección 5).</li>
+  <li><b>Buck-boost TPS63021</b> (salida fija de 3.3 V; el TPS63020 es la versión ajustable) <span class="e a">ADR-013</span>: <code>VSYS</code> → <code>3V3</code>. Del circuito típico: inductor de 1.5 µH con corriente de saturación ≥ 3 A, capacitores cerámicos a la entrada y a la salida, EN a VIN y FB a VOUT. Para PS/SYNC, elige el nivel que <b>desactiva el modo de ahorro</b>: menos rizo con los picos del radio a cambio de unos mA más. Verifica el nivel en la hoja de datos <span class="e p">PROPUESTA</span>.</li>
+  <li><b>Bulk de 470 µF</b> en <code>3V3</code>, junto al pin de alimentación del módulo <span class="e f">MAESTRO</span>. Polímero o tántalo SMD. Su valor final sale de la sección 8 <span class="e x">PENDIENTE</span>.</li>
+  <li><b>Medición de batería</b> <span class="e p">PROPUESTA</span>: divisor de 100 kΩ / 100 kΩ desde <code>VSYS</code> a <code>VBAT_ADC</code> (GPIO34), con 100 nF a GND. 4.2 V quedan en 2.1 V. Va después del interruptor para que no descargue la celda con el sistema apagado.</li>
 </ol>
 
 <div class="caja ojo">
-  <h3>Trampa 1 — la tierra del módulo cargador</h3>
-  <p>En los módulos TP4056 + DW01, el DW01 corta la batería por el lado negativo. Por eso <code>B-</code> y <code>OUT-</code> <b>no son la misma red</b>. La tierra del sistema (<code>GND</code>) tiene que ser <code>OUT-</code>. Si la tomas de <code>B-</code>, la protección contra sobredescarga y cortocircuito queda puenteada y no sirve. Comprueba en tu módulo, con el multímetro en continuidad, que <code>B-</code> y <code>OUT-</code> no estén unidos.</p>
-  <p>Consecuencia: el PTC, el MOSFET de polaridad y el TVS quedan entre la batería y <code>B+</code>/<code>B-</code>, y todo lo demás se alimenta de <code>OUT+</code>/<code>OUT-</code> <span class="e p">PROPUESTA</span>.</p>
+  <h3>La tierra del sistema es la de después del DW01A</h3>
+  <p>El FS8205A corta la celda por el negativo. Por eso <code>BAT-</code> (la celda) y <code>GND</code> (todo lo demás) <b>son redes distintas</b>, unidas solo a través de los MOSFET. Todo el circuito, incluido el cargador, usa <code>GND</code>. Solo el conector de batería, el gate del MOSFET de polaridad, el TVS y el DW01A tocan <code>BAT-</code>. Si los unes, la protección deja de funcionar sin que nada lo avise.</p>
 </div>
 
-<div class="caja ojo">
-  <h3>Trampa 2 — dos fuentes en el mismo riel de 3.3 V <span class="e x">PENDIENTE: decisión</span></h3>
-  <p>La tarjeta ESP32 trae su propio regulador: cuando conectas el USB para programar, la tarjeta genera 3.3 V en su pin <code>3V3</code>. Si ese pin también recibe la salida del buck-boost, quedan <b>dos reguladores en paralelo</b> empujando el mismo riel. El Maestro (12.2) pide tratar el USB "solo como datos" salvo que haya un diseño de OR-ing. Con una tarjeta enchufada eso no es automático. Opciones:</p>
-  <ul>
-    <li><b>A. Regla de uso:</b> nunca conectar el USB con el interruptor encendido. Cuesta cero, pero un descuido en campo o en el banco puede dañar algo.</li>
-    <li><b>B. Selector de fuente</b> entre el buck-boost y <code>3V3</code> (un power mux tipo TPS2116 o un "diodo ideal" con MOSFET). Con USB conectado alimenta la tarjeta; sin USB, la batería. No pierde los 0.3 V de un diodo Schottky, que dejarían al ESP32 en ~3.0 V, en el límite.</li>
-    <li><b>C. Jumper de fuente</b> de 3 pines: elegir a mano USB o batería. Simple y seguro, pero hay que acordarse de moverlo.</li>
-  </ul>
-  <p>Mi recomendación es la <b>C para la primera versión</b>: es la más simple de verificar y no agrega un integrado nuevo. Mientras decides, deja en el esquemático un jumper de 3 pines entre la salida del buck-boost y <code>3V3</code>.</p>
+<h2>5. USB, carga y programación (hoja 2_usb_carga)</h2>
+<ol>
+  <li><b>USB-C de 16 pines</b> (solo USB 2.0) <span class="e a">ADR-013</span>. CC1 y CC2 cada uno con su propia resistencia de <b>5.1 kΩ a GND</b>: sin ellas, un cargador USB-C no entrega 5 V. Une A6 con B6 (D+) y A7 con B7 (D−).</li>
+  <li><b>Protección ESD</b> en D+/D− y VBUS (tipo USBLC6-2SC6) <span class="e p">PROPUESTA</span>: el conector queda expuesto en el gabinete.</li>
+  <li><b>Cargador TP4056</b> <span class="e a">ADR-013</span>: VCC a <code>VBUS</code>, BAT a <code>BATP</code> y GND a <code>GND</code>. La resistencia de PROG fija la corriente de carga: 2 kΩ ≈ 580 mA <span class="e p">PROPUESTA</span>, suave para la celda y con menos calor dentro del gabinete (1.2 kΩ ≈ 1 A). TEMP: a GND si no hay termistor; si quieres el corte por temperatura que sugiere el Maestro 12.4, un NTC de 10 kΩ pegado a la celda <span class="e x">PENDIENTE: decisión</span>. CHRG y STDBY a dos LED (rojo y verde) con 1 kΩ desde <code>VBUS</code>.</li>
+  <li><b>CH340C</b> (USB-serial, no necesita cristal) <span class="e a">ADR-013</span>: VCC y V3 a <code>3V3</code> con 100 nF; UD+/UD− a <code>USB_DP</code>/<code>USB_DN</code>; TXD → <code>RXD0</code> y RXD ← <code>TXD0</code>. Se alimenta del riel de 3.3 V: <b>para programar, el interruptor tiene que estar encendido</b>. A cambio, sus niveles quedan en 3.3 V, que es lo que tolera el ESP32.</li>
+  <li><b>Auto-reset</b> <span class="e a">ADR-013</span>: el circuito de dos NPN de la DevKitC. Q1 con base a DTR por 10 kΩ, emisor a RTS y colector a <code>EN</code>. Q2 con base a RTS por 10 kΩ, emisor a DTR y colector a <code>IO0</code>. Con eso, el IDE y arduino-cli programan sin tocar botones, igual que con tus placas de banco.</li>
+</ol>
+<div class="caja">
+  <h3>Por qué esto resuelve el problema de las dos fuentes</h3>
+  <p>Los 5 V del USB van <b>solo</b> al cargador. El ESP32 y el CH340C siempre se alimentan de <code>3V3</code>, que solo viene del buck-boost. Nunca hay dos reguladores empujando el mismo riel, que era el problema de la versión con tarjeta enchufada.</p>
+  <p><b>Limitación conocida:</b> el TP4056 no separa la carga de la celda del consumo del sistema. Si cargas con el interruptor encendido, la carga puede no terminar bien. Por eso el cargador va antes del interruptor y la regla es: <b>cargar con el sistema apagado y nunca en campo</b> (Maestro 12.4). Ponlo en la serigrafía.</p>
 </div>
 
-<h3>4.2 ESP32 (hoja 2_esp32)</h3>
+<h2 class="salto">6. ESP32 (hoja 3_esp32)</h2>
 <ol>
-  <li>Dos headers hembra de 1×19 (o 1×15 en la tarjeta de 30 pines), con el orden de pines de <b>tu</b> tarjeta. Pon los nombres de pin en el símbolo para que el ERC te ayude.</li>
-  <li>Desacoplo de 1 µF y 100 nF en <code>3V3</code>, lo más cerca posible del pin 3V3 del header <span class="e f">MAESTRO</span>. El bulk de 470 µF también va aquí en la PCB, aunque esté dibujado en la hoja de energía.</li>
-  <li>El pin <code>5V</code>/<code>VIN</code> de la tarjeta <b>no se conecta</b> a nada de la placa (consecuencia de la trampa 2). Márcalo con un "no connect" (X) para que el ERC no se queje.</li>
-  <li>Jumpers de rol: dos headers de 2 pines entre <code>ROL0</code>/<code>ROL1</code> y <code>GND</code>.</li>
+  <li><b>Módulo WROOM-32UE</b> con todos sus pines de GND y la <b>almohadilla central</b> a <code>GND</code> (en la PCB, con varias vías al plano).</li>
+  <li><b>Desacoplo</b> en el pin 3V3 del módulo: 10 µF + 100 nF (diseño de Espressif) más el 1 µF que pide el Maestro <span class="e f">MAESTRO</span>, lo más cerca posible del pin.</li>
+  <li><b>EN</b>: 10 kΩ a 3V3, 1 µF a GND (el retardo de arranque que recomienda Espressif) y botón RESET a GND.</li>
+  <li><b>IO0</b>: 10 kΩ a 3V3 y botón BOOT a GND. Los dos botones son de respaldo por si el auto-reset falla; se pueblan en todas las placas.</li>
+  <li><b>GPIO 2, 5, 12 y 15</b>: "no connect". No les pongas nada.</li>
+  <li><b>Antena</b>: el conector U.FL ya viene en el módulo; un cable U.FL a SMA lo lleva a la antena del gabinete. No hay nada que dibujar, pero deja libre el espacio alrededor del conector en la PCB.</li>
+  <li><b>Roles</b>: DIP switch de 2 posiciones entre <code>ROL0</code>/<code>ROL1</code> y <code>GND</code>.</li>
 </ol>
 
-<h3>4.3 Sensor (hoja 3_sensor)</h3>
+<h2>7. Sensor, interfaz y prueba (hojas 4 y 5)</h2>
+<h3>Sensor</h3>
 <ol>
-  <li><b>Conector polarizado de 6 vías</b> hacia el gabinete del sensor <span class="e f">MAESTRO</span>, en este orden: 1 <code>SENS_VIN</code>, 2 <code>GND</code>, 3 <code>SDA</code>, 4 <code>SCL</code>, 5 <code>SENS_INT</code>, 6 <code>SENS_XSHUT</code>. Las tierras van juntas a propósito: si un día el cable va trenzado, cada señal queda junto a un retorno.</li>
-  <li><b>Resistencias serie de 33 Ω</b> en SDA y SCL, del lado del ESP32 <span class="e f">MAESTRO</span> (rango 22–33 Ω). Amortiguan los rebotes del cable largo.</li>
-  <li><b>Load switch</b> <span class="e f">MAESTRO</span>: MOSFET-P (mismo tipo AO3401) con source en <code>3V3</code>, drain en <code>SENS_VIN</code> y gate a <code>SENS_EN</code> (GPIO27), más 10 kΩ de gate a <code>3V3</code> <span class="e p">PROPUESTA</span>. Mientras el ESP32 arranca y el GPIO flota, el pull-up mantiene el sensor <b>apagado</b>: el sensor solo enciende cuando el firmware lo decide. Agrega 1 µF en <code>SENS_VIN</code> del lado del conector.</li>
-  <li><b>Pull-ups opcionales</b> <span class="e x">PENDIENTE</span>: 4.7 kΩ de SDA y SCL a <code>SENS_VIN</code> y 10 kΩ de <code>SENS_INT</code> a <code>SENS_VIN</code>, marcados como <b>DNP</b> (no poblar). Solo se ponen si el breakout del sensor no los trae (12.2: no duplicar pull-ups). Se decide al revisar tu módulo y al volver a probar I2C a 400 kHz. Van a <code>SENS_VIN</code> y no a <code>3V3</code> a propósito: con el sensor apagado por el load switch, un pull-up a 3V3 lo alimentaría "por detrás" a través de sus pines.</li>
-  <li><code>SENS_XSHUT</code> va directo al GPIO17, sin resistencia a <code>3V3</code>: el módulo ya trae la suya y el pin no se fuerza a alto <span class="e f">MAESTRO</span>.</li>
+  <li><b>Conector JST-PH de 6 vías</b> <span class="e f">MAESTRO</span>: 1 <code>SENS_VIN</code>, 2 <code>GND</code>, 3 <code>SDA</code>, 4 <code>SCL</code>, 5 <code>SENS_INT</code>, 6 <code>SENS_XSHUT</code>.</li>
+  <li><b>33 Ω en serie</b> en SDA y SCL, del lado del ESP32 <span class="e f">MAESTRO</span>.</li>
+  <li><b>Load switch</b> <span class="e f">MAESTRO</span>: MOSFET-P (AO3401) con source en <code>3V3</code>, drain en <code>SENS_VIN</code>, gate a <code>SENS_EN</code> (GPIO27) y 10 kΩ de gate a <code>3V3</code> <span class="e p">PROPUESTA</span>: mientras el ESP32 arranca, el sensor queda apagado. Pon 1 µF en <code>SENS_VIN</code>.</li>
+  <li><b>Pull-ups opcionales</b>, marcados como DNP (no poblar) <span class="e x">PENDIENTE</span>: 4.7 kΩ de SDA y SCL y 10 kΩ de <code>SENS_INT</code>, todos a <code>SENS_VIN</code>, no a 3V3. Con el sensor apagado, un pull-up a 3V3 lo alimentaría "por detrás" a través de sus pines. Solo se pueblan si el breakout no los trae (Maestro 12.2).</li>
+  <li><code>SENS_XSHUT</code> directo al GPIO17, sin pull-up propio <span class="e f">MAESTRO</span>.</li>
 </ol>
-
-<h3>4.4 Interfaz (hoja 4_interfaz)</h3>
-<ol>
-  <li><b>LED</b>: GPIO25 → 100 Ω → LED → <code>GND</code> <span class="e f">MAESTRO</span> (13 mA con un LED rojo). Si te deslumbra, sube a 330 Ω.</li>
-  <li><b>Buzzer pasivo</b> (solo se puebla en el hub) <span class="e f">MAESTRO</span>: GPIO26 → 1 kΩ → base de un NPN (tipo MMBT3904). El buzzer va entre <code>3V3</code> y el colector, con un diodo de rueda libre en paralelo (1N4148) si el buzzer es magnético <span class="e p">PROPUESTA</span>.</li>
-  <li><b>Botones</b> (sin poblar en nodos) <span class="e f">MAESTRO</span>: GPIO13 y GPIO19 a <code>GND</code>, con 100 nF en paralelo para el rebote.</li>
-</ol>
-
-<h3>4.5 Prueba y serigrafía (hoja 5_prueba)</h3>
+<h3>Interfaz</h3>
 <ul>
-  <li><b>Test points</b> <span class="e f">MAESTRO</span>: <code>3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>. Agrega <code>VBAT_PROT</code> y <code>VSYS</code> <span class="e p">PROPUESTA</span>: son los que vas a medir con el osciloscopio (sección 7). Pon al menos dos de <code>GND</code>, cerca de los de 3V3, para el clip de la punta.</li>
-  <li><b>Serigrafía</b> <span class="e f">MAESTRO</span>: nombre del proyecto, versión de la placa y fecha; función y pin 1 de cada conector; la tabla de jumpers de rol de la sección 3; autor y URL del repositorio. En el esquemático basta con un bloque de texto que lo recuerde.</li>
+  <li><b>LED</b>: GPIO25 → 100 Ω → LED → GND <span class="e f">MAESTRO</span>.</li>
+  <li><b>Buzzer pasivo</b> (DNP salvo en el hub) <span class="e f">MAESTRO</span>: GPIO26 → 1 kΩ → base de un NPN. Buzzer entre 3V3 y el colector, con diodo de rueda libre si es magnético.</li>
+  <li><b>Botones</b> (DNP en nodos) <span class="e f">MAESTRO</span>: GPIO13 y GPIO19 a GND, con 100 nF en paralelo.</li>
+</ul>
+<h3>Prueba y serigrafía</h3>
+<ul>
+  <li><b>Test points</b> <span class="e f">MAESTRO</span>: <code>3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>. Agrega <code>VBUS</code>, <code>BATP</code> y <code>VSYS</code>, y al menos dos de GND junto a los de energía <span class="e p">PROPUESTA</span>. Usa pads SMD, no pines: no cuestan ensamblado.</li>
+  <li><b>Puentes de 0 Ω</b> en <code>VSYS</code> (antes del buck-boost) y en <code>3V3</code> (antes del módulo) <span class="e p">PROPUESTA</span>. En la primera energización de cada placa se prueba cada bloque por separado: si el buck-boost sale mal, no se lleva al ESP32 de corbata. Es la mitigación principal del riesgo de no poder rehacer la placa (ADR-013).</li>
+  <li><b>Serigrafía</b> <span class="e f">MAESTRO</span>: proyecto, versión y fecha; función y pin 1 de cada conector; tabla de roles; autor y URL del repositorio; "Cargar apagado".</li>
 </ul>
 
-<h2>5. Paso a paso en KiCad</h2>
-<ol class="check">
-  <li>Crear el proyecto <code>dash_nodo</code> en <code>hardware/</code> y llenar el cajetín: título, versión <b>v0.1</b>, fecha y autor.</li>
-  <li>Crear las 5 hojas jerárquicas vacías desde la raíz.</li>
-  <li>Hacer los símbolos propios de los tres módulos (cargador, buck-boost, breakout del sensor) en una librería del proyecto <code>dash.kicad_sym</code>.</li>
-  <li>Dibujar la hoja 1 completa, con las dos trampas resueltas o marcadas.</li>
-  <li>Dibujar la hoja 2, con los headers en el orden real de tu tarjeta.</li>
-  <li>Dibujar las hojas 3, 4 y 5.</li>
-  <li>Poner <b>PWR_FLAG</b> en <code>VBAT</code>, <code>GND</code> y <code>3V3</code>; sin ellos el ERC marca "pin de alimentación sin manejar".</li>
-  <li>Marcar con "no connect" todos los pines de la tarjeta que no se usan.</li>
-  <li>Anotar los designadores (Herramientas → Anotar) y llenar el campo <b>Valor</b> de cada componente.</li>
-  <li>Marcar como <b>DNP</b> (campo "No poblar") los pull-ups opcionales, el buzzer y los botones. Al poblar el hub se quitan esas marcas en su BOM.</li>
-  <li>Correr el <b>ERC</b> y dejarlo en cero errores. Las advertencias que aceptes, explícalas con una nota de texto.</li>
-  <li>Exportar el esquemático a PDF y la BOM a CSV en <code>hardware/</code>, y hacer commit (o pedírmelo).</li>
-</ol>
-<p>Los footprints se asignan después, cuando tengas los módulos medidos. Dibujar el esquemático no depende de eso.</p>
-
-<h2>6. Cómo lo revisamos</h2>
-<ul>
-  <li><b>Pasa el ERC</b> sin errores.</li>
-  <li><b>Cada GPIO</b> de la tabla de la sección 3 aparece una sola vez y en su red.</li>
-  <li><b>Sigues la corriente de la batería al ESP32</b> pasando por PTC, MOSFET, cargador, interruptor y buck-boost, y la tierra del sistema es <code>OUT-</code>.</li>
-  <li><b>No hay ningún camino</b> entre el 5 V del USB de la tarjeta y la batería o el buck-boost.</li>
-  <li><b>XSHUT nunca se conecta</b> a un pull-up propio ni a 3V3.</li>
-  <li><b>Los componentes DNP</b> son exactamente los que dependen del rol o de una medición pendiente.</li>
-</ul>
-<p>Cuando lo termines, pásamelo (el PDF exportado o el <code>.kicad_sch</code>) y lo reviso contra esta lista y contra el Maestro.</p>
-
-<h2 class="salto">7. Medición del riel de 3.3 V con el osciloscopio</h2>
-<p>Es la medición que más pesa en el bloque de energía. El hub se reinició 422 veces por brownout en el Experimento 0b, con el SoftAP cargado. Hay que ver cuánto cae el riel de 3.3 V en los picos del radio y con qué margen. Con eso se fijan el bulk, el desacoplo y el margen del regulador. Se puede hacer <b>hoy</b> con el hub de banco, sin la PCB.</p>
-
-<h3>Qué se mide</h3>
+<h2>8. Medición del riel de 3.3 V con el osciloscopio</h2>
+<p>El hub se reinició 422 veces por brownout en el Experimento 0b, con el SoftAP cargado. Esta medición dice cuánto cae el riel de 3.3 V en los picos del radio. Con eso se fijan el bulk, el desacoplo y el PTC. Se puede hacer ya con el hub de banco.</p>
 <table>
   <tr><th>Punto</th><th>Dónde</th><th>Por qué</th></tr>
-  <tr><td>3V3</td><td>Pin 3V3 de la tarjeta, con la tierra de la punta en el GND más cercano (clip corto o resorte, no el cable largo)</td><td>Es lo que ve el ESP32. Su mínimo de operación es 3.0 V</td></tr>
-  <tr><td>5V / VIN</td><td>Pin 5V de la tarjeta</td><td>Si cae aquí, el problema es el cable o el puerto USB, no el regulador de la tarjeta</td></tr>
+  <tr><td>3V3</td><td>Pin 3V3 de la tarjeta, con la tierra de la punta en el GND más cercano (clip corto o resorte)</td><td>Es lo que ve el ESP32; su mínimo de operación es 3.0 V</td></tr>
+  <tr><td>5V</td><td>Pin 5V de la tarjeta</td><td>Si cae aquí, el problema es el cable o el puerto USB</td></tr>
 </table>
-
-<h3>Montaje y ajuste del osciloscopio</h3>
 <ol>
-  <li>Firmware del hub del 0b en <b>modo ráfagas con SoftAP</b>, la carga de S3: 1 teléfono en estrés y 2 escuchando. Es la condición que provocó el brownout. El runner flashea y tú conectas los teléfonos, como en el 0b.</li>
-  <li>Punta en ×10. Acoplamiento <b>DC</b>, 0.5 V/div, con el trazo centrado en ~3.3 V. Así ves el nivel absoluto, no solo el rizo.</li>
-  <li>Base de tiempo de 50–100 µs/div para ver un pico de transmisión; después de 1–2 ms/div para ver varios.</li>
-  <li><b>Disparo por flanco de bajada</b> en ~3.1 V, modo normal (no auto). Así se congela la peor caída en lugar de un trazo cualquiera.</li>
-  <li>Si tu equipo tiene medición automática, usa <b>Vmin</b>, o el modo persistencia/pico durante 1–2 minutos.</li>
+  <li>Hub del 0b en <b>modo ráfagas con SoftAP</b> y la carga de S3 (1 teléfono en estrés y 2 escuchando). El runner flashea y tú conectas los teléfonos.</li>
+  <li>Punta en ×10, acoplamiento <b>DC</b>, 0.5 V/div, trazo centrado en ~3.3 V.</li>
+  <li>Base de tiempo de 50–100 µs/div para ver un pico; luego 1–2 ms/div para ver varios.</li>
+  <li><b>Disparo por flanco de bajada</b> en ~3.1 V, modo normal. Congela la peor caída.</li>
+  <li>Si tu equipo lo tiene: medición automática de Vmin o modo persistencia durante 1–2 min.</li>
 </ol>
-
-<h3>Corridas</h3>
 <table>
   <tr><th>#</th><th>Alimentación</th><th>Carga</th><th>Anotar</th></tr>
-  <tr><td>1</td><td>USB de la laptop</td><td>SoftAP apagado (C0)</td><td>Vmin en 3V3 y en 5V: es la referencia</td></tr>
-  <tr><td>2</td><td>USB de la laptop</td><td>S3 (SoftAP + 3 teléfonos)</td><td>Vmin, duración de la caída, ¿hay reinicios?</td></tr>
-  <tr><td>3</td><td>Otro puerto o cargador de pared de 5 V / 2 A, cable corto</td><td>S3</td><td>Si mejora, el brownout era de la fuente o el cable, no del diseño</td></tr>
-  <tr><td>4</td><td>Batería + módulo buck-boost (cuando los tengas), directo a 3V3 con el USB desconectado</td><td>S3</td><td>La condición real de la PCB</td></tr>
+  <tr><td>1</td><td>USB de la laptop</td><td>SoftAP apagado</td><td>Vmin en 3V3 y 5V (referencia)</td></tr>
+  <tr><td>2</td><td>USB de la laptop</td><td>S3</td><td>Vmin, duración de la caída, reinicios</td></tr>
+  <tr><td>3</td><td>Cargador de pared 5 V / 2 A, cable corto</td><td>S3</td><td>Si mejora, el brownout era de la fuente</td></tr>
+  <tr><td>4</td><td>Celda + módulo TPS63020 de banco directo a 3V3, sin USB</td><td>S3</td><td>La condición real de la placa</td></tr>
 </table>
-<p><b>Criterio</b> <span class="e p">PROPUESTA</span>: Vmin en 3V3 ≥ 3.1 V en la corrida 4, es decir, ≥ 0.1 V de margen sobre el mínimo del ESP32. Si no se cumple, se sube el bulk o se cambia el regulador antes de rutear. Antes de medir, escribe en <code>docs/ESTADO.md</code> tu predicción o que no la haces, como en los experimentos.</p>
-<p>Cuando quieras hacerla, dime y preparo el firmware y la corrida con el runner.</p>
+<p><b>Criterio</b> <span class="e p">PROPUESTA</span>: Vmin ≥ 3.1 V en la corrida 4. Antes de medir, escribe tu predicción (o que no la haces) en <code>docs/ESTADO.md</code>.</p>
 
-<h2>8. Qué falta antes de rutear y fabricar</h2>
+<h2>9. Paso a paso en KiCad</h2>
+<ol class="check">
+  <li>Crear <code>hardware/dash_nodo/</code>, llenar el cajetín (título, versión <b>v0.1</b>, fecha, autor).</li>
+  <li>Crear las 5 hojas jerárquicas.</li>
+  <li>Librería del proyecto <code>dash.kicad_sym</code>: los símbolos que no estén en KiCad (DW01A, FS8205A, TPS63021, CH340C si faltan) y la huella del WROOM-32UE.</li>
+  <li>Agregar a cada componente un campo <b>LCSC</b> con su código; el fabricante lo usa para el ensamblado.</li>
+  <li>Dibujar las hojas 1 y 2 copiando los circuitos típicos de las hojas de datos.</li>
+  <li>Dibujar las hojas 3, 4 y 5.</li>
+  <li><b>PWR_FLAG</b> en <code>VBUS</code>, <code>VBAT</code>, <code>GND</code>, <code>BAT-</code> y <code>3V3</code>.</li>
+  <li>"No connect" en GPIO 2, 5, 12, 15 y en los pines del módulo que no se usan.</li>
+  <li>Anotar designadores y poner el <b>Valor</b> de cada componente.</li>
+  <li>Marcar <b>DNP</b>: pull-ups opcionales, buzzer y botones de interfaz.</li>
+  <li><b>ERC</b> en cero errores; las advertencias que aceptes, con una nota de texto.</li>
+  <li>Exportar el esquemático a PDF y la BOM a CSV en <code>hardware/</code>, y hacer commit (o pedírmelo).</li>
+</ol>
+
+<h3>Cómo lo revisamos</h3>
+<ul>
+  <li><b>ERC</b> sin errores; cada GPIO de la sección 3, una sola vez y en su red.</li>
+  <li><b>VBUS</b> solo llega al cargador, al ESD y a los LED de carga; nunca a 3V3 ni a VSYS.</li>
+  <li><b>BAT- y GND</b> son redes distintas, unidas solo por el FS8205A.</li>
+  <li><b>GPIO12</b> sin nada conectado; EN con su RC; IO0 con pull-up.</li>
+  <li><b>XSHUT</b> sin pull-up propio; los pull-ups opcionales van a SENS_VIN.</li>
+  <li><b>Cada integrado</b> tiene su circuito típico completo, y cada pieza su código LCSC.</li>
+</ul>
+<p>Cuando lo termines, pásame el PDF exportado o el <code>.kicad_sch</code> y lo reviso contra esta lista y contra el Maestro.</p>
+
+<h2>10. Qué falta antes de rutear y fabricar</h2>
 <table>
-  <tr><th>Pendiente</th><th>Qué cambia en la placa</th><th>Cómo se cierra</th></tr>
-  <tr><td>Medición del riel de 3.3 V (sección 7)</td><td>Bulk, desacoplo, regulador, valor del PTC</td><td>Corridas 1–4 con el osciloscopio</td></tr>
-  <tr><td>Decisión de la trampa 2 (USB contra batería)</td><td>Jumper, mux o regla de uso</td><td>Decisión tuya; la registramos como ADR</td></tr>
-  <tr><td>Medir módulos y tarjeta con calibrador</td><td>Footprints, separación de headers, keep-out de antena</td><td>Medición física (12.2)</td></tr>
+  <tr><th>Pendiente</th><th>Qué cambia</th><th>Cómo se cierra</th></tr>
+  <tr><td>Medición del riel de 3.3 V (sección 8)</td><td>Bulk, desacoplo, PTC</td><td>Corridas 1–4 con el osciloscopio</td></tr>
+  <tr><td>Disponibilidad y costo en el catálogo del fabricante</td><td>Piezas equivalentes, presupuesto (Maestro 15.2)</td><td>Códigos LCSC y cotización de 5 placas ensambladas</td></tr>
+  <tr><td>Huella del WROOM-32UE</td><td>Footprint</td><td>Desde su hoja de datos</td></tr>
   <tr><td>Pull-ups de I2C e INT, I2C a 400 kHz</td><td>Poblar o no las resistencias DNP</td><td>Revisar el breakout y probar 400 kHz</td></tr>
-  <tr><td>Experimento 2 (sol y alcance)</td><td>Posición del conector del sensor y forma del gabinete</td><td>Plan de validación, 16.4</td></tr>
-  <tr><td>Experimento 3 (ventana del gabinete)</td><td>Mecánica, no el circuito</td><td>Con gabinete, 16.5</td></tr>
+  <tr><td>Termistor de la celda (TP4056 TEMP)</td><td>NTC o TEMP a GND</td><td>Decisión tuya</td></tr>
+  <tr><td>Experimentos 2 y 3</td><td>Posición de conectores, gabinete, ventana</td><td>Plan de validación (Maestro 16)</td></tr>
 </table>
-<p>Nada de esto impide terminar el esquemático: cada pendiente queda como un valor marcado o un componente DNP que se ajusta después.</p>
 
 </body>
 </html>
