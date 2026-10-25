@@ -10,7 +10,7 @@
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| I5 | Sketch para S2 (corrida larga apuntando al cielo) | Compila y registra ≥ 1000 intervalos separados por régimen válido/inválido | **No existe aún** |
+| I5 | Sketch para S2 (corrida larga apuntando al cielo) | Compila y registra ≥ 1000 intervalos separados por régimen válido/inválido | **Escrito y compila** (24-oct; IMP 25 y `-DIMP_MS=27`, 25 % de RAM). `experimentos/sensor_vl53l1x/corrida_cielo/` + `analizar_cielo.py` (probado con captura sintética). Falta registrar en placa: se cierra con la primera corrida de S2 |
 
 ## Siguiente
 
@@ -30,6 +30,7 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 - **Predicción del Exp. 0b (escribirla ANTES de la primera corrida; no se ajusta después):** **el usuario no hace predicción** (registrado el 23-oct-2026, antes de la primera corrida). Rigen los criterios del plan (3.3). Prueba de ráfagas (agregada tras ver C0–S3, ver `experimentos/exp0b/procedimiento.md`): también **sin predicción**, registrado antes de correrla. Referencias: C0 de hoy ≈ repetición del Exp. 0 (σ = 87 µs, rtt filtrado del Exp. 0: mediana 2 483 µs, piso F = 2 332 µs).
 - **¿ADR de reintento de ráfagas?** (conclusión 4 del Exp. 0b). Descartar y repetir una ráfaga cuyo mejor rtt pase de ~3 ms. En las ráfagas ≤ 3 ms el error del offset es σ 58 µs (C0) / 93 µs (S3); en las > 3 ms, 669 / 369 µs. Ataca el mecanismo dominante con o sin WiFi y es más barato que aislar núcleos. Falta: decidir el umbral y cuántos reintentos; medir con la prueba de ráfagas. Es decisión del usuario.
 - **Energía del hub (Exp. 0b):** 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
+- **Predicción de S2 (corrida al cielo, IMP 25): pendiente del usuario.** Escribirla aquí ANTES de correr: % de intervalos anómalos en régimen inválido (a IMP 20 fue 13.7 %) y si habrá saltos a 2 ranuras en régimen válido. Si no hay predicción, registrarlo así.
 - **Orden 0b vs webapp:** resuelto: el 0b dice que el hub sí puede servir la página (σ ≤ 488 µs con carga, REQ-NF-02 con 10×).
 - **Cambios pendientes para el Documento Maestro v2.3** (no se editan aquí; se juntan para una sola revisión): ninguno por ahora. La v2.2 (24-oct-2026) incorporó el barrido v5 y el Exp. 0b.
 - **¿Mover `DASH_Documento_Maestro_v2.1.docx` a `docs/history/`?** La v2.2 la declara SUPERSEDED; sigue en `docs/` hasta que el usuario lo autorice.
