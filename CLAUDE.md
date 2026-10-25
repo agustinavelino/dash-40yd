@@ -2,9 +2,9 @@
 
 Cronometraje electrónico del dash de 40 yardas para una liga juvenil de futbol americano en CDMX. Un solo desarrollador; proyecto de servicio social y portafolio. Todo se trabaja en **español** (código comentado, commits, documentos).
 
-**Fuente de verdad:** `docs/DASH_Documento_Maestro_v2.1.docx`. Si algo de este archivo contradice al Documento Maestro, manda el Documento Maestro. Cualquier cambio de arquitectura se registra como ADR nuevo y sube la versión del documento; no se cambia en silencio en el código.
+**Fuente de verdad:** `docs/DASH_Documento_Maestro_v2.2.docx` (la v2.1 sigue en `docs/` hasta moverla a `history/`). Si algo de este archivo contradice al Documento Maestro, manda el Documento Maestro. Cualquier cambio de arquitectura se registra como ADR nuevo y sube la versión del documento; no se cambia en silencio en el código.
 
-Para leer el .docx sin herramientas extra: descomprimir `word/document.xml` con `zipfile` de Python y extraer los `<w:t>`. Secciones más consultadas: 5 (requisitos), 6 (presupuesto de error), 9.2 (timing del sensor), 13 (software), 16 (plan de experimentos), 18 (ADRs), 19 (próximos pasos).
+Para leer el .docx sin herramientas extra: descomprimir `word/document.xml` con `zipfile` de Python y extraer los `<w:t>`. Secciones más consultadas: 5 (requisitos), 6 (presupuesto de error), 9.2 (timing del sensor), 13 (software), 16 (plan de experimentos; 16.2 es el Exp. 0b), 18 (ADRs), 19 (próximos pasos).
 
 ---
 
@@ -44,7 +44,7 @@ Híbrida: la de la sección 13.5 del Documento Maestro para el producto, pero **
 
 ```
 docs/
-  DASH_Documento_Maestro_v2.1.docx   fuente de verdad
+  DASH_Documento_Maestro_v2.2.docx   fuente de verdad (v2.1: superseded)
   experimento0b_contexto.md          plan del Exp. 0b
   adr/                               (por crear) ADRs nuevos
   history/                           obsoleto: no borrar, no usar como especificación
@@ -179,7 +179,7 @@ Pendientes conocidos:
 
 ## 8. Documentos de referencia
 
-- `docs/DASH_Documento_Maestro_v2.1.docx` — arquitectura, requisitos, presupuesto de error, ADRs
+- `docs/DASH_Documento_Maestro_v2.2.docx` — arquitectura, requisitos, presupuesto de error, ADRs
 - `experimentos/exp0/experimento0_resultados.md` — Experimento 0 completo
 - `docs/experimento0b_contexto.md` — plan del Experimento 0b (escenarios C0, S1, S2, S3; CSV extendido; criterios de éxito; trampas de canal y MAC con SoftAP)
 - `experimentos/exp0/prueba_0_A/`, `prueba_0_B/` — firmware base del hub y del nodo

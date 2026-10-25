@@ -31,18 +31,8 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 - **¿ADR de reintento de ráfagas?** (conclusión 4 del Exp. 0b). Descartar y repetir una ráfaga cuyo mejor rtt pase de ~3 ms. En las ráfagas ≤ 3 ms el error del offset es σ 58 µs (C0) / 93 µs (S3); en las > 3 ms, 669 / 369 µs. Ataca el mecanismo dominante con o sin WiFi y es más barato que aislar núcleos. Falta: decidir el umbral y cuántos reintentos; medir con la prueba de ráfagas. Es decisión del usuario.
 - **Energía del hub (Exp. 0b):** 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
 - **Orden 0b vs webapp:** resuelto: el 0b dice que el hub sí puede servir la página (σ ≤ 488 µs con carga, REQ-NF-02 con 10×).
-- **Cambios pendientes para el Documento Maestro v2.2** (no se editan aquí; se juntan para una sola revisión):
-  - 9.2: el ADR-011 queda confirmado en arranque en frío (antes solo se tenía con estado heredado del v3).
-  - 9.2: el "margen de 3.3 ms" supone que la medición dura lo mismo que el budget (20.02 ms). El v5 acota la duración real T a 20.48 < T ≤ 22.34 ms, así que el margen real a IMP 25 está entre **0.94 y 2.8 ms**, no 3.3 ms.
-  - 9.2: el jitter de cadencia de 10.6 µs ("firme") no se reprodujo: el v5 midió 48–266 µs según la configuración (235 µs a IMP 25), y 44–315 µs en la misma configuración entre arranques. Sigue siendo ≤ 1.4 % de la ranura e irrelevante frente a 6.7 ms de cuantización, pero la firmeza debe bajar a "varía entre corridas".
-  - 9.2: agregar el modelo periodo = ⌈T / ranura⌉ × ranura, confirmado en 11 configuraciones (desviación ≤ 0.009 ranuras).
-  - 1.1 y 19: el barrido en arranque en frío queda hecho; el siguiente paso del sensor es la corrida larga en régimen inválido.
-  - 16 (Exp. 0b): resultado y estado **HALLAZGO**: σ(S3) 488 µs, margen 10× sobre REQ-NF-02; la carga del SoftAP sube las ráfagas lentas de 14 % a 30 % (Fisher p = 0.010) sin mover el piso F. Reporte: `experimentos/exp0b/experimento0b_resultados.md`.
-  - 16 (Exp. 0b): el criterio "σ(S3) ≤ 1.5 × σ(C0)" no es repetible con 4 ráfagas por corrida (mismo C0: 263 y 69 µs). Para comparar condiciones del resync, usar la frecuencia de ráfagas lentas sobre ~100 ráfagas (prueba de ráfagas).
-  - 6 (presupuesto): sincronización con carga web medida: σ ≤ 0.49 ms por corrida; error del offset σ 0.22 ms, máximo 0.94 ms (R-S3).
-  - 13.2: el aislamiento de núcleos no hace falta para cumplir REQ-NF-02; queda como opción si se quiere recuperar la tasa de ráfagas lentas de C0.
-  - 18 (ADR candidato): reintento de ráfagas con mejor rtt > ~3 ms (pendiente de decisión).
-  - 20 / energía: brownout del hub con SoftAP cargado y alimentación USB.
+- **Cambios pendientes para el Documento Maestro v2.3** (no se editan aquí; se juntan para una sola revisión): ninguno por ahora. La v2.2 (24-oct-2026) incorporó el barrido v5 y el Exp. 0b.
+- **¿Mover `DASH_Documento_Maestro_v2.1.docx` a `docs/history/`?** La v2.2 la declara SUPERSEDED; sigue en `docs/` hasta que el usuario lo autorice.
 
 ## Hecho
 
@@ -55,6 +45,7 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 | 23-oct-2026 | **I2: runner cerrado.** Repitió el Exp. 0 completo: 200/200 eventos, σ = 87 µs, media −174 µs (original 168 / −311 µs). Deriva 9.4–10.6 µs/s (original 11.4–14.7): menos deriva, menos diente de sierra | `experimentos/exp0/exp0_repeticion_2026-10-23.csv`; intento 1 fallido por orden de flasheo en `exp0_repeticion_intento1_orden_flasheo_2026-10-23.csv` |
 | 23-oct-2026 | I3: skill `documentar`; primer uso: reporte del sensor | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` |
 | 23-oct-2026 | I4: hooks `proteger_datos` y `revisar_webapp` y permisos del proyecto | 13/13 casos de prueba correctos; el hook bloqueó en vivo un comando real |
+| 24-oct-2026 | Documento Maestro v2.2: barrido v5, Exp. 0b (nueva 16.2; Exps. 1–4 pasan a 16.3–16.6), margen real de IMP 25, riesgos y ADR candidato | `docs/DASH_Documento_Maestro_v2.2.docx` (0.3 lista los cambios) |
 | 24-oct-2026 | **T1: Experimento 0b — HALLAZGO.** σ(S3) 488 µs (REQ-NF-02 con 10×), 0 pérdidas en 1 200 pulsos. Criterio 3.3 no se cumple, pero la σ de 4 ráfagas no es repetible (C0: 263 y 69 µs). Prueba de ráfagas: lentas 14 % → 30 % con carga (p = 0.010), piso F sin cambio, error del offset dentro de la cota 200/200 | `experimentos/exp0b/experimento0b_resultados.md` |
 | 23-oct-2026 | **S1: barrido v5 en arranque en frío. IMP 25 → 1.001 ranuras (23.31 ms). ADR-011 se sostiene.** | `experimentos/sensor_vl53l1x/barrido_v5_frio_2026-10-23.txt` |
 
