@@ -32,9 +32,11 @@ En código y reportes nuevos se usa **hub** y **nodo**, no A y B. Los archivos h
 **El estado vivo está en `docs/ESTADO.md`** (qué se está haciendo, qué sigue, criterio de cierre de cada tarea, decisiones abiertas). Leerlo al empezar una sesión y actualizarlo al cerrar una tarea. Aquí solo va lo estable:
 
 - Experimento 0: **aprobado**, σ = 168 µs (REQ-NF-02 pide ≤ 5 ms).
-- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026; resultados en la sección 9.2 del Documento Maestro; el v4 no está en el repo). **Barrido v5 en arranque en frío hecho (23-oct-2026): IMP 25 → 23.31 ms (1 ranura); el ADR-011 se sostiene.** Falta la corrida larga apuntando al cielo (régimen inválido).
+- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026; resultados en la sección 9.2 del Documento Maestro; el v4 no está en el repo). **Barrido v5 en arranque en frío hecho (23-oct-2026): IMP 25 → 23.31 ms (1 ranura); el ADR-011 se sostiene.** Corrida larga a IMP 25 con fondo de vidrio (24-oct-2026): 0 saltos a 2 ranuras con blanco; sin blanco, 3.3 % de anómalos de fase (±9.5 ms). Falta repetirla al cielo abierto (S2b).
 - Experimento 0b: **hallazgo** (24-oct-2026). El hub puede servir la página: σ ≤ 488 µs con SoftAP + 3 teléfonos (REQ-NF-02 con 10×), 0 pérdidas. Pero la carga sube las ráfagas de resync lentas (mejor rtt > 3 ms) de 14 % a 30 %; el error lo explica la cota (rtt − F)/2. ADR candidato abierto: reintentar ráfagas lentas. Hubo brownout del hub por USB bajo carga.
-- Pendientes grandes: webapp (prototipo con datos simulados), PCB, firmware de producto.
+- Página del coach (W1): prototipo hecho con hub simulado (24-oct-2026), contrato en `webapp/PROTOCOLO.md`. Falta embeberla (W2).
+- **ADR-013 (24-oct-2026): la placa de producto lleva el módulo WROOM-32UE soldado y la ensambla el fabricante** (reemplaza "tarjeta en headers" del Maestro 12.1). El esquemático lo dibuja el usuario en KiCad con `hardware/guia_esquematico/guia_esquematico.pdf`.
+- Pendientes grandes: S2b, E1 (riel 3.3 V), Experimento 1, esquemático/cotización de la PCB, firmware de producto.
 
 ---
 
@@ -46,7 +48,7 @@ Híbrida: la de la sección 13.5 del Documento Maestro para el producto, pero **
 docs/
   DASH_Documento_Maestro_v2.2.docx   fuente de verdad
   experimento0b_contexto.md          plan del Exp. 0b
-  adr/                               (por crear) ADRs nuevos
+  adr/                               ADRs nuevos (ADR-013; ADR-012 reservado para el reintento de ráfagas)
   history/                           obsoleto: no borrar, no usar como especificación
                                      (bitacora.md, prueba0.md, algoritmo.py, Maestro v2.1)
 experimentos/
@@ -63,11 +65,12 @@ experimentos/
     smoke_test_vl53l1x/
     barrido_config_v3/               estado heredado entre configs
     barrido_config_v5/               arranque en frío, una config por arranque (vigente)
+    corrida_cielo/, analizar_cielo.py corrida larga en régimen sin retorno, LED de cruce en GPIO18
   exp0b/                             Experimento 0b — HALLAZGO (experimento0b_resultados.md)
 firmware/      (por crear) binario único con selección de rol
-webapp/        (por crear) página de producto embebida en el flash del hub
-hardware/      (por crear) PCB, gerbers, BOM, gabinete
-tools/         (por crear) logger serial y scripts comunes a varios experimentos
+webapp/        página del coach: index.html (se embebe), PROTOCOLO.md, sim.js y probar.py (no se embeben)
+hardware/      guia_esquematico/ (PDF + fuente HTML); dash_nodo/ (proyecto KiCad, lo crea el usuario)
+tools/         ard.sh, logger serial, identificar puertos, resumen de corridas
 cloud/         (fase posterior)
 .claude/       agentes y skills del proyecto (§9)
 ```
@@ -137,7 +140,7 @@ El entorno es **WSL2 sobre Windows**. Las placas USB solo las ve Windows, así q
 | Carpeta de librerías (Windows) | `C:\Users\aagus\OneDrive\Documents\Arduino\libraries` |
 | Librerías instaladas relevantes | `VL53L1X` (Pololu) 1.3.1 · **ESP Async WebServer 3.12.1** y **Async TCP 3.5.0** (ESP32Async; compilan con core 3.3.11) |
 | Python con pyserial (Windows) | `/mnt/c/Users/aagus/AppData/Local/Programs/Python/Python311/python.exe` (pyserial 3.5) |
-| Python de WSL | `python3` sin pyserial ni matplotlib (instalar en un venv antes de graficar) |
+| Python de WSL | `python3` sin pyserial ni matplotlib. El `.venv` del repo tiene matplotlib, pymupdf y **Playwright + Chromium** (pruebas de la webapp, capturas, PDFs desde HTML) |
 | esptool 5.3.1 (viene con el core) | `/mnt/c/Users/aagus/AppData/Local/Arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool.exe` |
 | Puertos vistos | COM3, COM4, COM11, COM12 no son ESP32 (no responden a esptool); las placas aparecen como otro COM al conectarlas |
 
@@ -183,7 +186,10 @@ Pendientes conocidos:
 - `experimentos/exp0/experimento0_resultados.md` — Experimento 0 completo
 - `docs/experimento0b_contexto.md` — plan del Experimento 0b (escenarios C0, S1, S2, S3; CSV extendido; criterios de éxito; trampas de canal y MAC con SoftAP)
 - `experimentos/exp0/prueba_0_A/`, `prueba_0_B/` — firmware base del hub y del nodo
-- `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` — caracterización del sensor (smoke test, v3, v5): cadencia, IMP, margen
+- `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` — caracterización del sensor (smoke test, v3, v5, corrida larga): cadencia, IMP, margen
+- `experimentos/exp0b/experimento0b_resultados.md` — Experimento 0b (hub con SoftAP y carga web)
+- `webapp/README.md` y `webapp/PROTOCOLO.md` — página del coach y contrato hub ↔ página
+- `hardware/guia_esquematico/guia_esquematico.pdf` y `docs/adr/ADR-013-modulo-soldado-pcba.md` — placa de producto
 - Gráficas: `.venv/bin/python <script>` (venv local con matplotlib, ignorado por git; recrear con `python3 -m venv .venv && .venv/bin/pip install matplotlib`)
 
 ---
