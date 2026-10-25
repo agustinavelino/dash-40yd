@@ -65,6 +65,57 @@ section > h1 { font-size: 1.15rem; margin: 0 0 .75rem; }
 #armar small { display: block; font-size: .85rem; font-weight: 400; }
 .aviso { color: var(--fallo); margin: .5rem 0 0; min-height: 1.4em; }
 
+/* --- formularios y botones secundarios --- */
+input { border: 2px solid var(--tinta); border-radius: 0; padding: .55rem .5rem; background: var(--papel); min-width: 0; }
+form button, .segmento button, #csv, .roster button { min-height: 2.9rem; padding: 0 1rem; border: 2px solid var(--tinta);
+  border-radius: 0; background: var(--papel); font-weight: 600; cursor: pointer; }
+form button[type="submit"], #csv { background: var(--tinta); color: var(--papel); }
+button:disabled { opacity: .45; cursor: default; }
+.nota { color: var(--gris); font-size: .9rem; margin: .5rem 0; }
+.sep { margin-top: 2.25rem !important; }
+.ancho { width: 100%; }
+
+/* --- Sesion --- */
+.controles { display: flex; gap: .5rem; flex-wrap: wrap; }
+.segmento { display: flex; }
+.segmento button + button { border-left: 0; }
+.segmento button[aria-pressed="true"] { background: var(--tinta); color: var(--papel); }
+.controles select { flex: 1; min-width: 9rem; padding: .55rem .5rem; border: 2px solid var(--tinta); border-radius: 0; background: var(--papel); }
+.resumen { color: var(--gris); margin: .75rem 0 .25rem; }
+.tabla-caja { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 1.15rem; }
+th { font: 600 .85rem var(--ui); color: var(--gris); text-align: right; padding: .35rem .4rem; border-bottom: 4px solid var(--tinta); }
+td { text-align: right; padding: .6rem .4rem; border-bottom: 2px solid var(--linea); white-space: nowrap; }
+.izq { text-align: left; }
+td.izq { font-family: var(--ui); font-size: 1rem; max-width: 9.5rem; overflow: hidden; text-overflow: ellipsis; }
+td.id { color: var(--gris); }
+td.sin { color: var(--fallo); }
+td.t3 { font-weight: 700; }
+td small.otra { color: var(--gris); font: .75rem var(--ui); }
+tr.mejor td.t3 { box-shadow: inset 0 -4px 0 var(--tinta); }
+
+/* --- Atletas --- */
+.fila-form { display: flex; gap: .5rem; }
+.fila-form input:first-child { width: 4.2rem; flex: none; text-align: center; font-size: 1.15rem; font-weight: 700; }
+.fila-form input:nth-child(2) { flex: 1; }
+.roster { list-style: none; margin: .5rem 0 0; padding: 0; }
+.roster li { display: flex; align-items: center; gap: .75rem; padding: .55rem 0; border-bottom: 2px solid var(--linea); }
+.roster .dorsal { font-family: var(--num); font-weight: 700; font-size: 1.6rem; width: 2.6rem; text-align: right; }
+.roster .nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roster li.editando { flex-wrap: wrap; }
+.roster li.editando input + input { flex: 1 1 calc(100% - 5.2rem); }
+.aviso.bien { color: var(--tinta); }
+.roster button { min-height: 2.6rem; padding: 0 .8rem; font-weight: 400; }
+.roster button.peligro { border-color: var(--fallo); color: var(--fallo); }
+.vacio-lista { color: var(--gris); padding: 1rem 0; }
+
+/* --- Ajustes --- */
+.distancias { display: grid; gap: .5rem; max-width: 20rem; }
+.distancias label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.distancias input { width: 4.5rem; text-align: right; font-size: 1.15rem; font-weight: 700; }
+.distancias .fija { font-weight: 700; font-size: 1.15rem; padding-right: 1.6rem; }
+.distancias button { margin-top: .5rem; }
+
 /* --- navegacion inferior --- */
 nav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: var(--papel);
   border-top: 3px solid var(--tinta); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -95,9 +146,51 @@ nav button .punto { position: absolute; top: .55rem; right: 22%; width: .6rem; h
     <p class="aviso" id="aviso"></p>
   </section>
 
-  <section id="sesion" hidden><h1>Sesión</h1></section>
-  <section id="atletas" hidden><h1>Atletas</h1></section>
-  <section id="ajustes" hidden><h1>Ajustes</h1></section>
+  <section id="sesion" hidden>
+    <h1>Sesión</h1>
+    <div class="controles">
+      <div class="segmento" role="group" aria-label="Orden">
+        <button type="button" data-orden="llegada" aria-pressed="true">Por llegada</button>
+        <button type="button" data-orden="tiempo" aria-pressed="false">Más rápidos</button>
+      </div>
+      <select id="filtro" aria-label="Atleta"></select>
+    </div>
+    <p class="resumen" id="resumen"></p>
+    <div class="tabla-caja">
+      <table class="num">
+        <thead><tr><th>#</th><th class="izq">Atleta</th><th id="h1">10</th><th id="h2">20</th><th id="h3">40</th></tr></thead>
+        <tbody id="filas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="atletas" hidden>
+    <h1>Atletas</h1>
+    <form id="nuevo" class="fila-form" autocomplete="off">
+      <input id="nNum" class="num" inputmode="numeric" maxlength="2" placeholder="#" aria-label="Número" required>
+      <input id="nNombre" placeholder="Nombre del atleta" aria-label="Nombre" maxlength="32" required>
+      <button type="submit">Agregar</button>
+    </form>
+    <p class="aviso" id="avisoRoster"></p>
+    <ul class="roster" id="roster"></ul>
+  </section>
+
+  <section id="ajustes" hidden>
+    <h1>Distancias de las puertas</h1>
+    <form id="distancias" class="distancias">
+      <label>Puerta 0 <span class="num fija">0 yd</span></label>
+      <label for="d1">Puerta 1 <span><input id="d1" class="num" inputmode="numeric" required> yd</span></label>
+      <label for="d2">Puerta 2 <span><input id="d2" class="num" inputmode="numeric" required> yd</span></label>
+      <label for="d3">Meta <span><input id="d3" class="num" inputmode="numeric" required> yd</span></label>
+      <button type="submit">Guardar distancias</button>
+    </form>
+    <p class="nota">Mide la distancia real con cinta. Las corridas ya registradas conservan las distancias con las que se midieron.</p>
+    <p class="aviso" id="avisoDist"></p>
+
+    <h1 class="sep">Datos</h1>
+    <button type="button" id="csv" class="ancho">Descargar CSV de la sesión</button>
+    <p class="nota" id="notaCsv"></p>
+  </section>
 </main>
 
 <nav>
@@ -172,6 +265,7 @@ function agregarCorrida(c, enVivo) {
   S.corridas.sort(function (a, b) { return a.id - b.id; });
   if (!S.ultima || c.id >= S.ultima.id) S.ultima = c;
   pintarVivo(enVivo);
+  pintarSesion();
   if (enVivo && pantalla !== "vivo") document.querySelector('[data-ir="vivo"] .punto').hidden = false;
   window.ultimoDibujo = performance.now();   // verificacion de REQ-F-05 con el simulador
 }
@@ -243,6 +337,180 @@ function pintarSelector() {
   sel.value = atleta(+antes) ? antes : "";
 }
 
+// --- Sesion ---
+var orden = "llegada";
+document.querySelectorAll("[data-orden]").forEach(function (b) {
+  b.onclick = function () {
+    orden = b.getAttribute("data-orden");
+    document.querySelectorAll("[data-orden]").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+    pintarSesion();
+  };
+});
+$("filtro").onchange = function () { pintarSesion(); };
+
+function pintarFiltro() {
+  var f = $("filtro"), antes = f.value;
+  f.textContent = "";
+  f.appendChild(el("option", { value: "" }, "Todos los atletas"));
+  S.roster.slice().sort(function (a, b) { return a.nombre.localeCompare(b.nombre); }).forEach(function (a) {
+    f.appendChild(el("option", { value: a.id }, a.nombre));
+  });
+  f.value = atleta(+antes) ? antes : "";
+}
+
+function pintarSesion() {
+  var filtro = +$("filtro").value || null;
+  var lista = S.corridas.filter(function (c) { return !filtro || c.atleta === filtro; });
+  var t3 = function (c) { return c.splits_ms[2]; };
+  if (orden === "tiempo") lista = lista.slice().sort(function (a, b) {
+    return (t3(a) == null) - (t3(b) == null) || t3(a) - t3(b) || a.id - b.id;   // sin meta al final
+  });
+  else lista = lista.slice().reverse();                                          // la mas reciente arriba
+
+  var mejor = null;
+  lista.forEach(function (c) { if (t3(c) != null && (!mejor || t3(c) < t3(mejor))) mejor = c; });
+  var yd = S.ultima ? S.ultima.yd : S.config.yd;
+  ["h1", "h2", "h3"].forEach(function (h, i) { $(h).textContent = yd[i] + " yd"; });
+
+  var atletas = {};
+  lista.forEach(function (c) { atletas[c.atleta] = 1; });
+  var n = lista.length, na = Object.keys(atletas).length;
+  $("resumen").textContent = n === 0
+    ? (S.corridas.length ? "Este atleta no tiene corridas en la sesión." : "Las corridas aparecen aquí en cuanto el atleta cruza la meta.")
+    : n + (n === 1 ? " corrida" : " corridas") + (filtro ? "" : ", " + na + (na === 1 ? " atleta" : " atletas")) +
+      (mejor ? ". Mejor 40: " + seg(t3(mejor)) + " s." : ".");
+
+  var tb = $("filas");
+  tb.textContent = "";
+  lista.forEach(function (c) {
+    var tr = el("tr", { "class": c === mejor ? "mejor" : null });
+    tr.appendChild(el("td", { "class": "id" }, c.id));
+    var a = atleta(c.atleta);
+    tr.appendChild(el("td", { "class": "izq", title: a ? a.nombre : null }, a ? a.nombre : "Atleta borrado"));
+    c.splits_ms.forEach(function (t, i) {
+      // Si la puerta se movio despues, la corrida conserva su distancia (REQ-F-06): se muestra junto al tiempo.
+      var td = el("td", { "class": "t" + (i + 1) + (t == null ? " sin" : "") }, seg(t) || "—");
+      if (c.yd[i] !== yd[i]) td.appendChild(el("small", { "class": "otra", title: "Medida con la puerta en " + c.yd[i] + " yd" }, " a " + c.yd[i]));
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+}
+
+// Avisos: rojo solo para errores; "Guardando…" y "Guardado" en tinta normal.
+function avisar(id, msg, error) { var e = $(id); e.textContent = msg; e.className = "aviso" + (error ? "" : " bien"); }
+
+// --- Atletas ---
+var editando = null;
+function alCambiarRoster() { pintarSelector(); pintarFiltro(); pintarRoster(); pintarVivo(); pintarSesion(); }
+
+function guardarRoster(nueva, ok) {
+  avisar("avisoRoster", "Guardando…", false);
+  return api("/api/roster", "POST", nueva).then(function (r) {
+    S.roster = r; editando = null; avisar("avisoRoster", "", true); alCambiarRoster(); if (ok) ok();
+  }).catch(function (e) { avisar("avisoRoster", "No se guardó: " + e.message + ". Revisa la conexión y vuelve a intentar.", true); });
+}
+function validar(num, nombre, id) {
+  if (!nombre) return "Escribe el nombre.";
+  if (!/^\d{1,2}$/.test(num)) return "El número va de 0 a 99.";
+  for (var i = 0; i < S.roster.length; i++)
+    if (S.roster[i].num === +num && S.roster[i].id !== id) return "El número " + num + " ya es de " + S.roster[i].nombre + ".";
+  return null;
+}
+
+$("nuevo").onsubmit = function (e) {
+  e.preventDefault();
+  var num = $("nNum").value.trim(), nom = $("nNombre").value.trim(), err = validar(num, nom, null);
+  if (err) { avisar("avisoRoster", err, true); return; }
+  guardarRoster(S.roster.concat([{ id: null, nombre: nom, num: +num }]), function () {
+    $("nNum").value = ""; $("nNombre").value = ""; $("nNum").focus();
+  });
+};
+
+function pintarRoster() {
+  var ul = $("roster");
+  ul.textContent = "";
+  if (!S.roster.length) { ul.appendChild(el("li", { "class": "vacio-lista" }, "Agrega a los atletas una vez; quedan guardados en el sistema.")); return; }
+  S.roster.slice().sort(function (a, b) { return a.num - b.num; }).forEach(function (a) {
+    var li = el("li");
+    if (editando === a.id) {
+      li.className = "editando";
+      var fNum = el("input", { "class": "num", inputmode: "numeric", maxlength: "2", "aria-label": "Número", style: "width:4.2rem;text-align:center;font-weight:700" });
+      var fNom = el("input", { maxlength: "32", "aria-label": "Nombre" });
+      fNum.value = a.num; fNom.value = a.nombre;
+      var bOk = el("button", { type: "button" }, "Guardar");
+      var bNo = el("button", { type: "button" }, "Cancelar");
+      var bBorrar = el("button", { type: "button", "class": "peligro" }, "Borrar");
+      bOk.onclick = function () {
+        var err = validar(fNum.value.trim(), fNom.value.trim(), a.id);
+        if (err) { avisar("avisoRoster", err, true); return; }
+        guardarRoster(S.roster.map(function (x) { return x.id === a.id ? { id: a.id, nombre: fNom.value.trim(), num: +fNum.value } : x; }));
+      };
+      bNo.onclick = function () { editando = null; avisar("avisoRoster", "", true); pintarRoster(); };
+      // Borrar pide una segunda confirmacion en el mismo boton (sin dialogos del navegador).
+      bBorrar.onclick = function () {
+        if (bBorrar.dataset.seguro) guardarRoster(S.roster.filter(function (x) { return x.id !== a.id; }));
+        else {
+          var n = S.corridas.filter(function (c) { return c.atleta === a.id; }).length;
+          bBorrar.dataset.seguro = "1";
+          bBorrar.textContent = "Sí, borrar a " + a.nombre.split(" ")[0] +
+            (n ? " (sus " + n + (n === 1 ? " corrida queda" : " corridas quedan") + " sin nombre)" : "");
+        }
+      };
+      [fNum, fNom, bOk, bNo, bBorrar].forEach(function (x) { li.appendChild(x); });
+      setTimeout(function () { fNom.focus(); }, 0);
+    } else {
+      li.appendChild(el("span", { "class": "dorsal" }, a.num));
+      li.appendChild(el("span", { "class": "nom" }, a.nombre));
+      var b = el("button", { type: "button", "aria-label": "Editar a " + a.nombre }, "Editar");
+      b.onclick = function () { editando = a.id; avisar("avisoRoster", "", true); pintarRoster(); };
+      li.appendChild(b);
+    }
+    ul.appendChild(li);
+  });
+}
+
+// --- Ajustes ---
+function llenarDistancias() { S.config.yd.forEach(function (d, i) { $("d" + (i + 1)).value = d; }); }
+$("distancias").onsubmit = function (e) {
+  e.preventDefault();
+  var yd = [1, 2, 3].map(function (i) { return +$("d" + i).value; });
+  if (!yd.every(function (d) { return d > 0 && d <= 100 && Math.round(d) === d; }) || !(yd[0] < yd[1] && yd[1] < yd[2])) {
+    avisar("avisoDist", "Las distancias deben ser yardas enteras y crecientes, por ejemplo 10, 20 y 40.", true);
+    return;
+  }
+  avisar("avisoDist", "Guardando…", false);
+  api("/api/config", "POST", { yd: yd }).then(function (c) {
+    S.config = c; llenarDistancias(); pintarVivo(); pintarSesion();
+    avisar("avisoDist", "Guardado. Las próximas corridas usan " + c.yd.join(", ") + " yd.", false);
+  }).catch(function (x) { avisar("avisoDist", "No se guardó: " + x.message + ".", true); });
+};
+
+// CSV con el formato de PROTOCOLO.md. Se arma en el telefono a partir de /api/sesion,
+// asi funciona igual con el hub real y con el simulador.
+function csvCampo(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+function fecha(ts) {
+  if (ts == null) return "";
+  var d = new Date(ts * 1000), z = function (n) { return (n < 10 ? "0" : "") + n; };
+  return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()) + " " + z(d.getHours()) + ":" + z(d.getMinutes());
+}
+$("csv").onclick = function () {
+  $("notaCsv").textContent = "Preparando…";
+  api("/api/sesion").then(function (d) {
+    var filas = [["corrida", "atleta", "num", "t1_s", "t2_s", "t3_s", "yd1", "yd2", "yd3", "fecha"]];
+    d.corridas.slice().sort(function (a, b) { return a.id - b.id; }).forEach(function (c) {
+      var a = atleta(c.atleta);
+      filas.push([c.id, a ? a.nombre : "", a ? a.num : ""].concat(c.splits_ms.map(seg), c.yd, [fecha(c.ts)]));
+    });
+    var texto = filas.map(function (f) { return f.map(csvCampo).join(","); }).join("\n") + "\n";
+    var hoy = fecha(d.inicio || Date.now() / 1000).slice(0, 10) || "sesion";
+    var a = el("a", { href: URL.createObjectURL(new Blob([texto], { type: "text/csv" })), download: "dash_" + hoy + ".csv" });
+    document.body.appendChild(a); a.click(); a.remove();
+    $("notaCsv").textContent = d.corridas.length + (d.corridas.length === 1 ? " corrida descargada." : " corridas descargadas.");
+    window.ultimoCsv = texto;   // para la verificacion automatica
+  }).catch(function (x) { $("notaCsv").textContent = "No se pudo leer la sesión del sistema: " + x.message + "."; });
+};
+
 // --- navegacion ---
 var pantalla = "vivo";
 document.querySelectorAll("nav button").forEach(function (b) {
@@ -258,8 +526,8 @@ document.querySelectorAll("nav button").forEach(function (b) {
 
 // --- arranque ---
 function iniciar() {
-  api("/api/roster").then(function (r) { S.roster = r; pintarSelector(); pintarVivo(); }).catch(function () {});
-  api("/api/config").then(function (c) { S.config = c; pintarVivo(); }).catch(function () {});
+  api("/api/roster").then(function (r) { S.roster = r; alCambiarRoster(); }).catch(function () {});
+  api("/api/config").then(function (c) { S.config = c; llenarDistancias(); pintarVivo(); }).catch(function () {});
   conectar();
   pintarVivo();
 }
