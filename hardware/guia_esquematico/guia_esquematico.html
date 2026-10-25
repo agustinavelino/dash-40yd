@@ -1,0 +1,271 @@
+<!doctype html>
+<!-- Fuente de guia_esquematico.pdf. Regenerar con: .venv/bin/python hardware/guia_esquematico/a_pdf.py -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>DASH — Guía del esquemático</title>
+<style>
+@page { size: A4; margin: 18mm 17mm 18mm 17mm; }
+:root { --tinta: #111; --gris: #555; --linea: #cfcfcf; --firme: #0f6f6a; --prop: #8a5a00; --pend: #b42318; }
+body { font: 10.5pt/1.45 "Noto Sans", "Segoe UI", Arial, sans-serif; color: var(--tinta); margin: 0; }
+h1 { font-size: 21pt; margin: 0 0 2mm; letter-spacing: -.01em; }
+h2 { font-size: 14pt; margin: 9mm 0 2.5mm; padding-top: 2mm; border-top: 2.5px solid var(--tinta); break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 5mm 0 1.5mm; break-after: avoid; }
+p { margin: 0 0 2.5mm; }
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1mm; }
+.sub { color: var(--gris); font-size: 11pt; margin-bottom: 5mm; }
+table { width: 100%; border-collapse: collapse; margin: 1.5mm 0 4mm; font-size: 9.5pt; break-inside: auto; }
+th { text-align: left; border-bottom: 2px solid var(--tinta); padding: 1.2mm 1.5mm; font-size: 9pt; }
+td { border-bottom: 1px solid var(--linea); padding: 1.2mm 1.5mm; vertical-align: top; }
+tr { break-inside: avoid; }
+code, .m { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 9pt; }
+.e { display: inline-block; font-size: 7.5pt; font-weight: 700; padding: .2mm 1.4mm; border-radius: 2mm; border: 1px solid; white-space: nowrap; }
+.e.f { color: var(--firme); } .e.p { color: var(--prop); } .e.x { color: var(--pend); }
+.caja { border: 1.5px solid var(--tinta); border-radius: 2.5mm; padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; }
+.caja.ojo { border-color: var(--pend); }
+.caja h3 { margin-top: 0; }
+.leyenda { font-size: 9pt; color: var(--gris); }
+svg { width: 100%; height: auto; display: block; margin: 2mm 0 1mm; }
+.check li { list-style: none; margin-left: -5mm; }
+.check li::before { content: "☐  "; }
+.salto { break-before: page; }
+</style>
+</head>
+<body>
+
+<h1>Guía del esquemático — placa de nodo DASH</h1>
+<div class="sub">Para dibujarlo en KiCad 8 · 24 de octubre de 2026 · Fuente: Documento Maestro v2.2, secciones 11.2, 12 y 15.1</div>
+
+<p>Esta guía te lleva bloque por bloque para dibujar el esquemático de la única placa del sistema: la misma para las 4 puertas, con el rol elegido por jumpers (ADR-009). El objetivo de esta etapa es tener el <b>esquemático completo y revisado</b>. El ruteo de la PCB y la fabricación esperan a las mediciones pendientes de la sección 8.</p>
+
+<p>Cada decisión lleva una etiqueta con su firmeza, igual que en el Maestro:</p>
+<ul>
+  <li><span class="e f">MAESTRO</span> lo pide el Documento Maestro. No se cambia sin un ADR.</li>
+  <li><span class="e p">PROPUESTA</span> lo propongo yo para completar el diseño. Puedes cambiarlo; si lo cambias, anótalo.</li>
+  <li><span class="e x">PENDIENTE</span> depende de una medición o compra que aún no se hace. Se dibuja, pero no se cierra.</li>
+</ul>
+
+<h2>1. Qué es esta placa</h2>
+<p>Es una <b>placa portadora</b>: la tarjeta de desarrollo ESP32 (con su USB, su programador y su conector de antena) se enchufa en headers hembra y nunca se suelda <span class="e f">MAESTRO</span>. La placa aporta todo lo demás: batería, protección, carga, regulador de 3.3 V, conector del sensor, LED, buzzer, jumpers de rol y test points.</p>
+
+<svg viewBox="0 0 760 330" role="img" aria-label="Diagrama de bloques">
+  <defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
+  <g font-family="Noto Sans, Arial" font-size="12" fill="#111">
+    <g stroke="#111" stroke-width="1.6" fill="#fff">
+      <rect x="10" y="20" width="110" height="56" rx="8"/>
+      <rect x="150" y="20" width="130" height="56" rx="8"/>
+      <rect x="310" y="20" width="130" height="56" rx="8"/>
+      <rect x="470" y="20" width="110" height="56" rx="8"/>
+      <rect x="610" y="20" width="140" height="56" rx="8"/>
+      <rect x="470" y="130" width="280" height="110" rx="8" stroke-width="2.4"/>
+      <rect x="10" y="130" width="200" height="56" rx="8"/>
+      <rect x="240" y="130" width="200" height="56" rx="8"/>
+      <rect x="10" y="215" width="200" height="56" rx="8"/>
+      <rect x="240" y="215" width="200" height="56" rx="8"/>
+      <rect x="470" y="262" width="280" height="50" rx="8" stroke-dasharray="5 4"/>
+    </g>
+    <text x="65" y="44" text-anchor="middle" font-weight="700">Celda 18650</text><text x="65" y="62" text-anchor="middle" font-size="10.5">conector polarizado</text>
+    <text x="215" y="44" text-anchor="middle" font-weight="700">Protección</text><text x="215" y="62" text-anchor="middle" font-size="10.5">PTC · P-MOSFET · TVS</text>
+    <text x="375" y="44" text-anchor="middle" font-weight="700">Cargador + DW01</text><text x="375" y="62" text-anchor="middle" font-size="10.5">módulo, entrada USB-C</text>
+    <text x="525" y="44" text-anchor="middle" font-weight="700">Encendido</text><text x="525" y="62" text-anchor="middle" font-size="10.5">interruptor</text>
+    <text x="680" y="44" text-anchor="middle" font-weight="700">Buck-boost 3.3 V</text><text x="680" y="62" text-anchor="middle" font-size="10.5">módulo TPS63020</text>
+    <text x="610" y="160" text-anchor="middle" font-weight="700" font-size="13">Tarjeta ESP32 (en headers)</text>
+    <text x="610" y="180" text-anchor="middle" font-size="10.5">riel 3V3: bulk 470 µF + 1 µF + 100 nF</text>
+    <text x="610" y="198" text-anchor="middle" font-size="10.5">I2C 21/22 · INT 16 · XSHUT 17</text>
+    <text x="610" y="216" text-anchor="middle" font-size="10.5">USB de la tarjeta: solo datos (ver 4.2)</text>
+    <text x="110" y="154" text-anchor="middle" font-weight="700">Conector del sensor</text><text x="110" y="172" text-anchor="middle" font-size="10.5">6 vías · load switch</text>
+    <text x="340" y="154" text-anchor="middle" font-weight="700">Interfaz</text><text x="340" y="172" text-anchor="middle" font-size="10.5">LED · buzzer (hub) · botones</text>
+    <text x="110" y="239" text-anchor="middle" font-weight="700">Jumpers de rol</text><text x="110" y="257" text-anchor="middle" font-size="10.5">2 bits → 4 roles</text>
+    <text x="340" y="239" text-anchor="middle" font-weight="700">Medición de batería</text><text x="340" y="257" text-anchor="middle" font-size="10.5">divisor → GPIO34</text>
+    <text x="610" y="285" text-anchor="middle" font-weight="700">Test points</text><text x="610" y="302" text-anchor="middle" font-size="10.5">3V3 · GND · SDA · SCL · INT · XSHUT · VBAT</text>
+    <g stroke="#111" stroke-width="1.6" fill="none" marker-end="url(#fl)">
+      <path d="M120,48 H148"/><path d="M280,48 H308"/><path d="M440,48 H468"/><path d="M580,48 H608"/>
+      <path d="M680,76 V128"/>
+      <path d="M210,158 H238" marker-end="none"/><path d="M468,158 H440" marker-start="url(#fl)" marker-end="none"/>
+      <path d="M210,243 H238" marker-end="none"/><path d="M468,225 H440" marker-start="url(#fl)" marker-end="none"/>
+    </g>
+  </g>
+</svg>
+<p class="leyenda">Flujo de energía arriba (izquierda a derecha) y señales abajo. La línea punteada son puntos de prueba, no un circuito.</p>
+
+<h2>2. Antes de abrir KiCad</h2>
+<ol>
+  <li><b>Identifica la tarjeta ESP32 exacta que vas a usar</b> (la de 38 pines tipo DevKitC o la de 30 pines). Cambia el número de pines y, sobre todo, la <b>separación entre las dos filas</b> (puede ser 22.86 mm o 25.4 mm). Mídela con calibrador antes de elegir el footprint <span class="e x">PENDIENTE</span>.</li>
+  <li>Comprueba que los GPIO de la tabla de la sección 3 existen en tu tarjeta. La de 30 pines no los tiene todos.</li>
+  <li>Junta las hojas de datos o fotos de los módulos genéricos: cargador (TP4056 + DW01), buck-boost TPS63020 y breakout del VL53L1X. Necesitas saber qué pines expone cada uno y si el del sensor ya trae pull-ups.</li>
+  <li>Crea el proyecto en <code>hardware/dash_nodo/</code> dentro del repo (KiCad crea la carpeta). Así el esquemático queda versionado junto al resto.</li>
+</ol>
+
+<h3>Organización en KiCad</h3>
+<p>Usa una hoja raíz con 5 hojas jerárquicas, una por bloque. Así cada parte se revisa por separado y el diagrama de la sección 1 corresponde con el archivo:</p>
+<table>
+  <tr><th>Hoja</th><th>Contenido</th></tr>
+  <tr><td>1_energia</td><td>Batería, protección, cargador, interruptor, buck-boost, bulk, medición de batería</td></tr>
+  <tr><td>2_esp32</td><td>Headers de la tarjeta ESP32, desacoplo, jumpers de rol</td></tr>
+  <tr><td>3_sensor</td><td>Conector de 6 vías, resistencias serie I2C, load switch, pull-ups opcionales</td></tr>
+  <tr><td>4_interfaz</td><td>LED, buzzer, botones</td></tr>
+  <tr><td>5_prueba</td><td>Test points y serigrafía (logo, versión, tabla de jumpers)</td></tr>
+</table>
+<p>Nombra las redes con etiquetas globales y nombres fijos: <code>VBAT</code>, <code>VBAT_PROT</code>, <code>VSYS</code> (tras el interruptor), <code>3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>, <code>SENS_VIN</code>, <code>SENS_EN</code>, <code>LED</code>, <code>BUZZ</code>, <code>ROL0</code>, <code>ROL1</code>, <code>BTN_A</code>, <code>BTN_B</code>, <code>VBAT_ADC</code>.</p>
+
+<h2>3. Asignación de pines del ESP32</h2>
+<p>Los del sensor ya están validados en banco. El resto son una propuesta que evita los pines conflictivos del ESP32: 0, 2, 5, 12 y 15 (de arranque), 6–11 (memoria flash), 1 y 3 (el puerto serial del USB) y los ADC2 (no funcionan con WiFi encendido).</p>
+<table>
+  <tr><th>GPIO</th><th>Red</th><th>Dirección</th><th>Notas</th><th></th></tr>
+  <tr><td class="m">21</td><td>SDA</td><td>E/S</td><td>I2C, 100 kHz validado en protoboard</td><td><span class="e f">MAESTRO</span></td></tr>
+  <tr><td class="m">22</td><td>SCL</td><td>Salida</td><td>I2C</td><td><span class="e f">MAESTRO</span></td></tr>
+  <tr><td class="m">16</td><td>SENS_INT</td><td>Entrada</td><td>INT del VL53L1X: activo en bajo y latcheado; ISR por flanco de bajada</td><td><span class="e f">MAESTRO</span></td></tr>
+  <tr><td class="m">17</td><td>SENS_XSHUT</td><td>Salida OD</td><td>Se suelta en alta impedancia, nunca se fuerza a alto</td><td><span class="e f">MAESTRO</span></td></tr>
+  <tr><td class="m">27</td><td>SENS_EN</td><td>Salida</td><td>Load switch del sensor (en bajo = sensor encendido)</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">25</td><td>LED</td><td>Salida</td><td>LED indicador con 100 Ω</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">26</td><td>BUZZ</td><td>Salida PWM</td><td>Buzzer pasivo vía transistor; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">32</td><td>ROL0</td><td>Entrada</td><td>Jumper a GND; pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">33</td><td>ROL1</td><td>Entrada</td><td>Jumper a GND; pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">13</td><td>BTN_A</td><td>Entrada</td><td>Botón a GND; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">19</td><td>BTN_B</td><td>Entrada</td><td>Botón a GND; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">34</td><td>VBAT_ADC</td><td>Entrada analógica</td><td>ADC1 (sí funciona con WiFi). Solo entrada, sin pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
+</table>
+<p><b>Roles con 2 jumpers</b> <span class="e p">PROPUESTA</span>: jumper puesto = 0, quitado = 1.</p>
+<table>
+  <tr><th>ROL1</th><th>ROL0</th><th>Rol</th></tr>
+  <tr><td>0</td><td>0</td><td>Puerta de inicio, 0 yd (umbral "por encima")</td></tr>
+  <tr><td>0</td><td>1</td><td>Split 1, 10 yd</td></tr>
+  <tr><td>1</td><td>0</td><td>Split 2, 20 yd</td></tr>
+  <tr><td>1</td><td>1</td><td>Meta + hub, 40 yd (sin jumpers: es la unidad que más se usa sola en banco)</td></tr>
+</table>
+
+<h2 class="salto">4. Bloque por bloque</h2>
+
+<h3>4.1 Energía (hoja 1_energia)</h3>
+<ol>
+  <li><b>Conector de batería</b> <span class="e f">MAESTRO</span>: 2 pines polarizado (JST-PH o JST-XH). Red <code>VBAT</code> y <code>GND_BAT</code>.</li>
+  <li><b>Fusible PTC</b> en serie con <code>VBAT</code> <span class="e f">MAESTRO</span>. Corriente de sostén ~1 A <span class="e p">PROPUESTA</span>: cubre los picos del radio con margen; ajústalo con la medición de la sección 7.</li>
+  <li><b>MOSFET-P de polaridad inversa</b> <span class="e f">MAESTRO</span>: drain hacia la batería, source hacia la carga y gate a <code>GND_BAT</code> con 10 kΩ. Usa uno de umbral bajo (tipo AO3401 o Si2301): con la celda en 3.0 V aún debe conducir bien. Salida: <code>VBAT_PROT</code>.</li>
+  <li><b>TVS</b> entre <code>VBAT_PROT</code> y <code>GND_BAT</code> <span class="e f">MAESTRO</span>: unidireccional, de voltaje de bloqueo ~5 V (por ejemplo, SMAJ5.0A).</li>
+  <li><b>Módulo cargador con protección</b> (TP4056 + DW01) <span class="e f">MAESTRO</span>. Dibújalo como un símbolo propio con los pads del módulo: <code>IN+</code>, <code>IN-</code> (USB-C), <code>B+</code>, <code>B-</code> (batería), <code>OUT+</code>, <code>OUT-</code> (carga).</li>
+  <li><b>Interruptor</b> en serie con <code>OUT+</code> <span class="e f">MAESTRO</span>. Salida: <code>VSYS</code>.</li>
+  <li><b>Módulo buck-boost</b> TPS63020 <span class="e f">MAESTRO</span>: <code>VSYS</code> → <code>3V3</code>. Dibújalo con los pads del módulo que compres (VIN, GND, VOUT y EN si lo trae).</li>
+  <li><b>Bulk de 470 µF</b> en <code>3V3</code>, junto a los pines de la tarjeta ESP32 <span class="e f">MAESTRO</span>.</li>
+  <li><b>Medición de batería</b> <span class="e p">PROPUESTA</span>: divisor de 100 kΩ / 100 kΩ desde <code>VBAT_PROT</code> a <code>VBAT_ADC</code> (GPIO34), con 100 nF a GND en el punto medio. Un máximo de 4.2 V queda en 2.1 V, dentro del rango del ADC. Consume 21 µA. No lo pide el Maestro, pero sirve para REQ-NF-05 (autonomía) y para estudiar el brownout.</li>
+</ol>
+
+<div class="caja ojo">
+  <h3>Trampa 1 — la tierra del módulo cargador</h3>
+  <p>En los módulos TP4056 + DW01, el DW01 corta la batería por el lado negativo. Por eso <code>B-</code> y <code>OUT-</code> <b>no son la misma red</b>. La tierra del sistema (<code>GND</code>) tiene que ser <code>OUT-</code>. Si la tomas de <code>B-</code>, la protección contra sobredescarga y cortocircuito queda puenteada y no sirve. Comprueba en tu módulo, con el multímetro en continuidad, que <code>B-</code> y <code>OUT-</code> no estén unidos.</p>
+  <p>Consecuencia: el PTC, el MOSFET de polaridad y el TVS quedan entre la batería y <code>B+</code>/<code>B-</code>, y todo lo demás se alimenta de <code>OUT+</code>/<code>OUT-</code> <span class="e p">PROPUESTA</span>.</p>
+</div>
+
+<div class="caja ojo">
+  <h3>Trampa 2 — dos fuentes en el mismo riel de 3.3 V <span class="e x">PENDIENTE: decisión</span></h3>
+  <p>La tarjeta ESP32 trae su propio regulador: cuando conectas el USB para programar, la tarjeta genera 3.3 V en su pin <code>3V3</code>. Si ese pin también recibe la salida del buck-boost, quedan <b>dos reguladores en paralelo</b> empujando el mismo riel. El Maestro (12.2) pide tratar el USB "solo como datos" salvo que haya un diseño de OR-ing. Con una tarjeta enchufada eso no es automático. Opciones:</p>
+  <ul>
+    <li><b>A. Regla de uso:</b> nunca conectar el USB con el interruptor encendido. Cuesta cero, pero un descuido en campo o en el banco puede dañar algo.</li>
+    <li><b>B. Selector de fuente</b> entre el buck-boost y <code>3V3</code> (un power mux tipo TPS2116 o un "diodo ideal" con MOSFET). Con USB conectado alimenta la tarjeta; sin USB, la batería. No pierde los 0.3 V de un diodo Schottky, que dejarían al ESP32 en ~3.0 V, en el límite.</li>
+    <li><b>C. Jumper de fuente</b> de 3 pines: elegir a mano USB o batería. Simple y seguro, pero hay que acordarse de moverlo.</li>
+  </ul>
+  <p>Mi recomendación es la <b>C para la primera versión</b>: es la más simple de verificar y no agrega un integrado nuevo. Mientras decides, deja en el esquemático un jumper de 3 pines entre la salida del buck-boost y <code>3V3</code>.</p>
+</div>
+
+<h3>4.2 ESP32 (hoja 2_esp32)</h3>
+<ol>
+  <li>Dos headers hembra de 1×19 (o 1×15 en la tarjeta de 30 pines), con el orden de pines de <b>tu</b> tarjeta. Pon los nombres de pin en el símbolo para que el ERC te ayude.</li>
+  <li>Desacoplo de 1 µF y 100 nF en <code>3V3</code>, lo más cerca posible del pin 3V3 del header <span class="e f">MAESTRO</span>. El bulk de 470 µF también va aquí en la PCB, aunque esté dibujado en la hoja de energía.</li>
+  <li>El pin <code>5V</code>/<code>VIN</code> de la tarjeta <b>no se conecta</b> a nada de la placa (consecuencia de la trampa 2). Márcalo con un "no connect" (X) para que el ERC no se queje.</li>
+  <li>Jumpers de rol: dos headers de 2 pines entre <code>ROL0</code>/<code>ROL1</code> y <code>GND</code>.</li>
+</ol>
+
+<h3>4.3 Sensor (hoja 3_sensor)</h3>
+<ol>
+  <li><b>Conector polarizado de 6 vías</b> hacia el gabinete del sensor <span class="e f">MAESTRO</span>, en este orden: 1 <code>SENS_VIN</code>, 2 <code>GND</code>, 3 <code>SDA</code>, 4 <code>SCL</code>, 5 <code>SENS_INT</code>, 6 <code>SENS_XSHUT</code>. Las tierras van juntas a propósito: si un día el cable va trenzado, cada señal queda junto a un retorno.</li>
+  <li><b>Resistencias serie de 33 Ω</b> en SDA y SCL, del lado del ESP32 <span class="e f">MAESTRO</span> (rango 22–33 Ω). Amortiguan los rebotes del cable largo.</li>
+  <li><b>Load switch</b> <span class="e f">MAESTRO</span>: MOSFET-P (mismo tipo AO3401) con source en <code>3V3</code>, drain en <code>SENS_VIN</code> y gate a <code>SENS_EN</code> (GPIO27), más 10 kΩ de gate a <code>3V3</code> <span class="e p">PROPUESTA</span>. Mientras el ESP32 arranca y el GPIO flota, el pull-up mantiene el sensor <b>apagado</b>: el sensor solo enciende cuando el firmware lo decide. Agrega 1 µF en <code>SENS_VIN</code> del lado del conector.</li>
+  <li><b>Pull-ups opcionales</b> <span class="e x">PENDIENTE</span>: 4.7 kΩ de SDA y SCL a <code>SENS_VIN</code> y 10 kΩ de <code>SENS_INT</code> a <code>SENS_VIN</code>, marcados como <b>DNP</b> (no poblar). Solo se ponen si el breakout del sensor no los trae (12.2: no duplicar pull-ups). Se decide al revisar tu módulo y al volver a probar I2C a 400 kHz. Van a <code>SENS_VIN</code> y no a <code>3V3</code> a propósito: con el sensor apagado por el load switch, un pull-up a 3V3 lo alimentaría "por detrás" a través de sus pines.</li>
+  <li><code>SENS_XSHUT</code> va directo al GPIO17, sin resistencia a <code>3V3</code>: el módulo ya trae la suya y el pin no se fuerza a alto <span class="e f">MAESTRO</span>.</li>
+</ol>
+
+<h3>4.4 Interfaz (hoja 4_interfaz)</h3>
+<ol>
+  <li><b>LED</b>: GPIO25 → 100 Ω → LED → <code>GND</code> <span class="e f">MAESTRO</span> (13 mA con un LED rojo). Si te deslumbra, sube a 330 Ω.</li>
+  <li><b>Buzzer pasivo</b> (solo se puebla en el hub) <span class="e f">MAESTRO</span>: GPIO26 → 1 kΩ → base de un NPN (tipo MMBT3904). El buzzer va entre <code>3V3</code> y el colector, con un diodo de rueda libre en paralelo (1N4148) si el buzzer es magnético <span class="e p">PROPUESTA</span>.</li>
+  <li><b>Botones</b> (sin poblar en nodos) <span class="e f">MAESTRO</span>: GPIO13 y GPIO19 a <code>GND</code>, con 100 nF en paralelo para el rebote.</li>
+</ol>
+
+<h3>4.5 Prueba y serigrafía (hoja 5_prueba)</h3>
+<ul>
+  <li><b>Test points</b> <span class="e f">MAESTRO</span>: <code>3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>. Agrega <code>VBAT_PROT</code> y <code>VSYS</code> <span class="e p">PROPUESTA</span>: son los que vas a medir con el osciloscopio (sección 7). Pon al menos dos de <code>GND</code>, cerca de los de 3V3, para el clip de la punta.</li>
+  <li><b>Serigrafía</b> <span class="e f">MAESTRO</span>: nombre del proyecto, versión de la placa y fecha; función y pin 1 de cada conector; la tabla de jumpers de rol de la sección 3; autor y URL del repositorio. En el esquemático basta con un bloque de texto que lo recuerde.</li>
+</ul>
+
+<h2>5. Paso a paso en KiCad</h2>
+<ol class="check">
+  <li>Crear el proyecto <code>dash_nodo</code> en <code>hardware/</code> y llenar el cajetín: título, versión <b>v0.1</b>, fecha y autor.</li>
+  <li>Crear las 5 hojas jerárquicas vacías desde la raíz.</li>
+  <li>Hacer los símbolos propios de los tres módulos (cargador, buck-boost, breakout del sensor) en una librería del proyecto <code>dash.kicad_sym</code>.</li>
+  <li>Dibujar la hoja 1 completa, con las dos trampas resueltas o marcadas.</li>
+  <li>Dibujar la hoja 2, con los headers en el orden real de tu tarjeta.</li>
+  <li>Dibujar las hojas 3, 4 y 5.</li>
+  <li>Poner <b>PWR_FLAG</b> en <code>VBAT</code>, <code>GND</code> y <code>3V3</code>; sin ellos el ERC marca "pin de alimentación sin manejar".</li>
+  <li>Marcar con "no connect" todos los pines de la tarjeta que no se usan.</li>
+  <li>Anotar los designadores (Herramientas → Anotar) y llenar el campo <b>Valor</b> de cada componente.</li>
+  <li>Marcar como <b>DNP</b> (campo "No poblar") los pull-ups opcionales, el buzzer y los botones. Al poblar el hub se quitan esas marcas en su BOM.</li>
+  <li>Correr el <b>ERC</b> y dejarlo en cero errores. Las advertencias que aceptes, explícalas con una nota de texto.</li>
+  <li>Exportar el esquemático a PDF y la BOM a CSV en <code>hardware/</code>, y hacer commit (o pedírmelo).</li>
+</ol>
+<p>Los footprints se asignan después, cuando tengas los módulos medidos. Dibujar el esquemático no depende de eso.</p>
+
+<h2>6. Cómo lo revisamos</h2>
+<ul>
+  <li><b>Pasa el ERC</b> sin errores.</li>
+  <li><b>Cada GPIO</b> de la tabla de la sección 3 aparece una sola vez y en su red.</li>
+  <li><b>Sigues la corriente de la batería al ESP32</b> pasando por PTC, MOSFET, cargador, interruptor y buck-boost, y la tierra del sistema es <code>OUT-</code>.</li>
+  <li><b>No hay ningún camino</b> entre el 5 V del USB de la tarjeta y la batería o el buck-boost.</li>
+  <li><b>XSHUT nunca se conecta</b> a un pull-up propio ni a 3V3.</li>
+  <li><b>Los componentes DNP</b> son exactamente los que dependen del rol o de una medición pendiente.</li>
+</ul>
+<p>Cuando lo termines, pásamelo (el PDF exportado o el <code>.kicad_sch</code>) y lo reviso contra esta lista y contra el Maestro.</p>
+
+<h2 class="salto">7. Medición del riel de 3.3 V con el osciloscopio</h2>
+<p>Es la medición que más pesa en el bloque de energía. El hub se reinició 422 veces por brownout en el Experimento 0b, con el SoftAP cargado. Hay que ver cuánto cae el riel de 3.3 V en los picos del radio y con qué margen. Con eso se fijan el bulk, el desacoplo y el margen del regulador. Se puede hacer <b>hoy</b> con el hub de banco, sin la PCB.</p>
+
+<h3>Qué se mide</h3>
+<table>
+  <tr><th>Punto</th><th>Dónde</th><th>Por qué</th></tr>
+  <tr><td>3V3</td><td>Pin 3V3 de la tarjeta, con la tierra de la punta en el GND más cercano (clip corto o resorte, no el cable largo)</td><td>Es lo que ve el ESP32. Su mínimo de operación es 3.0 V</td></tr>
+  <tr><td>5V / VIN</td><td>Pin 5V de la tarjeta</td><td>Si cae aquí, el problema es el cable o el puerto USB, no el regulador de la tarjeta</td></tr>
+</table>
+
+<h3>Montaje y ajuste del osciloscopio</h3>
+<ol>
+  <li>Firmware del hub del 0b en <b>modo ráfagas con SoftAP</b>, la carga de S3: 1 teléfono en estrés y 2 escuchando. Es la condición que provocó el brownout. El runner flashea y tú conectas los teléfonos, como en el 0b.</li>
+  <li>Punta en ×10. Acoplamiento <b>DC</b>, 0.5 V/div, con el trazo centrado en ~3.3 V. Así ves el nivel absoluto, no solo el rizo.</li>
+  <li>Base de tiempo de 50–100 µs/div para ver un pico de transmisión; después de 1–2 ms/div para ver varios.</li>
+  <li><b>Disparo por flanco de bajada</b> en ~3.1 V, modo normal (no auto). Así se congela la peor caída en lugar de un trazo cualquiera.</li>
+  <li>Si tu equipo tiene medición automática, usa <b>Vmin</b>, o el modo persistencia/pico durante 1–2 minutos.</li>
+</ol>
+
+<h3>Corridas</h3>
+<table>
+  <tr><th>#</th><th>Alimentación</th><th>Carga</th><th>Anotar</th></tr>
+  <tr><td>1</td><td>USB de la laptop</td><td>SoftAP apagado (C0)</td><td>Vmin en 3V3 y en 5V: es la referencia</td></tr>
+  <tr><td>2</td><td>USB de la laptop</td><td>S3 (SoftAP + 3 teléfonos)</td><td>Vmin, duración de la caída, ¿hay reinicios?</td></tr>
+  <tr><td>3</td><td>Otro puerto o cargador de pared de 5 V / 2 A, cable corto</td><td>S3</td><td>Si mejora, el brownout era de la fuente o el cable, no del diseño</td></tr>
+  <tr><td>4</td><td>Batería + módulo buck-boost (cuando los tengas), directo a 3V3 con el USB desconectado</td><td>S3</td><td>La condición real de la PCB</td></tr>
+</table>
+<p><b>Criterio</b> <span class="e p">PROPUESTA</span>: Vmin en 3V3 ≥ 3.1 V en la corrida 4, es decir, ≥ 0.1 V de margen sobre el mínimo del ESP32. Si no se cumple, se sube el bulk o se cambia el regulador antes de rutear. Antes de medir, escribe en <code>docs/ESTADO.md</code> tu predicción o que no la haces, como en los experimentos.</p>
+<p>Cuando quieras hacerla, dime y preparo el firmware y la corrida con el runner.</p>
+
+<h2>8. Qué falta antes de rutear y fabricar</h2>
+<table>
+  <tr><th>Pendiente</th><th>Qué cambia en la placa</th><th>Cómo se cierra</th></tr>
+  <tr><td>Medición del riel de 3.3 V (sección 7)</td><td>Bulk, desacoplo, regulador, valor del PTC</td><td>Corridas 1–4 con el osciloscopio</td></tr>
+  <tr><td>Decisión de la trampa 2 (USB contra batería)</td><td>Jumper, mux o regla de uso</td><td>Decisión tuya; la registramos como ADR</td></tr>
+  <tr><td>Medir módulos y tarjeta con calibrador</td><td>Footprints, separación de headers, keep-out de antena</td><td>Medición física (12.2)</td></tr>
+  <tr><td>Pull-ups de I2C e INT, I2C a 400 kHz</td><td>Poblar o no las resistencias DNP</td><td>Revisar el breakout y probar 400 kHz</td></tr>
+  <tr><td>Experimento 2 (sol y alcance)</td><td>Posición del conector del sensor y forma del gabinete</td><td>Plan de validación, 16.4</td></tr>
+  <tr><td>Experimento 3 (ventana del gabinete)</td><td>Mecánica, no el circuito</td><td>Con gabinete, 16.5</td></tr>
+</table>
+<p>Nada de esto impide terminar el esquemático: cada pendiente queda como un valor marcado o un componente DNP que se ajusta después.</p>
+
+</body>
+</html>

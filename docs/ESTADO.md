@@ -16,6 +16,8 @@
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
+| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`), lo dibuja el usuario con `hardware/guia_esquematico/guia_esquematico.pdf` | — (footprints y valores finales dependen de E1, calibrador e I2C 400 kHz) | ERC sin errores y revisión contra la sección 6 de la guía |
+| E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 7) | Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4 | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes |
 | W2 | Embeber `webapp/index.html` en el hub (gzip en PROGMEM o LittleFS) e implementar PROTOCOLO.md en el firmware | Firmware de producto (o el hub del 0b como banco) | La página carga desde el teléfono en el SoftAP sin datos móviles; `probar.py` adaptado contra el hub real pasa |
 | S3 | Experimento 1 (dos sensores, misma puerta) | S2b | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
@@ -31,6 +33,7 @@ Esquemático de PCB → firmware de producto (binario único, rol por jumpers) �
 - **Energía del hub (Exp. 0b):** 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
 - **Predicción de S2 (corrida al cielo, IMP 25): el usuario no hace predicción** (registrado el 24-oct-2026, antes de correr). Fondo: cortina a ~2 m (más allá del alcance del modo corto, 1.38 m). Referencia: a IMP 20 el régimen inválido dio 13.7 % de anómalos; en régimen válido a IMP 25, 0 saltos en 51 + 119 intervalos.
 - **Idea anotada, fuera de alcance (Maestro 4.1):** recomendaciones por reglas sobre los splits (sección 14.1) en la capa de nube. El Maestro pone la interpretación automática del desempeño como no-objetivo; requeriría un ADR. Los datos llegarían a la nube por el teléfono como puente (descarga de `/api/sesion`) o por el hub como cliente WiFi; ambos usan el formato de `webapp/PROTOCOLO.md`.
+- **Trampa de energía de la placa portadora (guía del esquemático, 4.1):** el USB de la tarjeta ESP32 y el buck-boost alimentan el mismo pin 3V3. Opciones: regla de uso, power mux (TPS2116) o jumper de fuente. Recomendación: jumper para la v0.1. Decisión del usuario; va como ADR.
 - **Orden 0b vs webapp:** resuelto: el 0b dice que el hub sí puede servir la página (σ ≤ 488 µs con carga, REQ-NF-02 con 10×).
 - **Cambios pendientes para el Documento Maestro v2.3** (se juntan para una sola revisión):
   - 9.2 y 0.3 (esperar a S2b; el usuario pidió no actualizar el Maestro todavía): la corrida larga a IMP 25 con fondo de vidrio a ~2 m da: 0 saltos a 46.6 ms en 1054 intervalos válidos. La nota provisional de la 9.2 se cierra en su punto 1.
