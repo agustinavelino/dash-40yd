@@ -2,7 +2,7 @@
 
 Cronometraje electrónico del dash de 40 yardas para una liga juvenil de futbol americano en CDMX. Un solo desarrollador; proyecto de servicio social y portafolio. Todo se trabaja en **español** (código comentado, commits, documentos).
 
-**Fuente de verdad:** `docs/DASH_Documento_Maestro_v2.2.docx` (la v2.1 sigue en `docs/` hasta moverla a `history/`). Si algo de este archivo contradice al Documento Maestro, manda el Documento Maestro. Cualquier cambio de arquitectura se registra como ADR nuevo y sube la versión del documento; no se cambia en silencio en el código.
+**Fuente de verdad:** `docs/DASH_Documento_Maestro_v2.2.docx`. Si algo de este archivo contradice al Documento Maestro, manda el Documento Maestro. Cualquier cambio de arquitectura se registra como ADR nuevo y sube la versión del documento; no se cambia en silencio en el código.
 
 Para leer el .docx sin herramientas extra: descomprimir `word/document.xml` con `zipfile` de Python y extraer los `<w:t>`. Secciones más consultadas: 5 (requisitos), 6 (presupuesto de error), 9.2 (timing del sensor), 13 (software), 16 (plan de experimentos; 16.2 es el Exp. 0b), 18 (ADRs), 19 (próximos pasos).
 
@@ -44,11 +44,11 @@ Híbrida: la de la sección 13.5 del Documento Maestro para el producto, pero **
 
 ```
 docs/
-  DASH_Documento_Maestro_v2.2.docx   fuente de verdad (v2.1: superseded)
+  DASH_Documento_Maestro_v2.2.docx   fuente de verdad
   experimento0b_contexto.md          plan del Exp. 0b
   adr/                               (por crear) ADRs nuevos
   history/                           obsoleto: no borrar, no usar como especificación
-                                     (bitacora.md, prueba0.md, algoritmo.py)
+                                     (bitacora.md, prueba0.md, algoritmo.py, Maestro v2.1)
 experimentos/
   exp0/                              Experimento 0 — APROBADO
     prueba_0_A/prueba_0_A.ino        hub (versión final)
