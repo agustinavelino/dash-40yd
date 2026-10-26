@@ -15,7 +15,7 @@ Dónde quedó todo al 26-oct-2026:
   1. **E1**: riel de 3.3 V con osciloscopio.
   2. **Experimento 1**: necesita un segundo sensor cableado al nodo. Ahora tiene una pregunta concreta: el cambio de fase de ~9.9 ms en cada cruce (sensor, sección 12.5).
 - **Decisiones del usuario pendientes:** reintento de ráfagas (ADR-012), NTC de la celda, cotización JLCPCB (H2). Ver "Decisiones abiertas".
-- Documento Maestro **v2.3** (26-oct-2026) ya incluye S2b, la corrida con vidrio y el ADR-013; la v2.2 pasó a `docs/history/`.
+- Documento Maestro **v2.3** (26-oct-2026) ya incluye S2b, la corrida con vidrio y el ADR-013 (sección 0.4 del Maestro). La v2.2 sigue en `docs/` hasta que el usuario autorice moverla a `docs/history/`.
 
 Cómo correr lo que ya existe:
 - **Página del coach sin placas:** `python3 -m http.server 8000 -d webapp` y abrir `http://localhost:8000/index.html?sim=1&rapido=1`. Prueba automática: `.venv/bin/python webapp/probar.py` (Playwright ya instalado en el `.venv`).
@@ -57,6 +57,7 @@ Experimento 1 → Experimento 2 (sol y alcance) → ruteo y fabricación de la P
 
 | Fecha | Qué | Evidencia |
 |---|---|---|
+| 26-oct-2026 | Documento Maestro v2.3: corridas largas del sensor (9.2 con el hallazgo de las dos fases, nota provisional cerrada), ADR-013 en 12, 15, 17 y 18, nota para el Exp. 1 en 16.3, pasos de 19 | `docs/DASH_Documento_Maestro_v2.3.docx` (0.4 lista los cambios) |
 | 26-oct-2026 | **S2b cerrada (S2 cerrada): corrida larga a IMP 25 al cielo abierto. ADR-011 se sostiene.** 5000/5000 muestras en 116.4 s, 30 cruces, sin predicción. Válido: 1022 intervalos, 0 saltos a 46.6 ms. Sin blanco: 3918 intervalos, 3.0 % anómalos (±9.9 ms; vidrio 3.3 %, ±9.5 ms). Fondo: 0/2471 válidas con LED apagado > 1 s. **Hallazgo:** dos fases del INT; en cada cruce la detección llega ~9.9 ms después de la fase sin blanco (29/29); los anómalos sin blanco son una sola interrupción tardía (par + −, 51/60), lo que corrige la lectura de la 11.4 | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` sección 12; `corrida_cielo_IMP25_2026-10-26.txt`; `fase_cruces.py` |
 | 20-sep-2026 | Experimento 0 aprobado: σ = 168 µs | `experimentos/exp0/experimento0_resultados.md` |
 | 11-oct-2026 | Smoke test y barridos v3/v4 del VL53L1X | Documento Maestro 9.2; ahora resumido en `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` |
