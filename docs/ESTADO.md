@@ -27,7 +27,7 @@ Cómo correr lo que ya existe:
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| S2b | Repetir la corrida larga a IMP 25 apuntando al **cielo abierto** (mismo sketch, LED externo en GPIO18) | Mismos criterios que S2: ≥ 1000 intervalos inválidos, 0 saltos a 46.6 ms en válido, < 1 % válidas con LED apagado > 1 s; comparar % y forma de anómalos contra el vidrio (3.3 %, ±9.5 ms) | Pendiente; el usuario la corre la próxima vez. S2 queda abierta hasta entonces. Logger con `--max-s 400` |
+| S2b | Repetir la corrida larga a IMP 25 apuntando al **cielo abierto** (mismo sketch, LED externo en GPIO18) | Mismos criterios que S2: ≥ 1000 intervalos inválidos, 0 saltos a 46.6 ms en válido, < 1 % válidas con LED apagado > 1 s; comparar % y forma de anómalos contra el vidrio (3.3 %, ±9.5 ms) | En corrida (26-oct-2026). **Predicción: el usuario no hace predicción** (registrado el 26-oct-2026, antes de correr). Logger con `--max-s 400` |
 | H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la guía v2 (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario) |
 
 ## Siguiente
