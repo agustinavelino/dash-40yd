@@ -1,6 +1,6 @@
 # Caracterización del VL53L1X — cadencia de INT y elección del IMP
 
-**Resultado:** a IMP = 25 ms el periodo real es **23.31 ms (1 ranura) en arranque en frío** → cuantización σ = **6.73 ms** · presupuesto de la sección 6: ±10 ms · **margen de 1.5×** · Estado: **APROBADO en régimen válido**; régimen sin retorno medido con fondo de vidrio (sección 11), **cielo abierto pendiente (S2b)**
+**Resultado:** a IMP = 25 ms el periodo real es **23.31 ms (1 ranura) en arranque en frío** → cuantización σ = **6.73 ms** · presupuesto de la sección 6: ±10 ms · **margen de 1.5×** · Estado: **APROBADO** en régimen válido y sin retorno (fondo de vidrio, sección 11; cielo abierto, sección 12). **Hallazgo:** al entrar un blanco el INT cambia de fase ~9.9 ms en todos los cruces (sección 12.5)
 
 ---
 
@@ -157,7 +157,7 @@ La cuantización sigue dentro del presupuesto de ±10 ms, con margen de 1.5×. E
 3. **El margen a IMP 25 es de 0.94–2.80 ms, no de 3.3 ms.** Una medición dura entre 20.48 y 22.34 ms, más que el budget de 20.02 ms. Eso hace más importante la corrida larga en régimen inválido (sección 19): si el margen se agota, el periodo salta a 46.6 ms.
 4. **IMP 12 es la única alternativa más rápida**: 22.41 ms (−0.9 ms, cuantización 6.47 ms, −4 %), con un margen de 0–1.86 ms. La ganancia no mueve el presupuesto. Se recomienda **mantener IMP 25** (preferencia respaldada por el margen; decisión abierta en `docs/ESTADO.md`).
 5. **El jitter de cadencia de 10.6 µs no es reproducible**: varía entre 44 y 315 µs según la corrida. Es irrelevante frente a la cuantización, pero su firmeza en el Documento Maestro debe bajar.
-6. **Pendiente para cerrar el sensor:** el régimen inválido (apuntando al cielo) a IMP 25. Ninguna corrida lo ha medido en esa configuración, y es la condición en que las puertas de split y meta pasan casi todo el tiempo.
+6. **Régimen inválido a IMP 25: medido** (secciones 11 y 12). Al cielo abierto: 3.0 % de anómalos sin blanco y 0 saltos a 2 ranuras con blanco. La cadencia se cierra; queda abierto el efecto del cambio de fase en el instante del cruce (12.5), que mide el Experimento 1.
 
 ## 9. Incidencias resueltas durante la ejecución
 
@@ -189,6 +189,9 @@ Hipótesis descartada con datos: **"en arranque en frío todo da 2 ranuras"**. I
 | `corrida_cielo_IMP25_2026-10-24.txt` | Intento 1: no válido (sin LED visible, cruces irregulares) |
 | `corrida_cielo_IMP25_2026-10-24_2.txt` | Intento 2: cortado a mano (LED sin GND), sin muestras |
 | `corrida_cielo_IMP25_2026-10-24_3.txt` | Intento 3: la corrida válida con fondo de vidrio |
+| `corrida_cielo_IMP25_2026-10-26.txt` | S2b: corrida válida al cielo abierto (sección 12) |
+| `corrida_cielo_IMP25_2026-10-26_intento1_idle-corto.txt` | S2b, intento 1: cortado por el logger (`--idle-s 30`), solo ruido de arranque |
+| `fase_cruces.py` | Fase de cada interrupción: tardías, tempranas y fase de la primera muestra válida de cada cruce (sección 12.5) |
 
 No están en el repo: los datos crudos del smoke test y del v3, y el sketch y los datos del v4.
 
@@ -228,7 +231,7 @@ Medir la condición en la que las puertas de split y meta pasan casi todo el tie
 
 - **El fondo no da retorno.** Con el LED apagado desde hace más de 1 s, solo 1 de 2 473 muestras salió válida (0.04 %). Las válidas del primer segundo tras apagarse el LED son la mano saliendo, a ~40 cm: 665 de 666 caen en ese segundo.
 - **31 cruces** en 116 s. Con el LED encendido solo el 34 % de las muestras fue válido: es la reacción humana (la mano llega tarde). No afecta la medición; solo dice que los cruces duran menos que la ventana del LED.
-- **Los anómalos son de fase, no ranuras perdidas.** Hay exactamente 78 intervalos cortos (−9.5 ms) y 78 largos (+9.5 ms), y casi nunca vienen seguidos (2 pares). Sin blanco, el INT se adelanta ~9.5 ms y se queda adelantado; al entrar un blanco regresa a su fase (en las transiciones, la mediana del exceso es +9.5 ms). El periodo medio de toda la corrida es 23.284 ms: no se pierde ninguna ranura.
+- **Los anómalos son de fase, no ranuras perdidas.** Hay exactamente 78 intervalos cortos (−9.5 ms) y 78 largos (+9.5 ms), y casi nunca vienen seguidos (2 pares). Sin blanco, el INT se adelanta ~9.5 ms y se queda adelantado; al entrar un blanco regresa a su fase (en las transiciones, la mediana del exceso es +9.5 ms). El periodo medio de toda la corrida es 23.284 ms: no se pierde ninguna ranura. *(Corregido el 26-oct-2026 en la sección 12.5: los anómalos son casi todos una sola interrupción tardía, un par + − seguido. La fase adelantada sin blanco sí se confirma.)*
 - Hipótesis, **sin verificar**: sin retorno la medición aborta antes de completar el budget (la 9.2 ya lo describe a IMP 20) y el INT sale antes.
 
 ### 11.5 Lo que esto cambia
@@ -246,3 +249,65 @@ Medir la condición en la que las puertas de split y meta pasan casi todo el tie
 | Intento 2: el LED externo no encendía | Faltaba el GND del LED | Cortado a mano; se conserva el archivo parcial, sin muestras |
 | Intento 3: el logger cortó a los 300 s imprimiendo las últimas 5 muestras | La impresión tardó mucho más que en el intento 1 (125 s en total); causa sin aislar | 4 995 / 5 000 muestras; no afecta. Para S2b, logger con `--max-s 400` |
 | El análisis contaba como "fondo con retorno" la mano saliendo tarde | Reacción humana al apagarse el LED | `analizar_cielo.py` verifica el fondo solo con muestras de más de 1 s después de apagarse el LED |
+
+## 12. Corrida larga al cielo abierto (S2b, 26-oct-2026)
+
+**Resultado:** a IMP 25, **0 saltos a 46.6 ms en 1 022 intervalos con blanco** y **3.0 % de anómalos sin blanco** (vidrio: 3.3 %). Fondo verificado: 0 de 2 471 muestras válidas con el LED apagado hace más de 1 s. **El ADR-011 se sostiene al cielo abierto. S2 queda cerrada.**
+
+### 12.1 Montaje y procedimiento
+
+Igual que la sección 11 (mismo sketch `corrida_cielo.ino`, IMP 25, LED de cruce en GPIO18, placa hub en COM7), con una diferencia: **el sensor apunta al cielo abierto**, no a un vidrio. Arranque en frío al abrir el puerto. Logger con `--fin "^# fin$" --max-s 400`. 5 000 muestras en 116.4 s, todas con checksum válido, 0 rescates, 0 lecturas perdidas. 30 cruces.
+
+### 12.2 Predicción contra resultado
+
+| | Predicción (escrita el 26-oct-2026) | Medido |
+|---|---|---|
+| Corrida al cielo | **Sin predicción**: el usuario no la hizo, registrado antes de correr | — |
+| ≥ 1 000 intervalos sin blanco | criterio | **3 918**: cumple |
+| Saltos a 2 ranuras con blanco | criterio: 0 | **0 / 1 022**: cumple |
+| Válidas con LED apagado > 1 s | criterio: < 1 % | **0 / 2 471 (0.00 %)**: cumple |
+| Anómalos sin blanco | referencia: vidrio 3.3 %, IMP 20 13.7 % | **3.0 % (118 / 3 918)** |
+
+### 12.3 Resultados
+
+| Régimen | Intervalos | 1 ranura | 2 ranuras | Anómalos | Mediana | Jitter de los normales |
+|---|---|---|---|---|---|---|
+| Válido (blanco en el haz) | 1 022 | 1 022 | 0 | 0 (0.0 %) | 23.299 ms | 36 µs |
+| Inválido (cielo) | 3 918 | 3 800 | 0 | 118 (3.0 %) | 23.289 ms | 73 µs |
+| Transición | 59 | 14 | 0 | 45 (76.3 %) | 23.309 ms | 28 µs |
+
+- Status de las 5 000 muestras: 0 (válida) 1 052 · 1 87 · **2 (signal fail) 2 888** · 4 (fuera de rango) 967 · 7 6. Con el vidrio dominaba el status 4 (3 071) y el 2 era minoría (821): al cielo, el chip reporta sobre todo "sin señal" en vez de "fuera de rango". La cadencia no cambia.
+- Exceso de los anómalos sin blanco: mediana 9.8 ms, entre −10.1 y +10.1 ms (vidrio: ±9.5 ms).
+- Periodo medio de toda la corrida: 23.293 ms. No se pierde ninguna ranura.
+- Con el LED encendido, 36 % de muestras válidas (vidrio: 34 %): igual que antes, la mano entra tarde y se va antes de que acabe la ventana.
+
+### 12.4 Cielo contra vidrio
+
+| | Vidrio (24-oct, intento 3) | Cielo (26-oct) |
+|---|---|---|
+| Intervalos sin blanco | 3 878 | 3 918 |
+| Anómalos sin blanco | 3.3 % | 3.0 % |
+| Desfase de los anómalos | ±9.5 ms | ±9.9 ms |
+| Saltos a 2 ranuras con blanco | 0 / 1 054 | 0 / 1 022 |
+| Válidas con LED apagado > 1 s | 1 / 2 473 | 0 / 2 471 |
+
+El fondo no cambia la cadencia: el régimen sin retorno se comporta igual contra un vidrio fuera de alcance que contra el cielo. El desfase sí cambia un poco (9.5 contra 9.9 ms). Con dos corridas no se sabe si eso viene del fondo, del arranque o de la temperatura.
+
+### 12.5 Hallazgo: dos fases del INT y el cambio de fase en el cruce
+
+`fase_cruces.py` mide la fase de cada interrupción contra sus vecinas, en lugar de solo contar intervalos. Sale lo mismo en las dos corridas:
+
+1. **Sin blanco, el INT lleva una fase adelantada ~9.9 ms** (vidrio: 9.5 ms) respecto a la fase con blanco. En los 29 cruces de hoy, la primera muestra válida llega +10.0 ms (mediana) tarde respecto a las 10 muestras anteriores y a tiempo (+0.0 ms) respecto a las 10 posteriores. Con el vidrio: 30 de 31 cruces, +9.5 ms.
+2. **Los anómalos sin blanco son casi todos una sola interrupción que vuelve un instante a la fase "con blanco".** De los 60 intervalos largos (+9.9 ms) sin blanco, 51 van seguidos inmediatamente por uno corto (vidrio: 48 de 60). Es una muestra tardía, no dos anómalos independientes. 53 de las 60 muestras tardías tienen status 2 (vidrio: 48 de 50); las otras 7 son el último cruce, que quedó abierto al terminar la corrida (artefacto de la ventana de vecinas).
+3. Esto **corrige la lectura de la sección 11.4**. Ahí decía que los anómalos eran el INT "adelantándose y quedándose adelantado". La fase sin blanco sí es la adelantada, pero los anómalos son vueltas momentáneas a la fase con blanco. El conteo de "cortos y largos casi nunca seguidos" miraba el orden − +, y el par real es + −.
+
+Lectura (hipótesis **sin verificar**, la misma de la 9.2): sin retorno la medición aborta ~9.9 ms antes de completar el budget y el INT sale antes. Con blanco la medición se completa. Una muestra status 2 que alcanza a completarse sale en la fase larga.
+
+**Por qué importa para el presupuesto de error.** El intervalo que termina en la primera detección (de la última muestra sin blanco a la primera con blanco) dura ~23.3 + 9.9 ≈ 33.2 ms **en cada cruce**, no en el 3 % de las veces. El modelo de "ventanas de ancho variable" de la 9.2 suponía que el intervalo largo era la excepción (13.7 % a IMP 20). Si la ventana de cuantización de la detección fuera ese intervalo completo, una uniforme de 33.2 ms da σ ≈ 9.6 ms por sensor, contra 6.73 ms. Eso **no está medido**: depende de en qué momento dentro de la medición el chip "ve" el blanco. El Experimento 1 (dos sensores, misma puerta) lo mide directamente, y su predicción ya escrita (9.5 / 10.7 ms) no se ajusta.
+
+### 12.6 Incidencias
+
+| Síntoma | Causa raíz | Solución |
+|---|---|---|
+| Intento 1: el logger cortó a los pocos segundos con 8 líneas de ruido | El runner agregó `--idle-s 30`, pero el sketch no imprime nada durante los ~116 s de captura | Repetir sin `--idle-s`. Al abrir el puerto otra vez, la placa se reinició en frío. El intento 1 se conserva |
+| `analizar_cielo.py` da 16 % de válidas con el LED apagado | Incluye el primer segundo tras apagarse el LED (la mano saliendo) | Ya resuelto en la sección 11.6: el criterio del fondo usa solo las muestras de más de 1 s después (0 / 2 471) |

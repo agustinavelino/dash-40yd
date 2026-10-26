@@ -4,40 +4,38 @@
 > El Documento Maestro manda sobre la arquitectura; este archivo solo dice en qué paso vamos.
 > Cada tarea tiene un **criterio de cierre** medible: si no se cumple, la tarea no está cerrada.
 
-**Última actualización:** 24-oct-2026 (cierre de sesión)
+**Última actualización:** 26-oct-2026 (S2b cerrada; Documento Maestro v2.3)
 
 ## Cómo retomar (leer primero en un chat nuevo)
 
-Dónde quedó todo al 24-oct-2026:
-- **Hecho y documentado:** Exp. 0 y 0b, sensor (barridos y corrida larga con fondo de vidrio), Documento Maestro v2.2, página del coach (W1), guía del esquemático v2, ADR-013.
+Dónde quedó todo al 26-oct-2026:
+- **Hecho y documentado:** Exp. 0 y 0b, sensor (barridos, corrida larga con vidrio y **al cielo abierto, S2b**), Documento Maestro **v2.3**, página del coach (W1), guía del esquemático v2, ADR-013.
 - **El usuario está haciendo:** el esquemático en KiCad (H1) con `hardware/guia_esquematico/guia_esquematico.pdf`.
 - **Lo siguiente en banco, en este orden:**
-  1. **S2b**: corrida al cielo abierto. Ya está todo listo: sketch, LED y análisis.
-  2. **E1**: riel de 3.3 V con osciloscopio.
-  3. **Experimento 1**: necesita un segundo sensor cableado al nodo.
+  1. **E1**: riel de 3.3 V con osciloscopio.
+  2. **Experimento 1**: necesita un segundo sensor cableado al nodo. Ahora tiene una pregunta concreta: el cambio de fase de ~9.9 ms en cada cruce (sensor, sección 12.5).
 - **Decisiones del usuario pendientes:** reintento de ráfagas (ADR-012), NTC de la celda, cotización JLCPCB (H2). Ver "Decisiones abiertas".
-- **El Maestro no se actualiza hasta después de S2b** (pedido del usuario). Los cambios para la v2.3 están juntos abajo.
+- Documento Maestro **v2.3** (26-oct-2026) ya incluye S2b, la corrida con vidrio y el ADR-013; la v2.2 pasó a `docs/history/`.
 
 Cómo correr lo que ya existe:
 - **Página del coach sin placas:** `python3 -m http.server 8000 -d webapp` y abrir `http://localhost:8000/index.html?sim=1&rapido=1`. Prueba automática: `.venv/bin/python webapp/probar.py` (Playwright ya instalado en el `.venv`).
-- **S2b:** el runner flashea `experimentos/sensor_vl53l1x/corrida_cielo/` en el hub y captura con `--fin "^# fin$" --max-s 400` a `corrida_cielo_IMP25_<fecha>.txt`. Después: `python3 experimentos/sensor_vl53l1x/analizar_cielo.py <archivo>`. Antes de correr, registrar aquí la predicción (o que no la hay).
+- **Corrida al cielo (repetirla si hace falta):** el runner flashea `experimentos/sensor_vl53l1x/corrida_cielo/` en el hub y captura con `--fin "^# fin$" --max-s 400` (**sin `--idle-s`**: el sketch calla ~116 s) a `corrida_cielo_IMP25_<fecha>.txt`. Después: `analizar_cielo.py <archivo>` y `fase_cruces.py <archivo>` (en `experimentos/sensor_vl53l1x/`). Antes de correr, registrar aquí la predicción (o que no la hay).
 - **Regenerar el PDF de la guía:** `.venv/bin/python hardware/guia_esquematico/a_pdf.py`.
 
 ## Ahora
 
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
-| S2b | Repetir la corrida larga a IMP 25 apuntando al **cielo abierto** (mismo sketch, LED externo en GPIO18) | Mismos criterios que S2: ≥ 1000 intervalos inválidos, 0 saltos a 46.6 ms en válido, < 1 % válidas con LED apagado > 1 s; comparar % y forma de anómalos contra el vidrio (3.3 %, ±9.5 ms) | En corrida (26-oct-2026). **Predicción: el usuario no hace predicción** (registrado el 26-oct-2026, antes de correr). Logger con `--max-s 400` |
+| E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 8) (requiere: Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4) | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes | Siguiente en banco |
 | H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la guía v2 (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario) |
 
 ## Siguiente
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
-| E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 8) | Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4 | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes |
 | W2 | Embeber `webapp/index.html` en el hub (gzip en PROGMEM o LittleFS) e implementar PROTOCOLO.md en el firmware | Firmware de producto (o el hub del 0b como banco) | La página carga desde el teléfono en el SoftAP sin datos móviles; `probar.py` adaptado contra el hub real pasa |
 | H2 | Códigos LCSC de cada pieza y cotización de 5 placas ensambladas (JLCPCB) | H1 | Costo real contra los $600 MXN del Maestro 15.2; piezas sin stock sustituidas |
-| S3 | Experimento 1 (dos sensores, misma puerta) | S2b | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
+| S3 | Experimento 1 (dos sensores, misma puerta) | Segundo sensor cableado al nodo | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
 ## Después
 
@@ -45,23 +43,21 @@ Experimento 1 → Experimento 2 (sol y alcance) → ruteo y fabricación de la P
 
 ## Decisiones abiertas
 
-- **¿IMP = 12 ms en lugar de 25 ms?** (hallazgo del v5, ver abajo). IMP 12 da 22.41 ms de periodo (2 ranuras) contra 23.31 ms de IMP 25: 0.9 ms menos, lo que baja la cuantización por sensor de 6.73 a 6.47 ms (−4 %). A cambio, su margen hacia el siguiente salto es menor (≥ 0 ms contra ≥ 0.94 ms de IMP 25). **Recomendación: quedarse en IMP 25.** La corrida larga (vidrio) dio 0 saltos a 2 ranuras en 1 054 intervalos con blanco; la ganancia de IMP 12 no mueve el presupuesto de error. Es decisión del usuario.
+- **¿IMP = 12 ms en lugar de 25 ms?** (hallazgo del v5, ver abajo). IMP 12 da 22.41 ms de periodo (2 ranuras) contra 23.31 ms de IMP 25: 0.9 ms menos, lo que baja la cuantización por sensor de 6.73 a 6.47 ms (−4 %). A cambio, su margen hacia el siguiente salto es menor (≥ 0 ms contra ≥ 0.94 ms de IMP 25). **Recomendación: quedarse en IMP 25.** Las corridas largas dieron 0 saltos a 2 ranuras con blanco (vidrio 0/1 054, cielo 0/1 022); la ganancia de IMP 12 no mueve el presupuesto de error. Es decisión del usuario.
 - **Predicción del Exp. 0b (escribirla ANTES de la primera corrida; no se ajusta después):** **el usuario no hace predicción** (registrado el 23-oct-2026, antes de la primera corrida). Rigen los criterios del plan (3.3). Prueba de ráfagas (agregada tras ver C0–S3, ver `experimentos/exp0b/procedimiento.md`): también **sin predicción**, registrado antes de correrla. Referencias: C0 de hoy ≈ repetición del Exp. 0 (σ = 87 µs, rtt filtrado del Exp. 0: mediana 2 483 µs, piso F = 2 332 µs).
 - **¿ADR de reintento de ráfagas?** (conclusión 4 del Exp. 0b). Descartar y repetir una ráfaga cuyo mejor rtt pase de ~3 ms. En las ráfagas ≤ 3 ms el error del offset es σ 58 µs (C0) / 93 µs (S3); en las > 3 ms, 669 / 369 µs. Ataca el mecanismo dominante con o sin WiFi y es más barato que aislar núcleos. Falta: decidir el umbral y cuántos reintentos; medir con la prueba de ráfagas. Es decisión del usuario.
 - **Energía del hub (Exp. 0b):** se mide en E1. 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
-- **Predicción de S2 (corrida al cielo, IMP 25): el usuario no hace predicción** (registrado el 24-oct-2026, antes de correr). Fondo: cortina a ~2 m (más allá del alcance del modo corto, 1.38 m). Referencia: a IMP 20 el régimen inválido dio 13.7 % de anómalos; en régimen válido a IMP 25, 0 saltos en 51 + 119 intervalos.
+- **Predicción de S2 (corrida al cielo, IMP 25): el usuario no hace predicción** (registrado el 24-oct-2026, antes de correr; para S2b, el 26-oct-2026). Fondo: cortina a ~2 m (más allá del alcance del modo corto, 1.38 m). Referencia: a IMP 20 el régimen inválido dio 13.7 % de anómalos; en régimen válido a IMP 25, 0 saltos en 51 + 119 intervalos.
 - **Idea anotada, fuera de alcance (Maestro 4.1):** recomendaciones por reglas sobre los splits (sección 14.1) en la capa de nube. El Maestro pone la interpretación automática del desempeño como no-objetivo; requeriría un ADR. Los datos llegarían a la nube por el teléfono como puente (descarga de `/api/sesion`) o por el hub como cliente WiFi; ambos usan el formato de `webapp/PROTOCOLO.md`.
 - **ADR-013 (24-oct-2026, aceptado): módulo WROOM-32UE soldado y placa ensamblada por el fabricante** (`docs/adr/ADR-013-modulo-soldado-pcba.md`). Reemplaza la placa portadora con la tarjeta en headers del Maestro 12.1. Un solo USB-C para cargar y programar resuelve la trampa de las dos fuentes en 3V3. ADR-012 queda reservado para el reintento de ráfagas. Pendientes: H2 (códigos LCSC y cotización de 5 placas ensambladas) y decisión sobre el NTC de la celda (TEMP del TP4056: NTC de 10 kΩ en la celda o a GND).
-- **Cambios pendientes para el Documento Maestro v2.3** (se juntan para una sola revisión):
-  - 9.2 y 0.3 (esperar a S2b; el usuario pidió no actualizar el Maestro todavía): la corrida larga a IMP 25 con fondo de vidrio a ~2 m da: 0 saltos a 46.6 ms en 1054 intervalos válidos. La nota provisional de la 9.2 se cierra en su punto 1.
-  - 9.2: en régimen inválido a IMP 25, 3.3 % de intervalos anómalos (no 13.7 %), y son de fase: el INT se adelanta ~9.5 ms sin blanco y regresa al entrar uno, sin perder ranuras. El modelo de "ventanas de ancho variable" (σ 7.54 ms, predicción del Exp. 1 de 10.7 ms) se escribió para intervalos +9.3 ms: hay que revisarlo. Hipótesis sin verificar: sin retorno la medición aborta antes (como ya dice la 9.2 para IMP 20) y el INT sale antes.
-  - 12.1, 12.2, 12.5, 15.1, 15.2 y 18: ADR-013 (módulo soldado, chips en lugar de módulos, USB-C único con CH340C, ensamblado por el fabricante). Costo de PCB pendiente de cotización.
-  - 16.3: en el cruce (transición) el 47 % de los intervalos lleva el +9.5 ms; el Exp. 1 medirá si eso agrega error al instante del cruce.
+- **Cambios para el Documento Maestro:** los pendientes de la v2.3 (corrida con vidrio, S2b, ADR-013, nota del cruce en 16.3) se aplicaron el 26-oct-2026; la sección 0.3 de la v2.3 los lista. Para la v2.4 no hay nada pendiente todavía.
+- **Nuevo (S2b): cambio de fase de ~9.9 ms en cada cruce.** Sin blanco, el INT va ~9.9 ms adelantado; la primera muestra válida llega en la fase con blanco (29/29 cruces al cielo, 30/31 con vidrio). Si la ventana de cuantización de la detección es el intervalo completo (~33.2 ms), σ por sensor ≈ 9.6 ms en vez de 6.73 ms. **No medido:** lo mide el Experimento 1; su predicción escrita (9.5 / 10.7 ms) no se ajusta.
 
 ## Hecho
 
 | Fecha | Qué | Evidencia |
 |---|---|---|
+| 26-oct-2026 | **S2b cerrada (S2 cerrada): corrida larga a IMP 25 al cielo abierto. ADR-011 se sostiene.** 5000/5000 muestras en 116.4 s, 30 cruces, sin predicción. Válido: 1022 intervalos, 0 saltos a 46.6 ms. Sin blanco: 3918 intervalos, 3.0 % anómalos (±9.9 ms; vidrio 3.3 %, ±9.5 ms). Fondo: 0/2471 válidas con LED apagado > 1 s. **Hallazgo:** dos fases del INT; en cada cruce la detección llega ~9.9 ms después de la fase sin blanco (29/29); los anómalos sin blanco son una sola interrupción tardía (par + −, 51/60), lo que corrige la lectura de la 11.4 | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` sección 12; `corrida_cielo_IMP25_2026-10-26.txt`; `fase_cruces.py` |
 | 20-sep-2026 | Experimento 0 aprobado: σ = 168 µs | `experimentos/exp0/experimento0_resultados.md` |
 | 11-oct-2026 | Smoke test y barridos v3/v4 del VL53L1X | Documento Maestro 9.2; ahora resumido en `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` |
 | 23-oct-2026 | Repo reorganizado, CLAUDE.md alineado | commits `a1c3931`, `b705d4e` |

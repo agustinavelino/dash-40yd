@@ -32,11 +32,11 @@ En código y reportes nuevos se usa **hub** y **nodo**, no A y B. Los archivos h
 **El estado vivo está en `docs/ESTADO.md`** (qué se está haciendo, qué sigue, criterio de cierre de cada tarea, decisiones abiertas). Leerlo al empezar una sesión y actualizarlo al cerrar una tarea. Aquí solo va lo estable:
 
 - Experimento 0: **aprobado**, σ = 168 µs (REQ-NF-02 pide ≤ 5 ms).
-- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026; resultados en la sección 9.2 del Documento Maestro; el v4 no está en el repo). **Barrido v5 en arranque en frío hecho (23-oct-2026): IMP 25 → 23.31 ms (1 ranura); el ADR-011 se sostiene.** Corrida larga a IMP 25 con fondo de vidrio (24-oct-2026): 0 saltos a 2 ranuras con blanco; sin blanco, 3.3 % de anómalos de fase (±9.5 ms). Falta repetirla al cielo abierto (S2b).
+- Sensor: smoke test y barridos v3/v4 hechos (11-oct-2026; resultados en la sección 9.2 del Documento Maestro; el v4 no está en el repo). **Barrido v5 en arranque en frío hecho (23-oct-2026): IMP 25 → 23.31 ms (1 ranura); el ADR-011 se sostiene.** Corridas largas a IMP 25: vidrio (24-oct-2026) y **cielo abierto, S2b (26-oct-2026)**: 0 saltos a 2 ranuras con blanco; sin blanco, 3.0–3.3 % de anómalos (±9.5–9.9 ms). **S2 cerrada.** Hallazgo: sin blanco el INT va ~9.9 ms adelantado y en cada cruce la detección cae en la fase con blanco; su efecto en el error lo mide el Exp. 1.
 - Experimento 0b: **hallazgo** (24-oct-2026). El hub puede servir la página: σ ≤ 488 µs con SoftAP + 3 teléfonos (REQ-NF-02 con 10×), 0 pérdidas. Pero la carga sube las ráfagas de resync lentas (mejor rtt > 3 ms) de 14 % a 30 %; el error lo explica la cota (rtt − F)/2. ADR candidato abierto: reintentar ráfagas lentas. Hubo brownout del hub por USB bajo carga.
 - Página del coach (W1): prototipo hecho con hub simulado (24-oct-2026), contrato en `webapp/PROTOCOLO.md`. Falta embeberla (W2).
 - **ADR-013 (24-oct-2026): la placa de producto lleva el módulo WROOM-32UE soldado y la ensambla el fabricante** (reemplaza "tarjeta en headers" del Maestro 12.1). El esquemático lo dibuja el usuario en KiCad con `hardware/guia_esquematico/guia_esquematico.pdf`.
-- Pendientes grandes: S2b, E1 (riel 3.3 V), Experimento 1, esquemático/cotización de la PCB, firmware de producto.
+- Pendientes grandes: E1 (riel 3.3 V), Experimento 1, esquemático/cotización de la PCB, firmware de producto.
 
 ---
 
