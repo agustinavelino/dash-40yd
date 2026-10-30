@@ -27,7 +27,7 @@ Cómo correr lo que ya existe:
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
 | E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 8) (requiere: Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4) | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes | Siguiente en banco |
-| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la guía v2 (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario) |
+| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la guía v3 para KiCad 10, con hoja de referencia rápida (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario) |
 
 ## Siguiente
 
