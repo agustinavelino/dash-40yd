@@ -4,7 +4,7 @@
 > El Documento Maestro manda sobre la arquitectura; este archivo solo dice en qué paso vamos.
 > Cada tarea tiene un **criterio de cierre** medible: si no se cumple, la tarea no está cerrada.
 
-**Última actualización:** 26-oct-2026 (S2b cerrada; Documento Maestro v2.3)
+**Última actualización:** 31-oct-2026 (NTC decidido; compras para E1; v2.2 a history)
 
 ## Cómo retomar (leer primero en un chat nuevo)
 
@@ -14,7 +14,8 @@ Dónde quedó todo al 26-oct-2026:
 - **Lo siguiente en banco, en este orden:**
   1. **E1**: riel de 3.3 V con osciloscopio.
   2. **Experimento 1**: necesita un segundo sensor cableado al nodo. Ahora tiene una pregunta concreta: el cambio de fase de ~9.9 ms en cada cruce (sensor, sección 12.5).
-- **Decisiones del usuario pendientes:** reintento de ráfagas (ADR-012), NTC de la celda, cotización JLCPCB (H2). Ver "Decisiones abiertas".
+- **Decisiones del usuario pendientes:** reintento de ráfagas (ADR-012), cotización JLCPCB (H2).
+- **Compras para E1 (31-oct-2026):** 2 celdas 18650 originales (~3000 mAh, descarga ≥ 10 A), portapilas, TP4056 con protección (azul, USB-C), módulo buck-boost 3.3 V, cargador 5 V / 2 A. El usuario ya tiene osciloscopio. Ver "Decisiones abiertas".
 - Documento Maestro **v2.3** (26-oct-2026) ya incluye S2b, la corrida con vidrio y el ADR-013 (sección 0.4 del Maestro). La v2.2 se movió a `docs/history/` el 31-oct-2026 (autorizado por el usuario).
 
 Cómo correr lo que ya existe:
@@ -49,7 +50,7 @@ Experimento 1 → Experimento 2 (sol y alcance) → ruteo y fabricación de la P
 - **Energía del hub (Exp. 0b):** se mide en E1. 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
 - **Predicción de S2 (corrida al cielo, IMP 25): el usuario no hace predicción** (registrado el 24-oct-2026, antes de correr; para S2b, el 26-oct-2026). Fondo: cortina a ~2 m (más allá del alcance del modo corto, 1.38 m). Referencia: a IMP 20 el régimen inválido dio 13.7 % de anómalos; en régimen válido a IMP 25, 0 saltos en 51 + 119 intervalos.
 - **Idea anotada, fuera de alcance (Maestro 4.1):** recomendaciones por reglas sobre los splits (sección 14.1) en la capa de nube. El Maestro pone la interpretación automática del desempeño como no-objetivo; requeriría un ADR. Los datos llegarían a la nube por el teléfono como puente (descarga de `/api/sesion`) o por el hub como cliente WiFi; ambos usan el formato de `webapp/PROTOCOLO.md`.
-- **ADR-013 (24-oct-2026, aceptado): módulo WROOM-32UE soldado y placa ensamblada por el fabricante** (`docs/adr/ADR-013-modulo-soldado-pcba.md`). Reemplaza la placa portadora con la tarjeta en headers del Maestro 12.1. Un solo USB-C para cargar y programar resuelve la trampa de las dos fuentes en 3V3. ADR-012 queda reservado para el reintento de ráfagas. Pendientes: H2 (códigos LCSC y cotización de 5 placas ensambladas) y decisión sobre el NTC de la celda (TEMP del TP4056: NTC de 10 kΩ en la celda o a GND).
+- **ADR-013 (24-oct-2026, aceptado): módulo WROOM-32UE soldado y placa ensamblada por el fabricante** (`docs/adr/ADR-013-modulo-soldado-pcba.md`). Reemplaza la placa portadora con la tarjeta en headers del Maestro 12.1. Un solo USB-C para cargar y programar resuelve la trampa de las dos fuentes en 3V3. ADR-012 queda reservado para el reintento de ráfagas. Pendiente: H2 (códigos LCSC y cotización de 5 placas ensambladas). **NTC decidido (31-oct-2026, usuario):** el circuito va dibujado aunque salga sin poblar (R23 6.8 kΩ DNP, J5 conector DNP, R24 0 Ω poblada a GND); criterio del usuario: la placa lleva todas las protecciones posibles. Guía del esquemático actualizada.
 - **Cambios para el Documento Maestro:** los pendientes de la v2.3 (corrida con vidrio, S2b, ADR-013, nota del cruce en 16.3) se aplicaron el 26-oct-2026; la sección 0.3 de la v2.3 los lista. Para la v2.4 no hay nada pendiente todavía.
 - **Nuevo (S2b): cambio de fase de ~9.9 ms en cada cruce.** Sin blanco, el INT va ~9.9 ms adelantado; la primera muestra válida llega en la fase con blanco (29/29 cruces al cielo, 30/31 con vidrio). Si la ventana de cuantización de la detección es el intervalo completo (~33.2 ms), σ por sensor ≈ 9.6 ms en vez de 6.73 ms. **No medido:** lo mide el Experimento 1; su predicción escrita (9.5 / 10.7 ms) no se ajusta.
 
