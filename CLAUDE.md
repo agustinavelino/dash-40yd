@@ -46,11 +46,11 @@ Híbrida: la de la sección 13.5 del Documento Maestro para el producto, pero **
 
 ```
 docs/
-  DASH_Documento_Maestro_v2.3.docx   fuente de verdad (la v2.2 sigue aquí hasta moverla a history/)
+  DASH_Documento_Maestro_v2.3.docx   fuente de verdad
   experimento0b_contexto.md          plan del Exp. 0b
   adr/                               ADRs nuevos (ADR-013; ADR-012 reservado para el reintento de ráfagas)
   history/                           obsoleto: no borrar, no usar como especificación
-                                     (bitacora.md, prueba0.md, algoritmo.py, Maestro v2.1)
+                                     (bitacora.md, prueba0.md, algoritmo.py, Maestro v2.1 y v2.2)
 experimentos/
   exp0/                              Experimento 0 — APROBADO
     prueba_0_A/prueba_0_A.ino        hub (versión final)
