@@ -45,7 +45,7 @@ BATP ── Q7 (AO3401A: drain a BATP) ───┘
 ## Consecuencias
 
 - **Programar ya no requiere celda**, pero sí el interruptor encendido: el CH340C se alimenta de +3V3, como en el ADR-013.
-- **Corriente del USB:** ahora el USB entrega carga + sistema (~580 + ~120 mA con R_PROG de 2 kΩ). **Propuesta:** R_PROG = 3 kΩ (~400 mA, tabla del TP4056) para quedar cerca de los 500 mA de un puerto USB 2.0. Una celda de 3 000 mAh carga en ~8 h, de noche. Decisión del usuario, junto con H2.
+- **Corriente del USB:** ahora el USB entrega carga + sistema (~580 + ~120 mA con R_PROG de 2 kΩ). **Decidido (15-nov-2026, usuario):** R_PROG = 3 kΩ (~400 mA, tabla del TP4056), para quedar cerca de los 500 mA de un puerto USB 2.0 (400 + ~120 ≈ 520 mA). A cambio, una celda de 3 000 mAh carga en ~8 h en lugar de ~5.5 h. Sin USB, el consumo del equipo no cambia: R_PROG solo fija la corriente de carga.
 - **Lectura de batería:** el divisor de GPIO34 mide VSYS. Con USB conectado lee ~4.8 V, no la celda. El firmware puede interpretar **VSYS > 4.4 V como "USB conectado / cargando"**; así no hace falta otra señal.
 - **Fuga con el equipo apagado:** sin USB, la celda queda conectada a VBUS a través de la fuga en inversa de D6, y de ahí a GND por R28. Se suma a la del TVS (auditoría, H6). Se mide en la primera placa. R28 es de 10 kΩ y no de 100 kΩ para que esa fuga no suba el voltaje del gate al punto de apagar Q7 en caliente.
 - **Hipótesis para E1, no medida:** el TPS63021 funciona desde 1.8 V de entrada, así que una caída del USB de la laptop casi no lo afecta. Las DevKit regulan con un LDO que necesita ~4.3 V o más; eso podría explicar parte de los brownouts del Exp. 0b alimentado por USB.

@@ -29,7 +29,7 @@ La figura de la aplicación típica de la revisión I (figura 7) **no dibuja la 
 | "Faltan PWR_FLAG" | La guía v3 ya decía "en +3V3 si el ERC lo pide" y advertía en A3 que las piezas importadas traen mal el tipo de pin (se comprobó: todos los pines importados con easyeda2kicad son `unspecified`). Solo faltaba 3V3_MOD, y el ERC lo señala de todos modos | Precisión. Se agregaron 3V3_MOD y las redes nuevas a la lista de PWR_FLAG |
 | "El bulk está en la red equivocada" | Con R14 soldado, +3V3 y 3V3_MOD son el mismo nodo eléctrico | Claridad de texto. La v4 lo pone en 3V3_MOD, junto al pin VDD |
 | "El cable del sensor sale del gabinete: falta protección contra estática y contra cortos" | Salió del Maestro 12.1 ("hacia el gabinete del sensor") y del BOM (8 prensaestopas, cable de 6 hilos). El usuario decidió **un solo gabinete con el sensor adentro**: el cable es interno y corto | Retirado. El Maestro 12.1 y el BOM se corrigen en la v2.4 |
-| "580 mA de carga superan los 500 mA de USB 2.0" | Es cierto según la norma, pero casi ninguna laptop lo hace cumplir | Con el ADR-014 el USB alimenta además al sistema; se propone bajar la carga a 400 mA (ver el ADR) |
+| "580 mA de carga superan los 500 mA de USB 2.0" | Es cierto según la norma, pero casi ninguna laptop lo hace cumplir | Con el ADR-014 el USB alimenta además al sistema; la carga se bajó a 400 mA (R9 = 3 kΩ, decidido el 15-nov; ver el ADR) |
 | "Header de expansión" | No es un error, es una sugerencia | Decisión pendiente del usuario |
 
 ## 3. Decisiones del usuario (11 y 12 de noviembre de 2026)
