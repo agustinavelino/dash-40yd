@@ -1,7 +1,9 @@
 <!doctype html>
 <!-- Fuente de guia_esquematico.pdf. Regenerar con: .venv/bin/python hardware/guia_esquematico/a_pdf.py -->
 <!-- Nombres de símbolos, huellas, atajos y menús verificados contra KiCad 10.0.8 (librerías oficiales y código fuente), 29-oct-2026.
-     Códigos LCSC consultados en el catálogo de JLCPCB el mismo día; las existencias cambian. -->
+     Códigos LCSC consultados en el catálogo de JLCPCB el mismo día; las existencias cambian.
+     v4 (12-nov-2026): cambios de la auditoría (hardware/auditoria_guia_v3.md) y del ADR-014. Las piezas nuevas de la v4
+     (D6, Q7, R25–R30, TH1, J6, J7, H1–H4) usan símbolos y huellas estándar de KiCad que NO se verificaron uno por uno contra 10.0.8. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -64,7 +66,19 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <body>
 
 <h1>Guía del esquemático — placa de nodo DASH</h1>
-<div class="sub">Para dibujarlo en <b>KiCad 10</b> · versión 3, 29 de octubre de 2026 · Fuente: Documento Maestro v2.3 (11.2, 12, 15.1) y ADR-013 (módulo soldado, ensamblado por el fabricante)</div>
+<div class="sub">Para dibujarlo en <b>KiCad 10</b> · versión 4, 12 de noviembre de 2026 · Fuente: Documento Maestro v2.3 (11.2, 12, 15.1), ADR-013 (módulo soldado, ensamblado por el fabricante), ADR-014 (carga compartida) y la auditoría de la v3 (<code>hardware/auditoria_guia_v3.md</code>)</div>
+
+<div class="caja">
+  <h3>Qué cambió en la versión 4</h3>
+  <ul style="margin:0">
+    <li><b>TPS63021 completo según su hoja de datos</b>: PS/SYNC, VINA y PG; salida de 3 × 22 µF y entrada de 2 × 10 µF + 47 µF (la v3 sugería 10 µF).</li>
+    <li><b>Carga compartida</b> (ADR-014): con USB, el sistema se alimenta del USB y la carga termina bien. Se programa sin celda.</li>
+    <li><b>R4 y R14 sin poblar</b> (se sueldan a mano tras probar cada bloque) y pads para medir corriente junto a R4.</li>
+    <li><b>NTC de la celda poblado</b>; <b>NTC de placa</b> a GPIO35 para medir la temperatura en campo.</li>
+    <li><b>Header de programación</b> de respaldo (sin poblar), <b>buzzer en las 4 unidades</b>, <b>agujeros de montaje</b>.</li>
+    <li>Designadores repetidos corregidos (R23/R24) y redes nuevas: <code>VPATH</code>, <code>VBB</code>, <code>3V3_MOD</code>, <code>TEMP_ADC</code>.</li>
+  </ul>
+</div>
 
 <p>Esta guía te lleva de un KiCad vacío a un <b>esquemático completo y revisado</b> de la única placa del sistema: la misma para las 4 puertas, con el rol elegido por jumpers (ADR-009). El ruteo, la cotización y la fabricación vienen después y esperan a las mediciones de la sección 8.</p>
 
@@ -82,7 +96,8 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <p>Cada decisión lleva una etiqueta con su firmeza:</p>
 <ul>
   <li><span class="e f">MAESTRO</span> lo pide el Documento Maestro. No se cambia sin un ADR.</li>
-  <li><span class="e a">ADR-013</span> sale de la decisión de soldar el módulo y mandar a ensamblar (<code>docs/adr/ADR-013-modulo-soldado-pcba.md</code>).</li>
+  <li><span class="e a">ADR-013</span> sale de la decisión de soldar el módulo y mandar a ensamblar (<code>docs/adr/ADR-013-modulo-soldado-pcba.md</code>). <span class="e a">ADR-014</span> sale de la carga compartida (<code>docs/adr/ADR-014-carga-compartida.md</code>).</li>
+  <li><span class="e f">DECIDIDO</span> lo decidió el usuario en la auditoría (<code>hardware/auditoria_guia_v3.md</code>, sección 3).</li>
   <li><span class="e p">PROPUESTA</span> la propongo yo para completar el diseño. Puedes cambiarla; si la cambias, anótalo.</li>
   <li><span class="e x">PENDIENTE</span> depende de una medición, una hoja de datos o una cotización. Se dibuja, pero no se cierra.</li>
 </ul>
@@ -92,7 +107,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 </div>
 
 <h2>1. Qué es esta placa</h2>
-<p>El <b>módulo ESP32-WROOM-32UE va soldado</b> <span class="e a">ADR-013</span>. Es la pieza metálica que ya trae el chip, la memoria flash, el cristal y el conector U.FL para la antena externa. Alrededor van: un USB-C para <b>cargar y programar</b>, el cargador con protección de la celda, el buck-boost de 3.3 V, el conector del sensor, el LED, el buzzer, los jumpers de rol y los test points. Todo lo SMD en una sola cara, para que el fabricante lo ensamble.</p>
+<p>El <b>módulo ESP32-WROOM-32UE va soldado</b> <span class="e a">ADR-013</span>. Es la pieza metálica que ya trae el chip, la memoria flash, el cristal y el conector U.FL para la antena externa. Alrededor van: un USB-C para <b>cargar y programar</b>, el cargador con protección de la celda y carga compartida, el buck-boost de 3.3 V, el conector del sensor, el LED, el buzzer, el DIP de rol, dos NTC (celda y placa), un header de programación de respaldo y los test points. Todo va en un solo gabinete, con el sensor adentro. Todo lo SMD en una sola cara, para que el fabricante lo ensamble.</p>
 
 <svg viewBox="0 0 760 360" role="img" aria-label="Diagrama de bloques">
   <defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
@@ -118,20 +133,20 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
     <text x="545" y="44" text-anchor="middle" font-weight="700">Buck-boost</text><text x="545" y="62" text-anchor="middle" font-size="10.5">TPS63021 → 3V3</text>
     <text x="690" y="44" text-anchor="middle" font-weight="700">Riel 3V3</text><text x="690" y="62" text-anchor="middle" font-size="10.5">bulk 470 µF</text>
     <text x="70" y="134" text-anchor="middle" font-weight="700">USB-C</text><text x="70" y="152" text-anchor="middle" font-size="10.5">cargar y programar</text>
-    <text x="230" y="134" text-anchor="middle" font-weight="700">Cargador TP4056</text><text x="230" y="152" text-anchor="middle" font-size="10.5">5 V del USB → celda</text>
+    <text x="230" y="134" text-anchor="middle" font-weight="700">Cargador TP4056</text><text x="230" y="152" text-anchor="middle" font-size="10">+ carga compartida</text>
     <text x="610" y="160" text-anchor="middle" font-weight="700" font-size="13">ESP32-WROOM-32UE (soldado)</text>
     <text x="610" y="180" text-anchor="middle" font-size="10.5">EN e IO0 con botones · antena U.FL → SMA</text>
     <text x="610" y="198" text-anchor="middle" font-size="10.5">I2C 21/22 · INT 16 · XSHUT 17</text>
     <text x="610" y="216" text-anchor="middle" font-size="10.5">UART0 ↔ CH340C (USB-serial + auto-reset)</text>
     <text x="110" y="224" text-anchor="middle" font-weight="700">Conector del sensor</text><text x="110" y="242" text-anchor="middle" font-size="10.5">6 vías · load switch</text>
-    <text x="340" y="224" text-anchor="middle" font-weight="700">Interfaz</text><text x="340" y="242" text-anchor="middle" font-size="10.5">LED · buzzer (hub) · botones</text>
-    <text x="110" y="304" text-anchor="middle" font-weight="700">Jumpers de rol</text><text x="110" y="322" text-anchor="middle" font-size="10.5">2 bits → 4 roles</text>
-    <text x="340" y="304" text-anchor="middle" font-weight="700">Medición de batería</text><text x="340" y="322" text-anchor="middle" font-size="10.5">divisor → GPIO34</text>
+    <text x="340" y="224" text-anchor="middle" font-weight="700">Interfaz</text><text x="340" y="242" text-anchor="middle" font-size="10.5">LED · buzzer (todas) · botones</text>
+    <text x="110" y="304" text-anchor="middle" font-weight="700">DIP de rol</text><text x="110" y="322" text-anchor="middle" font-size="10.5">2 bits → 4 roles</text>
+    <text x="340" y="304" text-anchor="middle" font-weight="700">Batería y temperatura</text><text x="340" y="322" text-anchor="middle" font-size="10.5">VSYS → GPIO34 · NTC → GPIO35</text>
     <text x="610" y="305" text-anchor="middle" font-weight="700">Test points</text><text x="610" y="323" text-anchor="middle" font-size="10.5">VBUS · BATP · VSYS · 3V3 · GND · I2C · INT · XSHUT</text>
     <g stroke="#111" stroke-width="1.6" fill="none" marker-end="url(#fl)">
       <path d="M130,48 H158"/><path d="M300,48 H328"/><path d="M460,48 H488"/><path d="M600,48 H628"/>
       <path d="M690,76 V128"/>
-      <path d="M130,138 H158"/><path d="M230,110 V78"/>
+      <path d="M130,138 H158"/><path d="M230,110 V78"/><path d="M300,128 H395 V78"/>
       <path d="M210,228 H238" marker-end="none"/><path d="M468,228 H440" marker-start="url(#fl)" marker-end="none"/>
       <path d="M210,308 H238" marker-end="none"/>
     </g>
@@ -139,7 +154,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
     <text x="300" y="177" font-size="10" fill="#555">D+/D− del USB al CH340C</text>
   </g>
 </svg>
-<p class="leyenda">Flechas: camino de la energía. Los 5 V del USB solo alimentan el cargador; el ESP32 siempre se alimenta de la celda a través del buck-boost. La línea punteada son los datos del USB.</p>
+<p class="leyenda">Flechas: camino de la energía. Sin USB, el sistema se alimenta de la celda. Con USB, los 5 V cargan la celda y, por un diodo, alimentan la <b>entrada</b> del buck-boost (ADR-014). El ESP32 siempre recibe 3.3 V del buck-boost y nunca 5 V. La línea punteada son los datos del USB.</p>
 
 <h2>2. Antes de abrir KiCad</h2>
 <ol>
@@ -158,11 +173,11 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <h3>Organización en KiCad</h3>
 <table>
   <tr><th>Hoja</th><th>Contenido</th></tr>
-  <tr><td>1_energia</td><td>Batería, protección, interruptor, buck-boost, bulk, medición de batería</td></tr>
-  <tr><td>2_usb_carga</td><td>USB-C, protección ESD, cargador TP4056, CH340C y auto-reset</td></tr>
-  <tr><td>3_esp32</td><td>Módulo, desacoplo, EN e IO0, jumpers de rol</td></tr>
+  <tr><td>1_energia</td><td>Batería, protección, carga compartida, interruptor, buck-boost, bulk, medición de batería y NTC de placa</td></tr>
+  <tr><td>2_usb_carga</td><td>USB-C, protección ESD, cargador TP4056 con NTC de la celda, CH340C y auto-reset</td></tr>
+  <tr><td>3_esp32</td><td>Módulo, desacoplo, EN e IO0, DIP de rol</td></tr>
   <tr><td>4_sensor</td><td>Conector de 6 vías, resistencias serie I2C, load switch, pull-ups opcionales</td></tr>
-  <tr><td>5_interfaz_prueba</td><td>LED, buzzer, botones, test points, notas de serigrafía</td></tr>
+  <tr><td>5_interfaz_prueba</td><td>LED, buzzer, botones, header de programación, test points, agujeros de montaje, notas de serigrafía</td></tr>
 </table>
 
 <h3>Nombres de las redes</h3>
@@ -170,8 +185,8 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <table>
   <tr><th>Cómo se pone</th><th>Redes</th></tr>
   <tr><td>Símbolo de energía <kbd>P</kbd></td><td><code>+3V3</code> (símbolo <code>power:+3V3</code>; en el texto lo llamo "riel 3V3"), <code>GND</code> (<code>power:GND</code>, tierra del sistema), <code>VBUS</code> (<code>power:VBUS</code>)</td></tr>
-  <tr><td>Etiqueta global, energía</td><td><code>VBAT</code> (celda), <code>BAT-</code> (negativo de la celda), <code>BATP</code> (tras la protección), <code>VSYS</code> (tras el interruptor), <code>SENS_VIN</code></td></tr>
-  <tr><td>Etiqueta global, señales</td><td><code>USB_DP</code>, <code>USB_DN</code>, <code>TXD0</code>, <code>RXD0</code>, <code>DTR</code>, <code>RTS</code>, <code>EN</code>, <code>IO0</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>, <code>SENS_EN</code>, <code>LED</code>, <code>BUZZ</code>, <code>ROL0</code>, <code>ROL1</code>, <code>BTN_A</code>, <code>BTN_B</code>, <code>VBAT_ADC</code></td></tr>
+  <tr><td>Etiqueta global, energía</td><td><code>VBAT</code> (celda), <code>BAT-</code> (negativo de la celda), <code>BATP</code> (tras la protección), <code>VPATH</code> (salida de la carga compartida, antes del interruptor), <code>VSYS</code> (tras el interruptor), <code>VBB</code> (entrada del buck-boost, tras R4), <code>3V3_MOD</code> (pin VDD del módulo, tras R14), <code>SENS_VIN</code></td></tr>
+  <tr><td>Etiqueta global, señales</td><td><code>USB_DP</code>, <code>USB_DN</code>, <code>TXD0</code>, <code>RXD0</code>, <code>CH_TXD</code>, <code>DTR</code>, <code>RTS</code>, <code>EN</code>, <code>IO0</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>, <code>SENS_EN</code>, <code>LED</code>, <code>BUZZ</code>, <code>ROL0</code>, <code>ROL1</code>, <code>BTN_A</code>, <code>BTN_B</code>, <code>VBAT_ADC</code>, <code>TEMP_ADC</code></td></tr>
 </table>
 <p class="leyenda">Ojo: no uses <code>power:GND</code> para <code>BAT-</code>. Son redes distintas (caja roja de la sección 4).</p>
 
@@ -188,13 +203,14 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td class="m">17</td><td class="m">IO17</td><td>SENS_XSHUT</td><td>Salida OD</td><td>Se suelta en alta impedancia, nunca se fuerza a alto</td><td><span class="e f">MAESTRO</span></td></tr>
   <tr><td class="m">27</td><td class="m">IO27</td><td>SENS_EN</td><td>Salida</td><td>Load switch del sensor (en bajo = sensor encendido)</td><td><span class="e p">PROPUESTA</span></td></tr>
   <tr><td class="m">25</td><td class="m">IO25</td><td>LED</td><td>Salida</td><td>LED indicador con 100 Ω</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">26</td><td class="m">IO26</td><td>BUZZ</td><td>Salida PWM</td><td>Buzzer pasivo vía transistor; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">26</td><td class="m">IO26</td><td>BUZZ</td><td>Salida PWM</td><td>Buzzer pasivo vía transistor; poblado en las 4 unidades</td><td><span class="e f">DECIDIDO</span></td></tr>
   <tr><td class="m">32 / 33</td><td class="m">IO32 · IO33</td><td>ROL0 / ROL1</td><td>Entrada</td><td>Jumpers a GND; pull-up interno</td><td><span class="e p">PROPUESTA</span></td></tr>
   <tr><td class="m">13 / 19</td><td class="m">IO13 · IO19</td><td>BTN_A / BTN_B</td><td>Entrada</td><td>Botones a GND; sin poblar en nodos</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">34</td><td class="m">IO34</td><td>VBAT_ADC</td><td>Analógica</td><td>ADC1 (funciona con WiFi). Solo entrada</td><td><span class="e p">PROPUESTA</span></td></tr>
-  <tr><td class="m">resto</td><td class="m">IO2, IO4, IO5, IO12, IO14, IO15, IO18, IO23, IO35, SENSOR_VP, SENSOR_VN, NC</td><td>—</td><td>—</td><td>"No connect" (<kbd>Q</kbd>). Ver A6</td><td></td></tr>
+  <tr><td class="m">34</td><td class="m">IO34</td><td>VBAT_ADC</td><td>Analógica</td><td>ADC1 (funciona con WiFi). Solo entrada. Mide <code>VSYS</code>: con USB conectado lee ~4.8 V, así que el firmware puede tomar VSYS &gt; 4.4 V como "USB conectado" (ADR-014)</td><td><span class="e p">PROPUESTA</span></td></tr>
+  <tr><td class="m">35</td><td class="m">IO35</td><td>TEMP_ADC</td><td>Analógica</td><td>NTC de placa (temperatura dentro del gabinete). ADC1, solo entrada</td><td><span class="e f">DECIDIDO</span></td></tr>
+  <tr><td class="m">resto</td><td class="m">IO2, IO4, IO5, IO12, IO14, IO15, IO18, IO23, SENSOR_VP, SENSOR_VN, NC</td><td>—</td><td>—</td><td>"No connect" (<kbd>Q</kbd>). Ver A6</td><td></td></tr>
 </table>
-<p><b>Roles con 2 jumpers</b> <span class="e p">PROPUESTA</span>: interruptor cerrado = 0, abierto = 1. 00 = inicio (0 yd), 01 = split 10 yd, 10 = split 20 yd, 11 = meta + hub (40 yd; con todo abierto, porque es la unidad que más se usa sola en banco). Para que el fabricante lo ensamble, usa un DIP switch SMD de 2 posiciones en lugar de headers con jumper.</p>
+<p><b>Roles con 2 jumpers</b> <span class="e p">PROPUESTA</span>: interruptor cerrado = 0, abierto = 1. 00 = inicio (0 yd), 01 = split 10 yd, 10 = split 20 yd, 11 = meta + hub (40 yd; con todo abierto, porque es la unidad que más se usa sola en banco). Para que el fabricante lo ensamble, usa un DIP switch SMD de 2 posiciones en lugar de headers con jumper. <span class="e f">DECIDIDO</span>: el DIP se fija una vez al armar cada unidad y el rol se rotula por fuera del gabinete (texto y color). Se descartaron un selector rotativo (16 posiciones para 4 roles) y el rol en el código (rompe el binario único del ADR-009).</p>
 
 <!-- ======================= PARTE A ======================= -->
 <div class="salto"></div>
@@ -288,7 +304,15 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 </ol>
 
 <h3>A8. Piezas sin poblar (DNP)</h3>
-<p>Selecciona la pieza → <kbd>E</kbd> → casilla <b>Do not populate</b> (también en <span class="menu">Edit → Attributes → Do not Populate</span>). KiCad la tacha en el esquemático y la marca en la BOM. Van DNP: los pull-ups opcionales del sensor, el circuito del NTC (R23 y J5), y el buzzer y los botones de interfaz (el hub los pobla).</p>
+<p>Selecciona la pieza → <kbd>E</kbd> → casilla <b>Do not populate</b> (también en <span class="menu">Edit → Attributes → Do not Populate</span>). KiCad la tacha en el esquemático y la marca en la BOM. Van DNP:</p>
+<ul>
+  <li><b>R4 y R14</b> (puentes de 0 Ω): se sueldan a mano después de probar cada bloque (sección 7). Si van en la BOM, JLC los suelda en todas las placas.</li>
+  <li><b>R24</b> (0 Ω de TEMP a GND): ya no hace falta, porque el NTC de la celda va poblado.</li>
+  <li>Los <b>pull-ups opcionales del sensor</b> (R20–R22).</li>
+  <li>Los <b>botones de interfaz</b> SW4/SW5 y sus capacitores (el hub los pobla a mano si los necesita).</li>
+  <li>El <b>header de programación</b> J6 y los pads de corriente J7 (son huellas para usar a mano).</li>
+</ul>
+<p>El <b>buzzer ya no es DNP</b>: va en las 4 unidades.</p>
 <p class="leyenda">KiCad 10 trae <b>variantes de diseño</b> (<span class="menu">Tools → Variants</span>): servirían para una BOM "hub" y otra "nodo". Es opcional; con DNP basta para la v0.1.</p>
 
 <h3>A9. Numerar (anotar)</h3>
@@ -308,7 +332,8 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <p>Una advertencia que decidas aceptar se excluye con clic derecho → <b>Exclude</b>, y se deja una nota de texto (<kbd>T</kbd>) junto a ella explicando por qué.</p>
 
 <h3>A11. PWR_FLAG</h3>
-<p>Pon un <code>PWR_FLAG</code> (<kbd>P</kbd> → <code>PWR_FLAG</code>) en: <code>VBAT</code>, <code>BAT-</code>, <code>GND</code>, <code>VBUS</code>, <code>BATP</code> y <code>VSYS</code>. En <code>+3V3</code> solo si el ERC lo pide (depende de cómo venga marcado el pin VOUT del TPS63021 importado).</p>
+<p>Pon un <code>PWR_FLAG</code> (<kbd>P</kbd> → <code>PWR_FLAG</code>) en: <code>VBAT</code>, <code>BAT-</code>, <code>GND</code>, <code>VBUS</code>, <code>BATP</code>, <code>VPATH</code>, <code>VSYS</code>, <code>VBB</code>, <code>+3V3</code> y <code>3V3_MOD</code>.</p>
+<p class="leyenda">En <code>+3V3</code> sí hace falta: todos los pines que importó easyeda2kicad vienen como <code>unspecified</code> (revisado en <code>lib/dash.kicad_sym</code>), así que KiCad no sabe que VOUT del TPS63021 es una fuente. Por lo mismo, el ERC no va a detectar errores de tipo de pin en las piezas importadas: revísalas a mano (A3).</p>
 
 <h3>A12. Exportar y guardar</h3>
 <ol class="pasos">
@@ -331,18 +356,37 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 </div>
 
 <h2>4. Energía (hoja 1_energia)</h2>
-<p>El orden, desde la celda: conector → protección → (aquí se conecta el cargador) → interruptor → buck-boost → riel 3V3.</p>
+<p>El orden, desde la celda: conector → protección (<code>BATP</code>; aquí se conecta el cargador) → carga compartida (<code>VPATH</code>) → interruptor (<code>VSYS</code>) → R4 (<code>VBB</code>) → buck-boost → riel 3V3.</p>
 <ol>
   <li><b>Conector de batería</b> <span class="e f">MAESTRO</span>: JST-PH de 2 pines SMD, polarizado. Redes <code>VBAT</code> y <code>BAT-</code>.</li>
   <li><b>MOSFET-P de polaridad inversa</b> <span class="e f">MAESTRO</span>: drain a <code>VBAT</code>, source hacia la carga y gate a <code>BAT-</code> con 100 kΩ. De umbral bajo (AO3401A): a 3.0 V de celda debe conducir bien.</li>
   <li><b>Fusible PTC</b> en serie <span class="e f">MAESTRO</span>, de sostén 1.5 A <span class="e p">PROPUESTA</span>, con margen sobre los picos del radio. Se ajusta con la medición de la sección 8. Salida: <code>BATP</code>.</li>
   <li><b>TVS</b> entre <code>BATP</code> y <code>BAT-</code> <span class="e f">MAESTRO</span>: unidireccional de 5 V (SMAJ5.0A), cátodo a <code>BATP</code>.</li>
   <li><b>Protección de la celda</b>: DW01A + FS8205A (dos MOSFET-N en un encapsulado) en el <b>lado negativo</b>, entre <code>BAT-</code> y <code>GND</code> <span class="e a">ADR-013</span>. Pines del símbolo <code>DW01A</code>: <code>VCC</code> a <code>BATP</code> por 100 Ω, con 100 nF de <code>VCC</code> a <code>BAT-</code>; <code>GND</code> del DW01A a <code>BAT-</code>; <code>OD</code> y <code>OC</code> a las dos compuertas del FS8205A; <code>CS</code> a <code>GND</code> por 2 kΩ; <code>TD</code> sin conectar (<kbd>Q</kbd>). Corta la celda por sobrecarga, sobredescarga y cortocircuito.</li>
-  <li><b>Interruptor</b> <span class="e f">MAESTRO</span>: conector JST de 2 pines hacia el interruptor del gabinete, entre <code>BATP</code> y <code>VSYS</code>. El cargador queda <b>antes</b> del interruptor, así que la celda se carga con el sistema apagado.</li>
-  <li><b>Buck-boost TPS63021</b> (salida fija de 3.3 V; el TPS63020 es la versión ajustable) <span class="e a">ADR-013</span>: <code>VSYS</code> → <code>+3V3</code>. Es un VSON-14 de 3 × 4 mm con almohadilla térmica (a GND). Del circuito típico: inductor de 1.5 µH con corriente de saturación ≥ 3 A entre <code>L1</code> y <code>L2</code>, capacitores cerámicos a la entrada y a la salida (los valores de la hoja de datos), <code>EN</code> a <code>VIN</code> y <code>FB</code> a <code>VOUT</code>. Para <code>PS/SYNC</code>, el nivel que <b>desactiva el modo de ahorro</b>: menos rizo con los picos del radio a cambio de unos mA más; verifica el nivel en la hoja de datos <span class="e p">PROPUESTA</span>. <b>Solo había 184 piezas en existencia</b> el 29-oct <span class="e x">PENDIENTE</span>.</li>
-  <li><b>Bulk de 470 µF</b> en <code>+3V3</code>, junto al pin de alimentación del módulo <span class="e f">MAESTRO</span>. Polímero o tántalo SMD. Su valor final sale de la sección 8 <span class="e x">PENDIENTE</span>.</li>
-  <li><b>Puente de 0 Ω</b> en <code>VSYS</code>, antes del buck-boost <span class="e p">PROPUESTA</span>: se deja sin soldar en la primera energización (ver sección 7).</li>
-  <li><b>Medición de batería</b> <span class="e p">PROPUESTA</span>: divisor de 100 kΩ / 100 kΩ desde <code>VSYS</code> a <code>VBAT_ADC</code> (GPIO34), con 100 nF a GND. 4.2 V quedan en 2.1 V. Va después del interruptor para que no descargue la celda con el sistema apagado.</li>
+  <li><b>Carga compartida</b> <span class="e a">ADR-014</span>: tres piezas entre <code>BATP</code>, <code>VBUS</code> y <code>VPATH</code>.
+    <ul>
+      <li><b>D6</b>, Schottky B5819W: ánodo a <code>VBUS</code>, cátodo a <code>VPATH</code>.</li>
+      <li><b>Q7</b>, MOSFET-P AO3401A: <b>drain a <code>BATP</code></b>, <b>source a <code>VPATH</code></b>, gate a <code>VBUS</code>.</li>
+      <li><b>R28</b>, 10 kΩ de gate (<code>VBUS</code>) a <code>GND</code>.</li>
+    </ul>
+    Sin USB, R28 jala el gate a GND, Q7 conduce y la celda alimenta <code>VPATH</code>. Con USB, el gate sube a 5 V, Q7 se apaga y <code>VPATH</code> queda a ~4.8 V por D6: el sistema come del USB y la celda solo se carga, así que la carga termina bien. Ojo con la orientación de Q7: al revés (source a <code>BATP</code>), su diodo interno pasa los 5 V del USB directo a la celda, saltándose el cargador.</li>
+  <li><b>Interruptor</b> <span class="e f">MAESTRO</span>: conector JST de 2 pines hacia el interruptor del gabinete, entre <code>VPATH</code> y <code>VSYS</code>. El cargador queda <b>antes</b> del interruptor, así que la celda se carga con el sistema apagado. El interruptor tiene que ser <b>de enclavamiento</b> (se queda en su posición) y aguantar ≥ 2 A.</li>
+  <li><b>Buck-boost TPS63021</b> (salida fija de 3.3 V; el TPS63020 es la versión ajustable) <span class="e a">ADR-013</span>: <code>VBB</code> → <code>+3V3</code>. Es un VSON-14 de 3 × 4 mm con almohadilla térmica (a GND). Según la hoja de datos (TI SLVS916I, sección 8.2):
+    <ul>
+      <li><code>VIN</code> (pines 10 y 11) a <code>VBB</code>. <code>VOUT</code> (4 y 5) a <code>+3V3</code>. <code>FB</code> a <code>VOUT</code> (versión fija). <code>GND</code> y <code>PGND</code>/almohadilla a <code>GND</code>.</li>
+      <li>Inductor de <b>1.5 µH</b>, con corriente de saturación ≥ 3 A, entre <code>L1</code> y <code>L2</code>.</li>
+      <li><code>EN</code> a <code>VIN</code>.</li>
+      <li><code>PS/SYNC</code> a <code>VIN</code>: <b>no puede quedar al aire</b>. En alto desactiva el modo de ahorro: menos rizo con los picos del radio, a cambio de unos mA más.</li>
+      <li><code>VINA</code> a <code>VIN</code>, con <b>100 nF</b> de <code>VINA</code> a GND (la hoja de datos pide no pasar de 0.22 µF). <span class="e x">PENDIENTE</span>: la figura 7 de la revisión I de la hoja no dibuja la unión VINA–VIN, pero todas sus condiciones de prueba usan VIN = VINA. Confírmalo con el esquemático de la tarjeta de evaluación de TI.</li>
+      <li><code>PG</code> (power good) <b>al aire</b> (<kbd>Q</kbd>): la hoja de datos dice que puede quedar abierto.</li>
+      <li>Salida: <b>3 × 22 µF</b> cerámicos pegados a <code>VOUT</code>/<code>PGND</code>. La tabla 1 de la hoja solo admite 2×22, 3×22, 4×22 o ≥ 100 µF con 1.5 µH; con 10 µF (lo que decía la v3) queda fuera.</li>
+      <li>Entrada: <b>2 × 10 µF</b> cerámicos pegados a <code>VIN</code>, más <b>47 µF</b> de bulk: la hoja lo pide si la fuente está a más de unos centímetros, y aquí la celda llega por cables y pasa por el interruptor.</li>
+    </ul>
+    <b>Solo había 184 piezas en existencia</b> el 29-oct <span class="e x">PENDIENTE</span>.</li>
+  <li><b>Bulk de 470 µF</b> en <code>3V3_MOD</code>, junto al pin <code>VDD</code> del módulo (después de R14) <span class="e f">MAESTRO</span>. Polímero o tántalo SMD. La hoja del TPS63021 dice que la capacidad de salida no tiene límite superior, así que no hay problema de estabilidad. Su valor final sale de la sección 8 <span class="e x">PENDIENTE</span>.</li>
+  <li><b>Puente de 0 Ω R4</b> entre <code>VSYS</code> y <code>VBB</code>, <b>sin poblar (DNP)</b> <span class="e p">PROPUESTA</span>: se suelda a mano después de probar el bloque de energía (sección 7). Junto a él, <b>J7</b>: dos pads de 2.54 mm en paralelo con R4, sin poblar. Con R4 quitado, un amperímetro entre los pads de J7 mide el consumo de toda la placa (para la prueba de autonomía, REQ-NF-05).</li>
+  <li><b>Medición de batería</b> <span class="e p">PROPUESTA</span>: divisor de 100 kΩ / 100 kΩ desde <code>VSYS</code> a <code>VBAT_ADC</code> (GPIO34), con 100 nF a GND. 4.2 V quedan en 2.1 V. Va después del interruptor para que no descargue la celda con el sistema apagado. Con USB conectado mide ~4.8 V (los del diodo), no la celda: el firmware lo usa para saber que hay USB.</li>
+  <li><b>NTC de placa</b> <span class="e f">DECIDIDO</span>: TH1, NTC de <b>100 kΩ</b> (B ≈ 3950) en 0603 de <code>TEMP_ADC</code> a GND; R29 de 100 kΩ de <code>+3V3</code> a <code>TEMP_ADC</code>; C18 de 100 nF de <code>TEMP_ADC</code> a GND; <code>TEMP_ADC</code> a GPIO35. Va en la placa, lo más cerca posible de la celda. Con el NTC hacia GND, el voltaje queda en el rango bueno del ADC (~0.15–2.45 V) del lado caliente: 1.65 V a 25 °C, 0.66 V a 60 °C, 0.37 V a 80 °C. Consumo del divisor: ~16 µA. <span class="e x">PENDIENTE</span>: que haya NTC de 100 kΩ en 0603 en el catálogo. Si no hay, NTC de 10 kΩ con R29 de 10 kΩ, pero alimentando el divisor desde un GPIO libre que solo se prende al medir: fijo, gastaría ~165 µA siempre, unas 3 veces todo el consumo dormido.</li>
 </ol>
 
 <div class="caja ojo">
@@ -361,27 +405,35 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td>R2 · C1</td><td>Filtro de VCC del DW01A</td><td>Device:<wbr>R · Device:<wbr>C</td><td>R_<wbr>0603 · C_<wbr>0603</td><td>100 · 100nF</td><td>C22775 · C14663</td></tr>
   <tr><td>R3</td><td>CS del DW01A</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>2k</td><td>C22975</td></tr>
   <tr><td>Q2</td><td>Doble MOSFET-N</td><td>dash:<wbr>FS8205A</td><td>dash:<wbr> (importada, SOT-23-6)</td><td>FS8205A</td><td>C2830320</td></tr>
+  <tr><td>D6</td><td>Diodo de la carga compartida</td><td>Device:<wbr>D_<wbr>Schottky</td><td>Diode_<wbr>SMD:<wbr>D_<wbr>SOD-123</td><td>B5819W</td><td>C8598 · Basic (verificar)</td></tr>
+  <tr><td>Q7</td><td>MOSFET de la carga compartida</td><td>Transistor_<wbr>FET:<wbr>AO3401A</td><td>(la trae) SOT-23</td><td>AO3401A</td><td>C15127 · Basic</td></tr>
+  <tr><td>R28</td><td>Gate de Q7 a GND</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>10k</td><td>C25804 · Basic</td></tr>
   <tr><td>J2</td><td>Al interruptor del gabinete</td><td>Connector_<wbr>Generic:<wbr>Conn_<wbr>01x02</td><td>igual que J1</td><td>SW_ON</td><td>igual que J1</td></tr>
-  <tr><td>R4</td><td>Puente 0 Ω en VSYS</td><td>Device:<wbr>R</td><td>R_<wbr>1206 (aguanta más corriente)</td><td>0</td><td>C17888 · Basic</td></tr>
+  <tr><td>R4</td><td>Puente 0 Ω VSYS → VBB (<b>DNP</b>)</td><td>Device:<wbr>R</td><td>R_<wbr>1206 (aguanta más corriente)</td><td>0</td><td>C17888 · Basic (se suelda a mano)</td></tr>
+  <tr><td>J7</td><td>Pads para amperímetro, en paralelo con R4 (DNP)</td><td>Connector_<wbr>Generic:<wbr>Conn_<wbr>01x02</td><td>Connector_<wbr>PinHeader_<wbr>2.54mm:<wbr>PinHeader_<wbr>1x02_<wbr>P2.54mm_<wbr>Vertical</td><td>I_MEDIR</td><td>sin LCSC (huella para usar a mano)</td></tr>
   <tr><td>U2</td><td>Buck-boost 3.3 V</td><td>dash:<wbr>TPS63021DSJR</td><td>dash:<wbr> (importada, VSON-14 3×4)</td><td>TPS63021</td><td>C202140 · 184 en stock <span class="e x">PENDIENTE</span></td></tr>
   <tr><td>L1</td><td>Inductor 1.5 µH</td><td>Device:<wbr>L</td><td>dash:<wbr> (importada, 5×5 mm)</td><td>1.5uH</td><td>C5120877 (4 A) <span class="e p">PROPUESTA</span></td></tr>
-  <tr><td>C2–C4…</td><td>Entrada/salida del TPS63021</td><td>Device:<wbr>C</td><td>C_<wbr>0805</td><td>según hoja de datos</td><td>10 µF: C15850 · Basic</td></tr>
-  <tr><td>C5</td><td>Bulk del riel 3V3</td><td>Device:<wbr>C_<wbr>Polarized</td><td>dash:<wbr> o Capacitor_<wbr>Tantalum_<wbr>SMD:<wbr>CP_<wbr>EIA-7343-31_<wbr>Kemet-D</td><td>470uF 6.3V</td><td>C76438 (polímero, 35 mΩ) <span class="e x">PENDIENTE</span></td></tr>
+  <tr><td>C2 · C3</td><td>Entrada del TPS63021 (2 × 10 µF)</td><td>Device:<wbr>C</td><td>C_<wbr>0805</td><td>10uF</td><td>C15850 · Basic</td></tr>
+  <tr><td>C19</td><td>Bulk de entrada del TPS63021</td><td>Device:<wbr>C</td><td>C_<wbr>1206 (Capacitor_<wbr>SMD:<wbr>C_<wbr>1206_<wbr>3216Metric)</td><td>47uF 10V</td><td>busca "47uF 1206" en Basic <span class="e x">PENDIENTE</span></td></tr>
+  <tr><td>C4</td><td>VINA del TPS63021</td><td>Device:<wbr>C</td><td>C_<wbr>0603</td><td>100nF</td><td>C14663 · Basic</td></tr>
+  <tr><td>C20–C22</td><td>Salida del TPS63021 (3 × 22 µF)</td><td>Device:<wbr>C</td><td>C_<wbr>0805</td><td>22uF</td><td>busca "22uF 0805" en Basic (X5R, ≥ 10 V) <span class="e x">PENDIENTE</span></td></tr>
+  <tr><td>C5</td><td>Bulk del módulo (en 3V3_MOD)</td><td>Device:<wbr>C_<wbr>Polarized</td><td>dash:<wbr> o Capacitor_<wbr>Tantalum_<wbr>SMD:<wbr>CP_<wbr>EIA-7343-31_<wbr>Kemet-D</td><td>470uF 6.3V</td><td>C76438 (polímero, 35 mΩ) <span class="e x">PENDIENTE</span></td></tr>
   <tr><td>R5 · R6 · C6</td><td>Divisor de batería</td><td>Device:<wbr>R · Device:<wbr>C</td><td>R_<wbr>0603 · C_<wbr>0603</td><td>100k · 100k · 100nF</td><td>C25803 · C14663</td></tr>
+  <tr><td>TH1 · R29 · C18</td><td>NTC de placa y su divisor</td><td>Device:<wbr>Thermistor_<wbr>NTC · Device:<wbr>R · Device:<wbr>C</td><td>R_<wbr>0603 · R_<wbr>0603 · C_<wbr>0603</td><td>100k B3950 · 100k · 100nF</td><td>NTC: busca "NTC 0603 100k 3950" <span class="e x">PENDIENTE</span> · C25803 · C14663</td></tr>
 </table>
 
 <h2>5. USB, carga y programación (hoja 2_usb_carga)</h2>
 <ol>
   <li><b>USB-C de 16 pines</b> (solo USB 2.0) <span class="e a">ADR-013</span>. En el símbolo de KiCad, los pines <code>D+</code> y <code>D-</code> salen <b>dos veces</b> (A6/B6 y A7/B7): une los dos D+ entre sí y los dos D- entre sí, para que funcione con el cable en cualquier orientación. <code>CC1</code> y <code>CC2</code>, cada uno con su propia resistencia de <b>5.1 kΩ a GND</b>: sin ellas, un cargador USB-C no entrega 5 V. <code>SBU1</code>/<code>SBU2</code> sin conectar. <code>SHIELD</code> a GND <span class="e p">PROPUESTA</span>.</li>
-  <li><b>Protección ESD</b> en D+/D− y VBUS (USBLC6-2SC6) <span class="e p">PROPUESTA</span>: el conector queda expuesto en el gabinete.</li>
-  <li><b>Cargador TP4056</b> <span class="e a">ADR-013</span>. El símbolo de KiCad es la versión <code>TP4056-42</code>, que tiene un pin <code>CE</code> (habilitar): va a <code>V_CC</code>, o el cargador nunca arranca. <code>V_CC</code> a <code>VBUS</code>, <code>BAT</code> a <code>BATP</code>, <code>GND</code> y <code>EPAD</code> a <code>GND</code>. Capacitores de 10 µF en <code>V_CC</code> y en <code>BAT</code>. La resistencia de <code>PROG</code> fija la corriente de carga: 2 kΩ ≈ 580 mA <span class="e p">PROPUESTA</span>, suave para la celda y con menos calor dentro del gabinete (1.2 kΩ ≈ 1 A). <code>TEMP</code> <span class="e a">DECIDIDO 31-oct</span>: el circuito del NTC <b>va dibujado</b>, aunque la primera placa salga sin poblarlo. R23 (6.8 kΩ, DNP) de <code>V_CC</code> a <code>TEMP</code>; J5 (conector de 2 pines, DNP) de <code>TEMP</code> a <code>GND</code>, para el NTC de 10 kΩ pegado a la celda con dos cables; R24 (0 Ω, <b>poblada</b>) de <code>TEMP</code> a <code>GND</code>, que desactiva el corte mientras no haya NTC. Para activarlo: quitar R24 y soldar R23 y el NTC. El TP4056 deja de cargar si <code>TEMP</code> sale de 45–80 % de <code>V_CC</code>; con 6.8 kΩ y un NTC B = 3950 eso da una ventana de ~3 a ~41 °C <span class="e p">PROPUESTA</span>: recalcular con la curva del NTC que se compre. <code>~CHRG</code> y <code>~STDBY</code> a dos LED (rojo y verde) con 1 kΩ desde <code>VBUS</code>.</li>
-  <li><b>CH340C</b> (USB-serial, no necesita cristal) <span class="e a">ADR-013</span>: <code>VCC</code> y <code>V3</code> a <code>+3V3</code>, cada uno con 100 nF; <code>UD+</code>/<code>UD-</code> a <code>USB_DP</code>/<code>USB_DN</code>; <code>TXD</code> → <code>RXD0</code> y <code>RXD</code> ← <code>TXD0</code>; <code>~DTR</code> y <code>~RTS</code> a las etiquetas <code>DTR</code> y <code>RTS</code>. <code>~CTS</code>, <code>~DSR</code>, <code>~RI</code>, <code>~DCD</code>, <code>R232</code> y <code>NC</code>: "no connect" (revisa en la hoja de datos que <code>R232</code> pueda quedar libre). Se alimenta del riel de 3.3 V: <b>para programar, el interruptor tiene que estar encendido</b>. A cambio, sus niveles quedan en 3.3 V, que es lo que tolera el ESP32.</li>
+  <li><b>Protección ESD</b> en D+/D− y VBUS (USBLC6-2SC6) <span class="e p">PROPUESTA</span>: el conector se usa desde fuera del gabinete. <span class="e f">DECIDIDO</span>: el USB-C va en una <b>orilla de la placa</b>, alineado con un hoyo en la pared del gabinete y tapado con un tapón de TPU.</li>
+  <li><b>Cargador TP4056</b> <span class="e a">ADR-013</span>. El símbolo de KiCad es la versión <code>TP4056-42</code>, que tiene un pin <code>CE</code> (habilitar): va a <code>V_CC</code>, o el cargador nunca arranca. <code>V_CC</code> a <code>VBUS</code>, <code>BAT</code> a <code>BATP</code>, <code>GND</code> y <code>EPAD</code> a <code>GND</code>. Capacitores de 10 µF en <code>V_CC</code> y en <code>BAT</code>. La resistencia de <code>PROG</code> fija la corriente de carga: <b>3 kΩ ≈ 400 mA</b> <span class="e p">PROPUESTA</span> (ADR-014). Con la carga compartida, el USB entrega la carga más el sistema (~120 mA): con 3 kΩ el total queda cerca de los 500 mA de un puerto USB 2.0. Una celda de 3 000 mAh carga en ~8 h. Con 2 kΩ serían ~580 mA, y con 1.2 kΩ ~1 A (más calor dentro del gabinete). <code>TEMP</code> <span class="e f">DECIDIDO</span>: <b>el NTC de la celda va poblado</b> (11-nov; antes, 31-oct, iba dibujado y sin poblar). R23 (6.8 kΩ, poblada) de <code>V_CC</code> a <code>TEMP</code>; J5 (conector de 2 pines, poblado) de <code>TEMP</code> a <code>GND</code>, para el NTC de 10 kΩ pegado a la celda con dos cables; R24 (0 Ω, <b>DNP</b>) de <code>TEMP</code> a <code>GND</code>, que solo se suelda para desactivar el corte si algún día no hay NTC. El TP4056 deja de cargar si <code>TEMP</code> sale de 45–80 % de <code>V_CC</code>. Con 6.8 kΩ y un NTC B = 3950 eso da una ventana de <b>~4 a ~39 °C</b> (recalculado en la auditoría; la v3 decía ~3 a ~41 °C) <span class="e p">PROPUESTA</span>: recalcular con la curva del NTC que se compre. Este NTC solo funciona <b>mientras carga</b> (su divisor se alimenta de VBUS); en campo, la temperatura la mide el NTC de placa (sección 4). <code>~CHRG</code> y <code>~STDBY</code> a dos LED (rojo y verde) con 1 kΩ desde <code>VBUS</code>.</li>
+  <li><b>CH340C</b> (USB-serial, no necesita cristal) <span class="e a">ADR-013</span>: <code>VCC</code> y <code>V3</code> a <code>+3V3</code>, cada uno con 100 nF; <code>UD+</code>/<code>UD-</code> a <code>USB_DP</code>/<code>USB_DN</code>; <code>TXD</code> → <code>CH_TXD</code> → <b>R27 de 1 kΩ</b> → <code>RXD0</code>, y <code>RXD</code> ← <code>TXD0</code>. R27 <span class="e p">PROPUESTA</span> permite que un adaptador externo en el header J6 se imponga sobre el CH340C: sin ella, las dos salidas pelean por <code>RXD0</code>. A 921 600 baud, 1 kΩ con ~20 pF retrasa el flanco ~20 ns, nada frente a un bit de ~1 µs; <code>~DTR</code> y <code>~RTS</code> a las etiquetas <code>DTR</code> y <code>RTS</code>. <code>~CTS</code>, <code>~DSR</code>, <code>~RI</code>, <code>~DCD</code>, <code>R232</code> y <code>NC</code>: "no connect" (revisa en la hoja de datos que <code>R232</code> pueda quedar libre). Se alimenta del riel de 3.3 V: <b>para programar, el interruptor tiene que estar encendido</b> (con el ADR-014 ya no hace falta celda). A cambio, sus niveles quedan en 3.3 V, que es lo que tolera el ESP32.</li>
   <li><b>Auto-reset</b> <span class="e a">ADR-013</span>: el circuito de dos NPN de la DevKitC. Q3 con base a <code>DTR</code> por 10 kΩ, emisor a <code>RTS</code> y colector a <code>EN</code>. Q4 con base a <code>RTS</code> por 10 kΩ, emisor a <code>DTR</code> y colector a <code>IO0</code>. Con eso, el IDE y arduino-cli programan sin tocar botones, igual que con tus placas de banco.</li>
 </ol>
 <div class="caja">
-  <h3>Por qué esto resuelve el problema de las dos fuentes</h3>
-  <p>Los 5 V del USB van <b>solo</b> al cargador. El ESP32 y el CH340C siempre se alimentan de <code>+3V3</code>, que solo viene del buck-boost. Nunca hay dos reguladores empujando el mismo riel, que era el problema de la versión con tarjeta enchufada.</p>
-  <p style="margin:0"><b>Limitación conocida:</b> el TP4056 no separa la carga de la celda del consumo del sistema. Si cargas con el interruptor encendido, la carga puede no terminar bien. Por eso el cargador va antes del interruptor y la regla es: <b>cargar con el sistema apagado y nunca en campo</b> (Maestro 12.4). Ponlo en la serigrafía.</p>
+  <h3>Por qué sigue habiendo una sola fuente en el riel de 3.3 V</h3>
+  <p>Los 5 V del USB van al cargador y, a través de D6, a la <b>entrada</b> del buck-boost (ADR-014); nunca al riel. El ESP32 y el CH340C siempre se alimentan de <code>+3V3</code>, que solo viene del buck-boost. Nunca hay dos reguladores empujando el mismo riel, que era el problema de la versión con tarjeta enchufada. La entrada del TPS63021 acepta hasta 5.5 V; el USB llega como máximo a ~5.25–5.5 V, menos los ~0.15–0.4 V del diodo.</p>
+  <p style="margin:0"><b>Con la carga compartida, la carga termina bien aunque el sistema esté encendido.</b> La regla del Maestro (12.4) sigue siendo <b>no cargar en campo</b>. La parte de "no cargar con el gabinete cerrado" queda a revisión para la v2.4 del Maestro (auditoría, sección 4), porque el USB ahora se usa desde fuera con tapón y el NTC va poblado. Ponlo en la serigrafía.</p>
 </div>
 
 <table class="piezas">
@@ -391,13 +443,14 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td>U3</td><td>Protección ESD</td><td>Power_<wbr>Protection:<wbr>USBLC6-2SC6</td><td>(la trae) SOT-23-6</td><td>USBLC6-2SC6</td><td>C7519</td></tr>
   <tr><td>U4</td><td>Cargador</td><td>Battery_<wbr>Management:<wbr>TP4056-42-ESOP8</td><td>(la trae) Package_<wbr>SO:<wbr>SOIC-8-1EP_<wbr>3.9x4.9mm_<wbr>P1.27mm_<wbr>EP2.41x3.3mm_<wbr>ThermalVias</td><td>TP4056</td><td>C16581</td></tr>
   <tr><td>C7 · C8</td><td>V_CC y BAT del TP4056</td><td>Device:<wbr>C</td><td>C_<wbr>0805</td><td>10uF</td><td>C15850 · Basic</td></tr>
-  <tr><td>R9</td><td>PROG</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>2k</td><td>C22975</td></tr>
+  <tr><td>R9</td><td>PROG (≈ 400 mA)</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>3k</td><td>busca "3kΩ 0603" en Basic <span class="e p">PROPUESTA</span></td></tr>
   <tr><td>D2 · D3</td><td>LED de carga (rojo) y terminado (verde)</td><td>Device:<wbr>LED</td><td>LED_<wbr>0603</td><td>rojo · verde</td><td>rojo C2286 · Basic; verde: busca "LED 0603 green" con stock</td></tr>
   <tr><td>R10 · R11</td><td>Resistencias de los LED</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>1k</td><td>C21190</td></tr>
-  <tr><td>J5</td><td>Conector del NTC de la celda (DNP)</td><td>Connector_<wbr>Generic:<wbr>Conn_<wbr>01x02</td><td>JST-PH 2 pines (igual que J1)</td><td>NTC</td><td>el NTC va en la celda, no en la placa</td></tr>
-  <tr><td>R23</td><td>Divisor del NTC (DNP)</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>6.8k</td><td>C23212 · Basic</td></tr>
-  <tr><td>R24</td><td>TEMP a GND sin NTC (poblada)</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>0</td><td>C21189 · Basic</td></tr>
+  <tr><td>J5</td><td>Conector del NTC de la celda</td><td>Connector_<wbr>Generic:<wbr>Conn_<wbr>01x02</td><td>JST-PH 2 pines (igual que J1)</td><td>NTC</td><td>igual que J1; el NTC de 10 kΩ va pegado a la celda, no en la placa</td></tr>
+  <tr><td>R23</td><td>Divisor del NTC de la celda</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>6.8k</td><td>C23212 · Basic</td></tr>
+  <tr><td>R24</td><td>TEMP a GND, solo sin NTC (DNP)</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>0</td><td>C21189 · Basic</td></tr>
   <tr><td>U5</td><td>USB-serial</td><td>Interface_<wbr>USB:<wbr>CH340C</td><td>(la trae) Package_<wbr>SO:<wbr>SOIC-16_<wbr>3.9x9.9mm_<wbr>P1.27mm</td><td>CH340C</td><td>C84681</td></tr>
+  <tr><td>R27</td><td>Serie en TXD del CH340C</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>1k</td><td>C21190</td></tr>
   <tr><td>C9 · C10</td><td>VCC y V3 del CH340C</td><td>Device:<wbr>C</td><td>C_<wbr>0603</td><td>100nF</td><td>C14663</td></tr>
   <tr><td>Q3 · Q4</td><td>Auto-reset</td><td>Transistor_<wbr>BJT:<wbr>MMBT3904</td><td>(la trae) SOT-23</td><td>MMBT3904</td><td>C20526 · Basic</td></tr>
   <tr><td>R12 · R13</td><td>Bases de Q3 y Q4</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>10k</td><td>C25804 · Basic</td></tr>
@@ -407,18 +460,19 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <ol>
   <li><b>Módulo WROOM-32UE</b> con todos sus pines <code>GND</code> a GND. La <b>almohadilla central</b> también es GND: en el símbolo de KiCad va incluida en los pines GND (en la PCB se le ponen varias vías al plano).</li>
   <li><b>Desacoplo</b> en el pin <code>VDD</code> del módulo: 10 µF + 100 nF (diseño de Espressif) más el 1 µF que pide el Maestro <span class="e f">MAESTRO</span>, lo más cerca posible del pin.</li>
-  <li><b>Puente de 0 Ω</b> en <code>+3V3</code> antes del módulo <span class="e p">PROPUESTA</span> (ver sección 7). Del lado del módulo, la red cambia de nombre: etiqueta <code>3V3_MOD</code> entre el puente y el pin <code>VDD</code>.</li>
+  <li><b>Puente de 0 Ω R14</b> en <code>+3V3</code> antes del módulo, <b>sin poblar (DNP)</b> <span class="e p">PROPUESTA</span> (ver sección 7). Del lado del módulo, la red cambia de nombre: etiqueta <code>3V3_MOD</code> entre el puente y el pin <code>VDD</code>. El desacoplo de este punto y el <b>bulk de 470 µF (C5)</b> van en <code>3V3_MOD</code>.</li>
   <li><b>EN</b>: 10 kΩ a +3V3, 1 µF a GND (el retardo de arranque que recomienda Espressif) y botón RESET a GND.</li>
   <li><b>IO0</b>: 10 kΩ a +3V3 y botón BOOT a GND. Los dos botones son de respaldo por si el auto-reset falla; se pueblan en todas las placas.</li>
   <li><b>IO2, IO5, IO12 e IO15</b>: "no connect". No les pongas nada. Lo mismo para todos los pines de la última fila de la tabla de la sección 3.</li>
   <li><b>Antena</b>: el conector U.FL ya viene en el módulo; un cable U.FL a SMA lo lleva a la antena del gabinete. No hay nada que dibujar, pero deja libre el espacio alrededor del conector en la PCB.</li>
   <li><b>Roles</b>: DIP switch de 2 posiciones entre <code>ROL0</code>/<code>ROL1</code> y <code>GND</code>.</li>
+  <li><b>Flash</b>: la tabla pone el módulo de 4 MB (N4). Si más adelante se decide la actualización por WiFi (OTA), hacen falta dos copias del programa en la flash y quizá convenga el de 8 MB (N8). <span class="e x">PENDIENTE</span>: se decide cuando esté definido el firmware del hub, midiendo el tamaño de su binario.</li>
 </ol>
 <table class="piezas">
   <tr><th>Ref</th><th>Qué es</th><th>Símbolo</th><th>Huella</th><th>Valor</th><th>LCSC</th></tr>
   <tr><td>U6</td><td>Módulo ESP32</td><td>RF_<wbr>Module:<wbr>ESP32-WROOM-32UE</td><td>(la trae) RF_<wbr>Module:<wbr>ESP32-WROOM-32UE</td><td>ESP32-WROOM-32UE-N4</td><td>C701344 (4 MB de flash)</td></tr>
   <tr><td>C11 · C12 · C13</td><td>Desacoplo del VDD</td><td>Device:<wbr>C</td><td>C_<wbr>0805 · C_<wbr>0603 · C_<wbr>0603</td><td>10uF · 100nF · 1uF</td><td>C15850 · C14663 · C15849</td></tr>
-  <tr><td>R14</td><td>Puente 0 Ω en +3V3</td><td>Device:<wbr>R</td><td>R_<wbr>1206</td><td>0</td><td>C17888</td></tr>
+  <tr><td>R14</td><td>Puente 0 Ω +3V3 → 3V3_MOD (<b>DNP</b>)</td><td>Device:<wbr>R</td><td>R_<wbr>1206</td><td>0</td><td>C17888 (se suelda a mano)</td></tr>
   <tr><td>R15 · C14</td><td>RC de EN</td><td>Device:<wbr>R · Device:<wbr>C</td><td>R_<wbr>0603 · C_<wbr>0603</td><td>10k · 1uF</td><td>C25804 · C15849</td></tr>
   <tr><td>R16</td><td>Pull-up de IO0</td><td>Device:<wbr>R</td><td>R_<wbr>0603</td><td>10k</td><td>C25804</td></tr>
   <tr><td>SW1 · SW2</td><td>RESET y BOOT</td><td>Switch:<wbr>SW_<wbr>Push</td><td>dash:<wbr> (importada, 5.1×5.1 mm)</td><td>RESET · BOOT</td><td>C318884 (TS-1187A-B-A-B) · Basic</td></tr>
@@ -431,8 +485,9 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <li><b>Conector JST-PH de 6 vías</b> <span class="e f">MAESTRO</span>: 1 <code>SENS_VIN</code>, 2 <code>GND</code>, 3 <code>SDA</code>, 4 <code>SCL</code>, 5 <code>SENS_INT</code>, 6 <code>SENS_XSHUT</code>.</li>
   <li><b>33 Ω en serie</b> en SDA y SCL, del lado del ESP32 <span class="e f">MAESTRO</span>. Las etiquetas <code>SDA</code>/<code>SCL</code> van del lado del ESP32; del lado del conector, ponles <code>SDA_J</code>/<code>SCL_J</code> para que sean redes distintas.</li>
   <li><b>Load switch</b> <span class="e f">MAESTRO</span>: MOSFET-P (AO3401A) con source en <code>+3V3</code>, drain en <code>SENS_VIN</code>, gate a <code>SENS_EN</code> (GPIO27) y 10 kΩ de gate a <code>+3V3</code> <span class="e p">PROPUESTA</span>: mientras el ESP32 arranca, el sensor queda apagado. Pon 1 µF en <code>SENS_VIN</code>.</li>
-  <li><b>Pull-ups opcionales</b>, marcados como DNP <span class="e x">PENDIENTE</span>: 4.7 kΩ de SDA y SCL y 10 kΩ de <code>SENS_INT</code>, todos a <code>SENS_VIN</code>, no a +3V3. Con el sensor apagado, un pull-up a +3V3 lo alimentaría "por detrás" a través de sus pines. Solo se pueblan si el breakout no los trae (Maestro 12.2).</li>
+  <li><b>Pull-ups opcionales</b>, marcados como DNP <span class="e f">DECIDIDO</span>: 4.7 kΩ de SDA y SCL y 10 kΩ de <code>SENS_INT</code>, todos a <code>SENS_VIN</code>, no a +3V3. Con el sensor apagado, un pull-up a +3V3 lo alimentaría "por detrás" a través de sus pines. <b>No se pueblan</b>: el módulo TOF400C ya trae 10 kΩ de SDA a VIN (medido por el usuario, 11-nov). Son un seguro por si algún día se quiere I2C a 400 kHz: con 10 kΩ el bus tendría que tener menos de ~35 pF.</li>
   <li><code>SENS_XSHUT</code> directo al GPIO17, sin pull-up propio <span class="e f">MAESTRO</span>.</li>
+  <li><b>Montaje</b> <span class="e f">DECIDIDO</span>: el sensor va <b>dentro del mismo gabinete</b>, en una pieza impresa en cuña (ventana paralela al sensor, visera y empaque; cuñas de 15°, 20° y 25°). J4 se conecta al sensor con un cable interno corto. El Maestro 12.1 todavía dice "hacia el gabinete del sensor"; se corrige en la v2.4.</li>
 </ol>
 <table class="piezas">
   <tr><th>Ref</th><th>Qué es</th><th>Símbolo</th><th>Huella</th><th>Valor</th><th>LCSC</th></tr>
@@ -445,24 +500,28 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 
 <h3>Interfaz (hoja 5_interfaz_prueba)</h3>
 <ul>
-  <li><b>LED</b>: GPIO25 → 100 Ω → LED → GND <span class="e f">MAESTRO</span>. En el símbolo <code>Device:LED</code>, el triángulo apunta del ánodo (A) al cátodo (K): el cátodo va a GND.</li>
-  <li><b>Buzzer pasivo</b> (DNP salvo en el hub) <span class="e f">MAESTRO</span>: GPIO26 → 1 kΩ → base de un NPN, emisor a GND. Buzzer entre +3V3 y el colector, con diodo de rueda libre (cátodo a +3V3) si es magnético.</li>
+  <li><b>LED</b>: GPIO25 → 100 Ω → LED → GND <span class="e f">MAESTRO</span>. En el símbolo <code>Device:LED</code>, el triángulo apunta del ánodo (A) al cátodo (K): el cátodo va a GND. En la PCB, ponlo en una orilla, alineado con una ventanita o guía de luz del gabinete: si no se ve desde fuera, no sirve.</li>
+  <li><b>Buzzer pasivo</b> <span class="e f">DECIDIDO</span>: <b>poblado en las 4 unidades</b> (el Maestro 12.1 lo ponía solo en el hub). Además de los avisos del hub, ayuda a alinear los trípodes: pita al detectar (REQ-NF-04, instalar en ≤ 10 min). GPIO26 → 1 kΩ → base de un NPN, emisor a GND. Buzzer entre +3V3 y el colector, con diodo de rueda libre (cátodo a +3V3) si es magnético. <span class="e x">PENDIENTE</span>: elegir uno más grande que el MLT-5030 (≥ 12 mm, 2–4 kHz, de excitación externa). El gabinete lleva un orificio acústico con membrana impermeable o una pared delgada frente al buzzer. Criterio propuesto: se escucha a 15 m con ruido de entrenamiento.</li>
   <li><b>Botones</b> (DNP en nodos) <span class="e f">MAESTRO</span>: GPIO13 y GPIO19 a GND, con 100 nF en paralelo.</li>
+  <li><b>Header de programación J6</b> (DNP) <span class="e f">DECIDIDO</span>: huella de header 1×6 de 2.54 mm con <code>+3V3</code>, <code>GND</code>, <code>TXD0</code>, <code>RXD0</code>, <code>EN</code> e <code>IO0</code>. Es el plan B si el USB o el CH340C fallan: se suelda un header y se programa con un adaptador USB-serial o una DevKit. Gracias a R27 (sección 5), el adaptador externo se impone sobre el CH340C en <code>RXD0</code>. El auto-reset es de colector abierto, así que tampoco pelea en <code>EN</code> ni en <code>IO0</code>.</li>
+  <li><b>Agujeros de montaje</b> <span class="e f">DECIDIDO</span>: H1–H4, símbolo <code>Mechanical:MountingHole</code>, huella <code>MountingHole:MountingHole_3.2mm_M3</code>. No llevan LCSC ni van en la BOM. Su posición se fija en la PCB; el gabinete se diseña alrededor de la placa.</li>
 </ul>
 <table class="piezas">
   <tr><th>Ref</th><th>Qué es</th><th>Símbolo</th><th>Huella</th><th>Valor</th><th>LCSC</th></tr>
-  <tr><td>D4 · R23</td><td>LED indicador</td><td>Device:<wbr>LED · Device:<wbr>R</td><td>LED_<wbr>0603 · R_<wbr>0603</td><td>rojo · 100</td><td>C2286 · C22775</td></tr>
-  <tr><td>BZ1</td><td>Buzzer (DNP)</td><td>Device:<wbr>Buzzer</td><td>dash:<wbr> (importada)</td><td>BUZZER</td><td>C95297 (MLT-5030): confirma que es pasivo <span class="e x">PENDIENTE</span></td></tr>
-  <tr><td>Q6 · R24</td><td>Driver del buzzer (DNP)</td><td>Transistor_<wbr>BJT:<wbr>MMBT3904 · Device:<wbr>R</td><td>(la trae) · R_<wbr>0603</td><td>MMBT3904 · 1k</td><td>C20526 · C21190</td></tr>
-  <tr><td>D5</td><td>Rueda libre (DNP)</td><td>Diode:<wbr>1N4148W</td><td>(la trae) Diode_<wbr>SMD:<wbr>D_<wbr>SOD-123</td><td>1N4148W</td><td>C81598 · Basic</td></tr>
+  <tr><td>D4 · R25</td><td>LED indicador</td><td>Device:<wbr>LED · Device:<wbr>R</td><td>LED_<wbr>0603 · R_<wbr>0603</td><td>rojo · 100</td><td>C2286 · C22775</td></tr>
+  <tr><td>BZ1</td><td>Buzzer (en las 4)</td><td>Device:<wbr>Buzzer</td><td>dash:<wbr> (importar la pieza elegida)</td><td>BUZZER</td><td>≥ 12 mm, 2–4 kHz, pasivo; el MLT-5030 (C95297) es de 5 mm <span class="e x">PENDIENTE</span></td></tr>
+  <tr><td>Q6 · R26</td><td>Driver del buzzer</td><td>Transistor_<wbr>BJT:<wbr>MMBT3904 · Device:<wbr>R</td><td>(la trae) · R_<wbr>0603</td><td>MMBT3904 · 1k</td><td>C20526 · C21190</td></tr>
+  <tr><td>D5</td><td>Rueda libre (si el buzzer es magnético)</td><td>Diode:<wbr>1N4148W</td><td>(la trae) Diode_<wbr>SMD:<wbr>D_<wbr>SOD-123</td><td>1N4148W</td><td>C81598 · Basic</td></tr>
   <tr><td>SW4 · SW5 · C16 · C17</td><td>Botones A y B (DNP)</td><td>Switch:<wbr>SW_<wbr>Push · Device:<wbr>C</td><td>dash:<wbr> (como SW1) · C_<wbr>0603</td><td>BTN_A · BTN_B · 100nF</td><td>C318884 · C14663</td></tr>
+  <tr><td>J6</td><td>Header de programación (DNP)</td><td>Connector_<wbr>Generic:<wbr>Conn_<wbr>01x06</td><td>Connector_<wbr>PinHeader_<wbr>2.54mm:<wbr>PinHeader_<wbr>1x06_<wbr>P2.54mm_<wbr>Vertical</td><td>PROG</td><td>sin LCSC (se suelda a mano si hace falta)</td></tr>
+  <tr><td>H1–H4</td><td>Agujeros de montaje M3</td><td>Mechanical:<wbr>MountingHole</td><td>MountingHole:<wbr>MountingHole_<wbr>3.2mm_<wbr>M3</td><td>M3</td><td>no van en la BOM</td></tr>
 </table>
 
 <h3>Prueba y serigrafía</h3>
 <ul>
-  <li><b>Test points</b> <span class="e f">MAESTRO</span>: <code>+3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>. Agrega <code>VBUS</code>, <code>BATP</code> y <code>VSYS</code>, y al menos dos de GND junto a los de energía <span class="e p">PROPUESTA</span>. Símbolo <code>Connector:TestPoint</code>, huella <code>TestPoint:TestPoint_Pad_D1.5mm</code> (un pad de cobre: no cuesta ensamblado y no lleva LCSC). Márcalos con <b>Exclude from Bill of Materials</b> (<kbd>E</kbd>).</li>
-  <li><b>Puentes de 0 Ω</b> (R4 en <code>VSYS</code> y R14 en <code>+3V3</code>) <span class="e p">PROPUESTA</span>. En la primera energización de cada placa se prueba cada bloque por separado: si el buck-boost sale mal, no se lleva al ESP32 de corbata. Es la mitigación principal del riesgo de no poder rehacer la placa (ADR-013).</li>
-  <li><b>Serigrafía</b> <span class="e f">MAESTRO</span>: proyecto, versión y fecha; función y pin 1 de cada conector; tabla de roles; autor y URL del repositorio; "Cargar apagado". En el esquemático, déjalo como nota de texto (<kbd>T</kbd>) en esta hoja; se dibuja en la PCB.</li>
+  <li><b>Test points</b> <span class="e f">MAESTRO</span>: <code>+3V3</code>, <code>GND</code>, <code>SDA</code>, <code>SCL</code>, <code>SENS_INT</code>, <code>SENS_XSHUT</code>. Agrega <code>VBUS</code>, <code>BATP</code>, <code>VPATH</code>, <code>VSYS</code>, <code>VBB</code>, <code>3V3_MOD</code> y <code>TEMP_ADC</code>, y al menos dos de GND junto a los de energía <span class="e p">PROPUESTA</span>. Símbolo <code>Connector:TestPoint</code>, huella <code>TestPoint:TestPoint_Pad_D1.5mm</code> (un pad de cobre: no cuesta ensamblado y no lleva LCSC). Márcalos con <b>Exclude from Bill of Materials</b> (<kbd>E</kbd>).</li>
+  <li><b>Puentes de 0 Ω</b> (R4 de <code>VSYS</code> a <code>VBB</code> y R14 de <code>+3V3</code> a <code>3V3_MOD</code>), <b>sin poblar en la BOM</b> <span class="e p">PROPUESTA</span>. En la primera energización de cada placa se prueba cada bloque por separado y los puentes se sueldan a mano: primero la energía hasta <code>VSYS</code>; luego R4 y se mide <code>+3V3</code>; luego R14 y arranca el ESP32. Si el buck-boost sale mal, no se lleva al ESP32 de corbata. Es la mitigación principal del riesgo de no poder rehacer la placa (ADR-013). La auditoría (H2) detectó que en la v3 iban en la BOM: JLC los habría soldado.</li>
+  <li><b>Serigrafía</b> <span class="e f">MAESTRO</span>: proyecto, versión y fecha; función y pin 1 de cada conector; tabla de roles; autor y URL del repositorio; "No cargar en campo". En el esquemático, déjalo como nota de texto (<kbd>T</kbd>) en esta hoja; se dibuja en la PCB.</li>
 </ul>
 
 <h2>8. Medición del riel de 3.3 V con el osciloscopio</h2>
@@ -496,9 +555,9 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <li>Dibujar las hojas 1 y 2 copiando los circuitos típicos de las hojas de datos.</li>
   <li>Dibujar las hojas 3, 4 y 5.</li>
   <li>"No connect" en IO2, IO5, IO12, IO15 y en los demás pines del módulo que no se usan.</li>
-  <li><code>PWR_FLAG</code> en <code>VBAT</code>, <code>BAT-</code>, <code>GND</code>, <code>VBUS</code>, <code>BATP</code> y <code>VSYS</code> (A11).</li>
+  <li><code>PWR_FLAG</code> en <code>VBAT</code>, <code>BAT-</code>, <code>GND</code>, <code>VBUS</code>, <code>BATP</code>, <code>VPATH</code>, <code>VSYS</code>, <code>VBB</code>, <code>+3V3</code> y <code>3V3_MOD</code> (A11).</li>
   <li>Valor y huella en cada pieza; columna <code>LCSC</code> llena con Bulk Edit Symbol Fields (A7).</li>
-  <li>Marcar <b>DNP</b>: pull-ups opcionales, NTC, buzzer y botones de interfaz (A8).</li>
+  <li>Marcar <b>DNP</b>: R4, R14, R24, pull-ups opcionales, botones de interfaz, J6 y J7 (A8).</li>
   <li>Anotar (A9).</li>
   <li><b>ERC</b> en cero errores; las advertencias que aceptes, excluidas y con una nota de texto (A10).</li>
   <li>Exportar el PDF y la BOM a <code>hardware/</code> (A12), y pasármelos para revisarlos y hacer el commit.</li>
@@ -507,7 +566,11 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <h3>Cómo lo revisamos</h3>
 <ul>
   <li><b>ERC</b> sin errores; cada GPIO de la sección 3, una sola vez y en su red.</li>
-  <li><b>VBUS</b> solo llega al cargador, al ESD y a los LED de carga; nunca a +3V3 ni a VSYS.</li>
+  <li><b>VBUS</b> solo llega al cargador, al ESD, a los LED de carga, al ánodo de D6 y al gate de Q7 (con R28 a GND); nunca a +3V3.</li>
+  <li><b>Q7</b> con drain a <code>BATP</code> y source a <code>VPATH</code> (al revés, el USB carga la celda saltándose el TP4056).</li>
+  <li><b>TPS63021</b>: PS/SYNC y EN a VIN; VINA a VIN con 100 nF; PG al aire; 3 × 22 µF a la salida y 2 × 10 µF + 47 µF a la entrada.</li>
+  <li><b>R4 y R14</b> marcados DNP; el bulk C5 en <code>3V3_MOD</code>.</li>
+  <li><b>R27</b> entre el TXD del CH340C y <code>RXD0</code>; J6 con 3V3, GND, TXD0, RXD0, EN e IO0.</li>
   <li><b>BAT- y GND</b> son redes distintas, unidas solo por el FS8205A.</li>
   <li><b>GPIO12</b> sin nada conectado; EN con su RC; IO0 con pull-up.</li>
   <li><b>XSHUT</b> sin pull-up propio; los pull-ups opcionales van a SENS_VIN.</li>
@@ -522,9 +585,14 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td>Existencias del TPS63021 (184 piezas el 29-oct)</td><td>Buck-boost o su encapsulado</td><td>Revisar al cotizar; si no alcanza, buscar equivalente y registrar el cambio</td></tr>
   <tr><td>Disponibilidad y costo en el catálogo del fabricante</td><td>Piezas equivalentes, presupuesto (Maestro 15.2)</td><td>Códigos LCSC y cotización de 5 placas ensambladas</td></tr>
   <tr><td>Huellas importadas (FS8205A, TPS63021, inductor, botones, DIP, buzzer)</td><td>Footprints</td><td>Compararlas con el dibujo de la hoja de datos antes de rutear</td></tr>
-  <tr><td>Pull-ups de I2C e INT, I2C a 400 kHz</td><td>Poblar o no las resistencias DNP</td><td>Revisar el breakout y probar 400 kHz</td></tr>
-  <tr><td>Termistor de la celda (TP4056 TEMP)</td><td>Poblar R23 + NTC y quitar R24</td><td>Decidido: circuito dibujado, DNP en la primera placa</td></tr>
-  <tr><td>Experimentos 2 y 3</td><td>Posición de conectores, gabinete, ventana</td><td>Plan de validación (Maestro 16)</td></tr>
+  <tr><td>I2C a 400 kHz</td><td>Poblar o no las resistencias DNP</td><td>Cerrado para la v0.1: el módulo trae 10 kΩ (medido) y basta a 100 kHz. Solo se reabre si se quiere 400 kHz</td></tr>
+  <tr><td>VINA del TPS63021</td><td>Una conexión</td><td>Comparar con el esquemático de la tarjeta de evaluación de TI (la figura 7 de la revisión I no la dibuja)</td></tr>
+  <tr><td>Piezas sin código LCSC todavía (D6 a verificar, 22 µF, 47 µF, R9 de 3 kΩ, NTC de 100 kΩ, buzzer)</td><td>BOM</td><td>H2. Si no hay NTC de 100 kΩ, usar el de 10 kΩ con el divisor alimentado desde un GPIO (sección 4)</td></tr>
+  <tr><td>Buzzer</td><td>Pieza, huella y orificio del gabinete</td><td>Elegir uno ≥ 12 mm; criterio propuesto: se escucha a 15 m con ruido de entrenamiento</td></tr>
+  <tr><td>Flash N4 contra N8</td><td>Variante del módulo</td><td>Medir el binario del hub cuando esté definido su firmware y decidir la OTA</td></tr>
+  <tr><td>Consumo con el interruptor apagado</td><td>TVS (D1) y diodo D6</td><td>Medirlo en la primera placa. El SMAJ5.0A especifica hasta 800 µA de fuga a 5 V (LCSC C10758); a 4.2 V debería ser mucho menor, pero no hay dato. Criterio propuesto: ≤ 20 µA <span class="e p">PROPUESTA</span></td></tr>
+  <tr><td>Header de expansión (GPIO libres a pads sin poblar)</td><td>Un conector más</td><td>Decisión pendiente del usuario (auditoría, sección 2)</td></tr>
+  <tr><td>Experimentos 2 y 3</td><td>Temperatura de la celda al sol (¿ventilas?), cuña y ventana del sensor, posición de conectores</td><td>Plan de validación (Maestro 16). Criterio propuesto del Exp. 2: celda ≤ 60 °C tras 2 h al sol del mediodía, medida con el NTC de placa</td></tr>
 </table>
 
 <!-- ======================= HOJA DE REFERENCIA ======================= -->
@@ -591,10 +659,11 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 
 <div class="bloque"><h4>Redes del proyecto</h4>
 <p><b>Con <kbd>P</kbd>:</b> <code>+3V3</code> <code>GND</code> <code>VBUS</code></p>
-<p><b>Con <kbd>Ctrl</kbd>+<kbd>L</kbd>, energía:</b> <code>VBAT</code> <code>BAT-</code> <code>BATP</code> <code>VSYS</code> <code>SENS_VIN</code> <code>3V3_MOD</code></p>
-<p><b>Con <kbd>Ctrl</kbd>+<kbd>L</kbd>, señales:</b> <code>USB_DP</code> <code>USB_DN</code> <code>TXD0</code> <code>RXD0</code> <code>DTR</code> <code>RTS</code> <code>EN</code> <code>IO0</code> <code>SDA</code> <code>SCL</code> <code>SENS_INT</code> <code>SENS_XSHUT</code> <code>SENS_EN</code> <code>LED</code> <code>BUZZ</code> <code>ROL0</code> <code>ROL1</code> <code>BTN_A</code> <code>BTN_B</code> <code>VBAT_ADC</code></p>
-<p><b>PWR_FLAG en:</b> VBAT · BAT- · GND · VBUS · BATP · VSYS</p>
-<p><b>No connect:</b> IO2 IO4 IO5 IO12 IO14 IO15 IO18 IO23 IO35 SENSOR_VP SENSOR_VN NC</p>
+<p><b>Con <kbd>Ctrl</kbd>+<kbd>L</kbd>, energía:</b> <code>VBAT</code> <code>BAT-</code> <code>BATP</code> <code>VPATH</code> <code>VSYS</code> <code>VBB</code> <code>3V3_MOD</code> <code>SENS_VIN</code></p>
+<p><b>Con <kbd>Ctrl</kbd>+<kbd>L</kbd>, señales:</b> <code>USB_DP</code> <code>USB_DN</code> <code>TXD0</code> <code>RXD0</code> <code>CH_TXD</code> <code>DTR</code> <code>RTS</code> <code>EN</code> <code>IO0</code> <code>SDA</code> <code>SCL</code> <code>SENS_INT</code> <code>SENS_XSHUT</code> <code>SENS_EN</code> <code>LED</code> <code>BUZZ</code> <code>ROL0</code> <code>ROL1</code> <code>BTN_A</code> <code>BTN_B</code> <code>VBAT_ADC</code> <code>TEMP_ADC</code></p>
+<p><b>PWR_FLAG en:</b> VBAT · BAT- · GND · VBUS · BATP · VPATH · VSYS · VBB · +3V3 · 3V3_MOD</p>
+<p><b>No connect:</b> IO2 IO4 IO5 IO12 IO14 IO15 IO18 IO23 SENSOR_VP SENSOR_VN NC · PG del TPS63021</p>
+<p><b>DNP:</b> R4 · R14 · R24 · R20–R22 · SW4 · SW5 · J6 · J7</p>
 <p style="margin:0"><b>¡</b><code>BAT-</code> ≠ <code>GND</code><b>!</b> Nunca uses <code>power:GND</code> en el negativo de la celda.</p>
 </div>
 
@@ -611,8 +680,10 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <tr><td><code>Diode:SMAJ5.0A</code> · <code>Diode:1N4148W</code></td><td>TVS · diodo</td></tr>
 <tr><td><code>Device:R</code> <code>C</code> <code>C_Polarized</code> <code>L</code> <code>LED</code></td><td>Pasivos</td></tr>
 <tr><td><code>Device:Polyfuse</code> · <code>Device:Buzzer</code></td><td>PTC · buzzer</td></tr>
-<tr><td><code>Device:Thermistor_NTC</code></td><td>NTC (DNP)</td></tr>
-<tr><td><code>Connector_Generic:Conn_01x02</code> · <code>Conn_01x06</code></td><td>JST batería / interruptor · sensor</td></tr>
+<tr><td><code>Device:Thermistor_NTC</code></td><td>NTC de placa (TH1)</td></tr>
+<tr><td><code>Device:D_Schottky</code></td><td>D6, carga compartida</td></tr>
+<tr><td><code>Connector_Generic:Conn_01x02</code> · <code>Conn_01x06</code></td><td>JST batería / interruptor / NTC · sensor · J6 · J7</td></tr>
+<tr><td><code>Mechanical:MountingHole</code></td><td>Agujeros M3</td></tr>
 <tr><td><code>Switch:SW_Push</code> · <code>Switch:SW_DIP_x02</code></td><td>Botones · DIP de rol</td></tr>
 <tr><td><code>Connector:TestPoint</code></td><td>Test point</td></tr>
 </table></div>
@@ -625,6 +696,9 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <tr><td>USB-C</td><td><code>Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12</code></td></tr>
 <tr><td>PTC</td><td><code>Fuse:Fuse_1206_3216Metric</code></td></tr>
 <tr><td>Test point</td><td><code>TestPoint:TestPoint_Pad_D1.5mm</code></td></tr>
+<tr><td>J6 · J7</td><td><code>PinHeader_1x06_P2.54mm_Vertical</code> · <code>…1x02…</code></td></tr>
+<tr><td>M3</td><td><code>MountingHole_3.2mm_M3</code></td></tr>
+<tr><td>D6 · 47 µF</td><td><code>D_SOD-123</code> · <code>C_1206_3216Metric</code></td></tr>
 </table></div>
 
 <div class="bloque"><h4>Orden de trabajo</h4>

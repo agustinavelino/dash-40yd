@@ -48,7 +48,7 @@ Híbrida: la de la sección 13.5 del Documento Maestro para el producto, pero **
 docs/
   DASH_Documento_Maestro_v2.3.docx   fuente de verdad
   experimento0b_contexto.md          plan del Exp. 0b
-  adr/                               ADRs nuevos (ADR-013; ADR-012 reservado para el reintento de ráfagas)
+  adr/                               ADRs nuevos (ADR-013, ADR-014; ADR-012 reservado para el reintento de ráfagas)
   history/                           obsoleto: no borrar, no usar como especificación
                                      (bitacora.md, prueba0.md, algoritmo.py, Maestro v2.1 y v2.2)
 experimentos/
@@ -189,7 +189,7 @@ Pendientes conocidos:
 - `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` — caracterización del sensor (smoke test, v3, v5, corrida larga): cadencia, IMP, margen
 - `experimentos/exp0b/experimento0b_resultados.md` — Experimento 0b (hub con SoftAP y carga web)
 - `webapp/README.md` y `webapp/PROTOCOLO.md` — página del coach y contrato hub ↔ página
-- `hardware/guia_esquematico/guia_esquematico.pdf` y `docs/adr/ADR-013-modulo-soldado-pcba.md` — placa de producto
+- `hardware/guia_esquematico/guia_esquematico.pdf` (v4), `hardware/auditoria_guia_v3.md`, `docs/adr/ADR-013-modulo-soldado-pcba.md` y `docs/adr/ADR-014-carga-compartida.md` — placa de producto
 - Gráficas: `.venv/bin/python <script>` (venv local con matplotlib, ignorado por git; recrear con `python3 -m venv .venv && .venv/bin/pip install matplotlib`)
 
 ---

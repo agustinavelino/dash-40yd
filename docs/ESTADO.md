@@ -4,13 +4,13 @@
 > El Documento Maestro manda sobre la arquitectura; este archivo solo dice en qué paso vamos.
 > Cada tarea tiene un **criterio de cierre** medible: si no se cumple, la tarea no está cerrada.
 
-**Última actualización:** 31-oct-2026 (NTC decidido; compras para E1; v2.2 a history)
+**Última actualización:** 12-nov-2026 (auditoría de la guía del esquemático; guía v4; ADR-014 carga compartida)
 
 ## Cómo retomar (leer primero en un chat nuevo)
 
 Dónde quedó todo al 26-oct-2026:
 - **Hecho y documentado:** Exp. 0 y 0b, sensor (barridos, corrida larga con vidrio y **al cielo abierto, S2b**), Documento Maestro **v2.3**, página del coach (W1), guía del esquemático v2, ADR-013.
-- **El usuario está haciendo:** el esquemático en KiCad (H1) con `hardware/guia_esquematico/guia_esquematico.pdf`.
+- **El usuario está haciendo:** el esquemático en KiCad (H1) con `hardware/guia_esquematico/guia_esquematico.pdf`, ya en la **v4** (12-nov-2026: correcciones de la auditoría `hardware/auditoria_guia_v3.md` y carga compartida del ADR-014). La PCB no se manda a fabricar antes del Experimento 1.
 - **Lo siguiente en banco, en este orden:**
   1. **E1**: riel de 3.3 V con osciloscopio.
   2. **Experimento 1**: necesita un segundo sensor cableado al nodo. Ahora tiene una pregunta concreta: el cambio de fase de ~9.9 ms en cada cruce (sensor, sección 12.5).
@@ -28,14 +28,14 @@ Cómo correr lo que ya existe:
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
 | E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 8) (requiere: Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4) | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes | Siguiente en banco |
-| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la guía v3 para KiCad 10, con hoja de referencia rápida (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario) |
+| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la **guía v4** para KiCad 10, con hoja de referencia rápida (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013, ADR-014) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario); el proyecto de KiCad sigue vacío al 12-nov |
 
 ## Siguiente
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
 | W2 | Embeber `webapp/index.html` en el hub (gzip en PROGMEM o LittleFS) e implementar PROTOCOLO.md en el firmware | Firmware de producto (o el hub del 0b como banco) | La página carga desde el teléfono en el SoftAP sin datos móviles; `probar.py` adaptado contra el hub real pasa |
-| H2 | Códigos LCSC de cada pieza y cotización de 5 placas ensambladas (JLCPCB) | H1 | Costo real contra los $600 MXN del Maestro 15.2; piezas sin stock sustituidas |
+| H2 | Códigos LCSC de cada pieza y cotización de 5 placas ensambladas (JLCPCB) | H1 | Costo real contra los $600 MXN del Maestro 15.2; piezas sin stock sustituidas. Incluye las piezas que la v4 dejó sin código: D6 (C8598 a verificar), 22 µF 0805, 47 µF 1206, R9 de 3 kΩ, NTC de 100 kΩ en 0603 y el buzzer de ≥ 12 mm; y el precio del módulo N4 contra el N8 |
 | S3 | Experimento 1 (dos sensores, misma puerta) | Segundo sensor cableado al nodo | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
 ## Después
@@ -50,14 +50,28 @@ Experimento 1 → Experimento 2 (sol y alcance) → ruteo y fabricación de la P
 - **Energía del hub (Exp. 0b):** se mide en E1. 422 reinicios por brownout bajo la carga de S3 alimentado por USB; causa física sin aislar (puerto, cable o fuente). Sube la prioridad de las capturas del riel de 3.3 V (DM 20) y del margen del regulador en la PCB; repetir con batería 18650.
 - **Predicción de S2 (corrida al cielo, IMP 25): el usuario no hace predicción** (registrado el 24-oct-2026, antes de correr; para S2b, el 26-oct-2026). Fondo: cortina a ~2 m (más allá del alcance del modo corto, 1.38 m). Referencia: a IMP 20 el régimen inválido dio 13.7 % de anómalos; en régimen válido a IMP 25, 0 saltos en 51 + 119 intervalos.
 - **Idea anotada, fuera de alcance (Maestro 4.1):** recomendaciones por reglas sobre los splits (sección 14.1) en la capa de nube. El Maestro pone la interpretación automática del desempeño como no-objetivo; requeriría un ADR. Los datos llegarían a la nube por el teléfono como puente (descarga de `/api/sesion`) o por el hub como cliente WiFi; ambos usan el formato de `webapp/PROTOCOLO.md`.
-- **ADR-013 (24-oct-2026, aceptado): módulo WROOM-32UE soldado y placa ensamblada por el fabricante** (`docs/adr/ADR-013-modulo-soldado-pcba.md`). Reemplaza la placa portadora con la tarjeta en headers del Maestro 12.1. Un solo USB-C para cargar y programar resuelve la trampa de las dos fuentes en 3V3. ADR-012 queda reservado para el reintento de ráfagas. Pendiente: H2 (códigos LCSC y cotización de 5 placas ensambladas). **NTC decidido (31-oct-2026, usuario):** el circuito va dibujado aunque salga sin poblar (R23 6.8 kΩ DNP, J5 conector DNP, R24 0 Ω poblada a GND); criterio del usuario: la placa lleva todas las protecciones posibles. Guía del esquemático actualizada.
-- **Cambios para el Documento Maestro:** los pendientes de la v2.3 (corrida con vidrio, S2b, ADR-013, nota del cruce en 16.3) se aplicaron el 26-oct-2026; la sección 0.3 de la v2.3 los lista. Para la v2.4 no hay nada pendiente todavía.
+- **Auditoría de la guía del esquemático (9–12 nov-2026)** (`hardware/auditoria_guia_v3.md`). Hallazgos verificados contra hojas de datos antes de documentarlos; los exagerados quedan como retirados. Decidido por el usuario:
+  - **Gabinete:** uno solo, con el sensor adentro en una cuña impresa (ventana paralela al sensor, visera, cuñas de 15/20/25°); ASA beige; el gabinete se diseña alrededor de la PCB; tapones de TPU en las entradas.
+  - **Rol:** DIP de 2 posiciones con rótulo por fuera (se descartaron el rotativo y el rol en el código).
+  - **Placa:** NTC de la celda **poblado**; NTC de placa a GPIO35 (100 kΩ si hay pieza); buzzer en las 4 unidades, más grande y con orificio acústico; header de programación de respaldo; agujeros de montaje.
+  - **Carga compartida (ADR-014, aceptado).**
+  - **Pendientes:** header de expansión (decisión del usuario); OTA y flash N4/N8 (cuando esté el firmware del hub); ventilación (después de medir la celda al sol en el Exp. 2; criterio propuesto ≤ 60 °C tras 2 h); R_PROG de 3 kΩ (400 mA, propuesta del ADR-014).
+- **Para el Exp. 2 (anotado en la auditoría):** registrar la temperatura interna con el NTC de placa (o un termómetro mientras no haya placa) y rociar la ventana del sensor (REQ-NF-06). Criterio: detección ≥ 99 % (REQ-NF-03) y cero disparos falsos.
+- **ADR-013 (24-oct-2026, aceptado): módulo WROOM-32UE soldado y placa ensamblada por el fabricante** (`docs/adr/ADR-013-modulo-soldado-pcba.md`). Reemplaza la placa portadora con la tarjeta en headers del Maestro 12.1. Un solo USB-C para cargar y programar resuelve la trampa de las dos fuentes en 3V3. ADR-012 queda reservado para el reintento de ráfagas. Pendiente: H2 (códigos LCSC y cotización de 5 placas ensambladas). **NTC decidido (31-oct-2026, usuario):** el circuito va dibujado aunque salga sin poblar (R23 6.8 kΩ DNP, J5 conector DNP, R24 0 Ω poblada a GND); criterio del usuario: la placa lleva todas las protecciones posibles. **Actualizado el 11-nov-2026: el NTC se pobla** (R23 y J5 poblados, R24 DNP); guía v4.
+- **Cambios para el Documento Maestro:** los pendientes de la v2.3 (corrida con vidrio, S2b, ADR-013, nota del cruce en 16.3) se aplicaron el 26-oct-2026; la sección 0.3 de la v2.3 los lista. **Para la v2.4** (lista completa en la auditoría, sección 4):
+  - 12.1: un solo gabinete; el conector del sensor es interno.
+  - 15.1: quitar los prensaestopas y el cable de 6 hilos; "Cable Micro USB" pasa a USB-C.
+  - 12.1 y 12.2: carga compartida, que cambia "los 5 V solo van al cargador".
+  - 12.1: buzzer en las 4 unidades, NTC de placa y header de programación.
+  - 18: agregar el ADR-014.
+  - 11.2, 12.4 y 17: regla de carga. Se propone "no cargar en campo, al sol ni mojado" en lugar de "no cargar con el gabinete cerrado". **Falta que el usuario la confirme.**
 - **Nuevo (S2b): cambio de fase de ~9.9 ms en cada cruce.** Sin blanco, el INT va ~9.9 ms adelantado; la primera muestra válida llega en la fase con blanco (29/29 cruces al cielo, 30/31 con vidrio). Si la ventana de cuantización de la detección es el intervalo completo (~33.2 ms), σ por sensor ≈ 9.6 ms en vez de 6.73 ms. **No medido:** lo mide el Experimento 1; su predicción escrita (9.5 / 10.7 ms) no se ajusta.
 
 ## Hecho
 
 | Fecha | Qué | Evidencia |
 |---|---|---|
+| 12-nov-2026 | **Auditoría de la guía del esquemático v3 → guía v4 y ADR-014.** 8 hallazgos confirmados, entre ellos el TPS63021 incompleto según SLVS916I (PS/SYNC al aire, salida de 10 µF fuera de la tabla 1), R4/R14 incompatibles con el ensamblado de fábrica, R23/R24 duplicadas y la carga que no termina en el banco. 5 retirados o rebajados (entre ellos el del cable del sensor: todo va en un solo gabinete). Pull-ups del módulo medidos por el usuario: 10 kΩ de SDA a VIN, no se agregan | `hardware/auditoria_guia_v3.md`; `docs/adr/ADR-014-carga-compartida.md`; guía v4 (HTML y PDF) |
 | 26-oct-2026 | Documento Maestro v2.3: corridas largas del sensor (9.2 con el hallazgo de las dos fases, nota provisional cerrada), ADR-013 en 12, 15, 17 y 18, nota para el Exp. 1 en 16.3, pasos de 19 | `docs/DASH_Documento_Maestro_v2.3.docx` (0.4 lista los cambios) |
 | 26-oct-2026 | **S2b cerrada (S2 cerrada): corrida larga a IMP 25 al cielo abierto. ADR-011 se sostiene.** 5000/5000 muestras en 116.4 s, 30 cruces, sin predicción. Válido: 1022 intervalos, 0 saltos a 46.6 ms. Sin blanco: 3918 intervalos, 3.0 % anómalos (±9.9 ms; vidrio 3.3 %, ±9.5 ms). Fondo: 0/2471 válidas con LED apagado > 1 s. **Hallazgo:** dos fases del INT; en cada cruce la detección llega ~9.9 ms después de la fase sin blanco (29/29); los anómalos sin blanco son una sola interrupción tardía (par + −, 51/60), lo que corrige la lectura de la 11.4 | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` sección 12; `corrida_cielo_IMP25_2026-10-26.txt`; `fase_cruces.py` |
 | 20-sep-2026 | Experimento 0 aprobado: σ = 168 µs | `experimentos/exp0/experimento0_resultados.md` |
