@@ -4,7 +4,7 @@
 > El Documento Maestro manda sobre la arquitectura; este archivo solo dice en qué paso vamos.
 > Cada tarea tiene un **criterio de cierre** medible: si no se cumple, la tarea no está cerrada.
 
-**Última actualización:** 12-nov-2026 (auditoría de la guía del esquemático; guía v4; ADR-014 carga compartida)
+**Última actualización:** 15-nov-2026 (Exp. 1 preparado: sketches, análisis y procedimiento)
 
 ## Cómo retomar (leer primero en un chat nuevo)
 
@@ -28,6 +28,7 @@ Cómo correr lo que ya existe:
 | # | Tarea | Criterio de cierre | Estado |
 |---|---|---|---|
 | E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 8) (requiere: Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4) | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes | Siguiente en banco |
+| S3 | Experimento 1 (dos sensores, misma puerta). Sketches, análisis y procedimiento en `experimentos/exp1/` (15-nov-2026). Predicción: la del Maestro 16.3; el usuario no agrega. Lugar: cielo abierto, como S2b | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms), con el control de interferencia hecho antes y la corrida válida según `procedimiento.md` | Siguiente en banco: falta cableado y montaje (usuario) |
 | H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la **guía v4** para KiCad 10, con hoja de referencia rápida (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013, ADR-014) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario); el proyecto de KiCad sigue vacío al 12-nov |
 
 ## Siguiente
@@ -36,7 +37,6 @@ Cómo correr lo que ya existe:
 |---|---|---|---|
 | W2 | Embeber `webapp/index.html` en el hub (gzip en PROGMEM o LittleFS) e implementar PROTOCOLO.md en el firmware | Firmware de producto (o el hub del 0b como banco) | La página carga desde el teléfono en el SoftAP sin datos móviles; `probar.py` adaptado contra el hub real pasa |
 | H2 | Códigos LCSC de cada pieza y cotización de 5 placas ensambladas (JLCPCB) | H1 | Costo real contra los $600 MXN del Maestro 15.2; piezas sin stock sustituidas. Incluye las piezas que la v4 dejó sin código: D6 (C8598 a verificar), 22 µF 0805, 47 µF 1206, R9 de 3 kΩ, NTC de 100 kΩ en 0603 y el buzzer de ≥ 12 mm; y el precio del módulo N4 contra el N8 |
-| S3 | Experimento 1 (dos sensores, misma puerta) | Segundo sensor cableado al nodo | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms) |
 
 ## Después
 

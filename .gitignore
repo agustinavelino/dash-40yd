@@ -1,3 +1,17 @@
 .venv/
 __pycache__/
 webapp/capturas/
+
+# Proyecto de KiCad: fuera del repo por ahora (se versiona cuando el esquemático esté revisado)
+hardware/dash_nodo/
+
+# Archivos temporales de KiCad (por si el proyecto entra al repo más adelante)
+*.lck
+*-backups/
+_autosave-*
+fp-info-cache
+*.kicad_prl
+.history/
+
+# Basura de Windows al copiar archivos a WSL
+*:Zone.Identifier
