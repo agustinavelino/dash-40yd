@@ -66,10 +66,10 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <body>
 
 <h1>Guía del esquemático — placa de nodo DASH</h1>
-<div class="sub">Para dibujarlo en <b>KiCad 10</b> · versión 4.1, 15 de noviembre de 2026 · Fuente: Documento Maestro v2.3 (11.2, 12, 15.1), ADR-013 (módulo soldado, ensamblado por el fabricante), ADR-014 (carga compartida) y la auditoría de la v3 (<code>hardware/auditoria_guia_v3.md</code>)</div>
+<div class="sub">Para dibujarlo en <b>KiCad 10</b> · versión 4.2, 16 de noviembre de 2026 · Fuente: Documento Maestro v2.3 (11.2, 12, 15.1), ADR-013 (módulo soldado, ensamblado por el fabricante), ADR-014 (carga compartida) y la auditoría de la v3 (<code>hardware/auditoria_guia_v3.md</code>)</div>
 
 <div class="caja">
-  <h3>Qué cambió en la versión 4 (y 4.1)</h3>
+  <h3>Qué cambió en la versión 4 (4.1 y 4.2)</h3>
   <ul style="margin:0">
     <li><b>TPS63021 completo según su hoja de datos</b>: PS/SYNC, VINA y PG; salida de 3 × 22 µF y entrada de 2 × 10 µF + 47 µF (la v3 sugería 10 µF).</li>
     <li><b>Carga compartida</b> (ADR-014): con USB, el sistema se alimenta del USB y la carga termina bien. Se programa sin celda.</li>
@@ -78,6 +78,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
     <li><b>Header de programación</b> de respaldo (sin poblar), <b>buzzer en las 4 unidades</b>, <b>agujeros de montaje</b>.</li>
     <li>Designadores repetidos corregidos (R23/R24) y redes nuevas: <code>VPATH</code>, <code>VBB</code>, <code>3V3_MOD</code>, <code>TEMP_ADC</code>.</li>
     <li><b>v4.1:</b> lo que se escribe en KiCad (hojas, redes, valores, cajetín, notas, serigrafía) va en <b>inglés</b>; la guía sigue en español (ver "Idioma", antes de la organización en KiCad).</li>
+    <li><b>v4.2:</b> <code>VINA</code> del TPS63021 ya <b>no se une a <code>VIN</code></b>: solo lleva sus 100 nF a GND, como en la tarjeta de evaluación de TI (sección 4). Si ya dibujaste el cable VINA–VIN, bórralo.</li>
   </ul>
 </div>
 
@@ -383,7 +384,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
       <li>Inductor de <b>1.5 µH</b>, con corriente de saturación ≥ 3 A, entre <code>L1</code> y <code>L2</code>.</li>
       <li><code>EN</code> a <code>VIN</code>.</li>
       <li><code>PS/SYNC</code> a <code>VIN</code>: <b>no puede quedar al aire</b>. En alto desactiva el modo de ahorro: menos rizo con los picos del radio, a cambio de unos mA más.</li>
-      <li><code>VINA</code> a <code>VIN</code>, con <b>100 nF</b> de <code>VINA</code> a GND (la hoja de datos pide no pasar de 0.22 µF). <span class="e x">PENDIENTE</span>: la figura 7 de la revisión I de la hoja no dibuja la unión VINA–VIN, pero todas sus condiciones de prueba usan VIN = VINA. Confírmalo con el esquemático de la tarjeta de evaluación de TI.</li>
+      <li><code>VINA</code> (pin 1) <b>solo</b> a su capacitor de <b>100 nF</b> a GND (C4), <b>sin unirlo a <code>VIN</code></b> <span class="e f">DECIDIDO</span> (16-nov). Por dentro, el chip alimenta VINA desde VIN a través de una resistencia (figura 4 de la hoja); con C4 forma un filtro RC que le da al control un voltaje limpio del ruido de conmutación. Un cable externo de VINA a VIN se salta ese filtro. Así lo dibuja la tarjeta de evaluación de TI (SLVU365, figura 9: C8 de 0.1 µF solo de VINA a GND), y la revisión I de la hoja quitó esa unión de sus figuras (historial: <i>"removed the connection from VINA to VIN"</i>). No lleva resistencia externa; C4 no debe pasar de 0.22 µF. <code>EN</code> y <code>PS/SYNC</code> siguen a <code>VIN</code>, como en la tarjeta de evaluación (la figura 7 de la hoja los cuelga de VINA; las dos formas sirven porque son entradas lógicas que casi no toman corriente).</li>
       <li><code>PG</code> (power good) <b>al aire</b> (<kbd>Q</kbd>): la hoja de datos dice que puede quedar abierto.</li>
       <li>Salida: <b>3 × 22 µF</b> cerámicos pegados a <code>VOUT</code>/<code>PGND</code>. La tabla 1 de la hoja solo admite 2×22, 3×22, 4×22 o ≥ 100 µF con 1.5 µH; con 10 µF (lo que decía la v3) queda fuera.</li>
       <li>Entrada: <b>2 × 10 µF</b> cerámicos pegados a <code>VIN</code>, más <b>47 µF</b> de bulk: la hoja lo pide si la fuente está a más de unos centímetros, y aquí la celda llega por cables y pasa por el interruptor.</li>
@@ -574,7 +575,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <li><b>ERC</b> sin errores; cada GPIO de la sección 3, una sola vez y en su red.</li>
   <li><b>VBUS</b> solo llega al cargador, al ESD, a los LED de carga, al ánodo de D6 y al gate de Q7 (con R28 a GND); nunca a +3V3.</li>
   <li><b>Q7</b> con drain a <code>BATP</code> y source a <code>VPATH</code> (al revés, el USB carga la celda saltándose el TP4056).</li>
-  <li><b>TPS63021</b>: PS/SYNC y EN a VIN; VINA a VIN con 100 nF; PG al aire; 3 × 22 µF a la salida y 2 × 10 µF + 47 µF a la entrada.</li>
+  <li><b>TPS63021</b>: PS/SYNC y EN a VIN; VINA solo con sus 100 nF a GND, <b>sin cable a VIN</b>; PG al aire; 3 × 22 µF a la salida y 2 × 10 µF + 47 µF a la entrada.</li>
   <li><b>R4 y R14</b> marcados DNP; el bulk C5 en <code>3V3_MOD</code>.</li>
   <li><b>R27</b> entre el TXD del CH340C y <code>RXD0</code>; J6 con 3V3, GND, TXD0, RXD0, EN e IO0.</li>
   <li><b>BAT- y GND</b> son redes distintas, unidas solo por el FS8205A.</li>
@@ -592,7 +593,6 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td>Disponibilidad y costo en el catálogo del fabricante</td><td>Piezas equivalentes, presupuesto (Maestro 15.2)</td><td>Códigos LCSC y cotización de 5 placas ensambladas</td></tr>
   <tr><td>Huellas importadas (FS8205A, TPS63021, inductor, botones, DIP, buzzer)</td><td>Footprints</td><td>Compararlas con el dibujo de la hoja de datos antes de rutear</td></tr>
   <tr><td>I2C a 400 kHz</td><td>Poblar o no las resistencias DNP</td><td>Cerrado para la v0.1: el módulo trae 10 kΩ (medido) y basta a 100 kHz. Solo se reabre si se quiere 400 kHz</td></tr>
-  <tr><td>VINA del TPS63021</td><td>Una conexión</td><td>Comparar con el esquemático de la tarjeta de evaluación de TI (la figura 7 de la revisión I no la dibuja)</td></tr>
   <tr><td>Piezas sin código LCSC todavía (D6 a verificar, 22 µF, 47 µF, R9 de 3 kΩ, NTC de 100 kΩ, buzzer)</td><td>BOM</td><td>H2. Si no hay NTC de 100 kΩ, usar el de 10 kΩ con el divisor alimentado desde un GPIO (sección 4)</td></tr>
   <tr><td>Buzzer</td><td>Pieza, huella y orificio del gabinete</td><td>Elegir uno ≥ 12 mm; criterio propuesto: se escucha a 15 m con ruido de entrenamiento</td></tr>
   <tr><td>Flash N4 contra N8</td><td>Variante del módulo</td><td>Medir el binario del hub cuando esté definido su firmware y decidir la OTA</td></tr>

@@ -22,6 +22,8 @@
 
 La figura de la aplicación típica de la revisión I (figura 7) **no dibuja la unión entre VINA y VIN**; el historial de cambios dice *"removed the connection from VINA to VIN"*. Aun así, todas las condiciones de prueba de la hoja usan `VIN = VINA` y el bloqueo por bajo voltaje (UVLO) se mide en VINA. La guía v4 une VINA a VIN y lo marca **PENDIENTE de comparar con el esquemático de la tarjeta de evaluación de TI**.
 
+**Cerrado el 16-nov-2026 (guía v4.2): VINA no se une a VIN.** La tarjeta de evaluación (TI SLVU365, figura 9) deja VINA solo con C8 de 0.1 µF a GND, y el diagrama de bloques del TPS63021 (SLVS916I, figura 4) muestra que VINA ya se alimenta de VIN por una resistencia interna: con el capacitor forma un filtro RC, y un cable externo VINA–VIN se lo salta. `VIN = VINA` en las condiciones de prueba describe el voltaje con que se mide, no un cable. EN y PS/SYNC siguen a VIN, como en la tarjeta de evaluación.
+
 ## 2. Hallazgos retirados o rebajados
 
 | Lo que se dijo | Por qué se retira | Estado |
