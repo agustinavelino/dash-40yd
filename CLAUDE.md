@@ -69,7 +69,8 @@ experimentos/
   exp0b/                             Experimento 0b — HALLAZGO (experimento0b_resultados.md)
 firmware/      (por crear) binario único con selección de rol
 webapp/        página del coach: index.html (se embebe), PROTOCOLO.md, sim.js y probar.py (no se embeben)
-hardware/      guia_esquematico/ (PDF + fuente HTML); dash_nodo/ (proyecto KiCad, lo crea el usuario)
+hardware/      guia_esquematico/ (PDF + fuente HTML); dash_nodo/ (proyecto KiCad, lo crea el usuario);
+               datasheets/ (hoja de datos de cada pieza por hoja del esquemático; índice en su README)
 tools/         ard.sh, logger serial, identificar puertos, resumen de corridas
 cloud/         (fase posterior)
 .claude/       agentes y skills del proyecto (§9)
@@ -189,7 +190,8 @@ Pendientes conocidos:
 - `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` — caracterización del sensor (smoke test, v3, v5, corrida larga): cadencia, IMP, margen
 - `experimentos/exp0b/experimento0b_resultados.md` — Experimento 0b (hub con SoftAP y carga web)
 - `webapp/README.md` y `webapp/PROTOCOLO.md` — página del coach y contrato hub ↔ página
-- `hardware/guia_esquematico/guia_esquematico.pdf` (v4.2), `hardware/auditoria_guia_v3.md`, `docs/adr/ADR-013-modulo-soldado-pcba.md` y `docs/adr/ADR-014-carga-compartida.md` — placa de producto
+- `hardware/datasheets/README.md` — hojas de datos de las piezas que se compran (por código LCSC), con qué se verificó en cada una
+- `hardware/guia_esquematico/guia_esquematico.pdf` (v4.3), `hardware/auditoria_guia_v3.md`, `docs/adr/ADR-013-modulo-soldado-pcba.md` y `docs/adr/ADR-014-carga-compartida.md` — placa de producto
 - Gráficas: `.venv/bin/python <script>` (venv local con matplotlib, ignorado por git; recrear con `python3 -m venv .venv && .venv/bin/pip install matplotlib`)
 
 ---

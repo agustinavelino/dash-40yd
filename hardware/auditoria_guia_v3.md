@@ -76,3 +76,32 @@ La figura de la aplicación típica de la revisión I (figura 7) **no dibuja la 
 - LCSC C10758, SMAJ5.0A (RUILON). <https://www.lcsc.com/product-detail/C10758.html>
 - Arduino-ESP32 core 3.3.11, `cores/esp32/esp32-hal-i2c-ng.c`, línea 131.
 - `hardware/dash_nodo/lib/dash.kicad_sym` (tipo de pin de las piezas importadas).
+
+## 7. Revisión de la hoja de energía contra las hojas de datos (16-nov-2026, guía v4.3)
+
+Cada pieza se comparó contra la hoja de datos **del fabricante del código LCSC que se compra**, no contra la de otro fabricante con el mismo número de parte. Las conexiones se compararon contra la netlist del archivo de KiCad del usuario (exportada con `kicad-cli`; versión guardada a las 13:41 del 16-nov, que todavía no tenía cableado el buck-boost).
+
+| Pieza (LCSC) | Hoja consultada | Qué se comprobó | Resultado |
+|---|---|---|---|
+| DW01A (C351410, PUOLOP) | PUOLOP DW01A rev. B, p. 2–4 | Pinout (1 OD, 2 VM = CS en KiCad, 3 OC, 4 TD, 5 VCC, 6 GND); aplicación típica R1 100 Ω, C1 0.1 µF, **R2 1 kΩ**; TD | **Corregido: R3 de 2 kΩ a 1 kΩ.** La hoja de H&M que enlaza KiCad también dice 1 kΩ; los 2 kΩ no salen de ninguna. TD se queda sin conectar (ver abajo) |
+| FS8205A (C2830320, TECH PUBLIC) | TECH PUBLIC FS8205A, p. 1–2 | Pinout 1 S1, 2 D, 3 S2, 4 G2, 5 D, 6 G1; VGS ±10 V; RDS(on) ≤ 25 mΩ a 4.5 V y ≤ 31.5 mΩ a 2.5 V | Bien. Con el umbral de sobrecorriente del DW01A (130–170 mV) y dos MOSFET en serie, el corte queda en ~2.3–4.4 A, arriba de los picos de la placa (~0.6 A desde la celda) |
+| AO3401A (C15127, AOS) | AOS rev. 3.1 | Pinout SOT-23 (1 G, 2 S, 3 D); VGS ±12 V; RDS(on) < 85 mΩ a −2.5 V | Bien. Q1 y Q7 ven VGS ≈ −VCELDA (≤ 4.3 V) |
+| SMAJ5.0A (C10758, RUILON) | RUILON SMAJ, rev. DEC-16 | VRWM 5.0 V, VBR 6.40–7.25 V, VC 9.2 V a 43.5 A, IR ≤ 800 µA a 5 V | Bien. El símbolo de KiCad (hereda de SM6T6V8A) nombra sus pines A1/A2 aunque es unidireccional; el pin 1 es el cátodo (la barra) y en el archivo va a `BATP`, que es lo correcto. VC < 10 V, el máximo de VDD del DW01A |
+| SMD1206P150TF (C20802, RUILON) | RUILON SMD1206, A6/2026-03 | Ihold 1.5 A, Itrip 3.0 A, Vmax 6 V, R 0.025–0.13 Ω | Bien. Ihold baja a ~1.17 A a 50 °C y ~1.06 A a 60 °C (tabla de reducción por temperatura) |
+| B5819W (C8598, JSCJ) | JSCJ B5817W–B5819W, rev. D | 40 V, 1 A, VF ≤ 0.6 V a 1 A, IR ≤ 1 mA a 40 V | **Corregido el texto:** la guía decía que caía 0.15–0.4 V; cae hasta 0.6 V. Con USB, `VPATH` queda en ~4.4–4.7 V. El umbral de "USB conectado" en `VBAT_ADC` queda pendiente de medir |
+| TP4056 (C16581, Top Power) | Top Power rev. 2.4 | CE a VCC; 10 µF en VCC y BAT; LED con 1 kΩ; TEMP 45–80 % de VCC; I = 1100 V / RPROG | Bien en conexiones. **Corregido el texto:** 3 kΩ dan ~370 mA por la fórmula (la tabla dice 400), ±15 %. La hoja trae una errata en los máximos absolutos (BAT −0.3 a 0.7 V; debe ser ~7 V) |
+| TPS63021 (C202140, TI) | SLVS916I y SLVU365 | Pinout y almohadilla térmica (pad 15 en la huella importada); VINA; capacitores | Bien con la corrección de VINA de la v4.2 |
+| CKCS5040-1.5uH (C5120877, CENKER) | CENKER CKCS | 1.5 µH, Isat 6.3 A, Irms 4.0 A, DCR 18 mΩ | Bien. La hoja lista el 1.5 µH como /N (±30 %); LCSC lo vende como /M. Con la ecuación 2 de TI (2.4 V de entrada, 0.6 A de salida) el pico es ~1.1 A |
+
+### Hallazgo retirado: "TD del DW01A va conectado a OD"
+
+Otra revisión leyó en la página 3 de la hoja de PUOLOP que TD va unido a OD. No es así: la línea horizontal que pasa por TD, OD, OC y VM es el **contorno del integrado** (sigue por arriba hasta VCC y cierra el rectángulo con la leyenda "DW01A"). Los cables salen hacia afuera: VCC y GND a la izquierda, VM a la derecha, OD y OC hacia abajo. De TD no sale ninguno. Si esa línea fuera un cable, OD, OC y VM estarían en corto y no podrían controlar los dos MOSFET por separado. La tabla de pines describe TD como *"Test pin for reduce delay time"*. El símbolo de KiCad lo marca como `no_connect`. **TD se queda sin conectar.**
+
+### Lo que estas hojas no resuelven
+
+- Fuga real de D1 y D6 a 4.2 V con el sistema apagado (las hojas solo dan el máximo a 5 V y a 40 V): ya está en la sección 10 de la guía.
+- `VSYS` con USB conectado, para fijar el umbral de "USB conectado".
+- Sobretiro al cerrar el interruptor o al enchufar el USB con capacitores cerámicos a la entrada (máximo absoluto del TPS63021: 7 V). Estimado: la resistencia en serie (PTC, Q1, Q7 y FS8205A, ~0.2–0.3 Ω) amortigua el cierre del interruptor. El enchufe del USB depende del cable. Se mide en la primera placa.
+- Temperatura del FS8205A, del PTC y del inductor dentro del gabinete.
+
+Fuentes adicionales: hojas de datos enlazadas desde las páginas de LCSC de cada código de la tabla (consultadas el 16-nov-2026); PUOLOP DW01A en <https://cdn.promelec.ru/upload/items/2024/07/19/PUOLOP-DW01A_.pdf>; H&M DW01A en <https://hmsemi.com/downfile/DW01A.PDF>; TI SLVU365 (TPS63020EVM-487).
