@@ -25,6 +25,8 @@ Descargadas el 22-nov-2026 desde la página de LCSC de cada código, salvo donde
 | U2 | TPS63021 | TI | C202140 | `TPS63021_TI_SLVS916I_revI_C202140.pdf` (de ti.com) | **Rev I, oct-2019** | 16-nov: pinout, VINA, capacitores, inductor | |
 | — | Tarjeta de evaluación TPS63020EVM-487 | TI | — | `TPS63020EVM_TI_SLVU365.pdf` (de ti.com) | SLVU365 | 16-nov: VINA solo con 0.1 µF a GND (fig. 9) | |
 | L1 | CKCS5040-1.5uH | CENKER | C5120877 | `CKCS5040-1.5uH_CENKER_C5120877.pdf` | — | 16-nov: Isat 6.3 A, Irms 4.0 A, DCR 18 mΩ | |
+| C19 | 10TPE47MAZB (polímero) | Panasonic | C147768 | `10TPE47MAZB_Panasonic_C147768.pdf` (en chino; los números de la tabla se leen igual) | dic-2017 | 23-nov: 47 µF, 10 V (8 V a 105 °C), ESR 35 mΩ, 3.5 × 2.8 × 1.9 mm | |
+| C19 (alternativa) | T520B476M010ATE035 (polímero) | KEMET | C141441 | `T520B476M010ATE035_KEMET_C141441.pdf` | 9/5/2017 | 23-nov: 47 µF, 10 V, ESR 35 mΩ; reducción recomendada: 90 % del nominal hasta 10 V | |
 | C5 | 6TPB470M (serie TPB) | Panasonic | C76438 | `6TPB470M_Panasonic_C76438.pdf` | hoja de serie, 1 página | 22-nov: 470 µF, 6.3 V, ESR 35 mΩ | |
 
 ## 2_usb_carga (hoja 2)
@@ -57,5 +59,5 @@ Descargadas el 22-nov-2026 desde la página de LCSC de cada código, salvo donde
 ## Faltan
 
 - Conectores JST-PH de 2 pines (J1, J2, J5): la guía todavía no fija su código LCSC.
-- Capacitores de 22 µF y 47 µF, NTC de 100 kΩ en 0603, LED verde, R9 de 3 kΩ: sin código LCSC todavía (guía, sección 10).
+- Capacitores de 22 µF, NTC de 100 kΩ en 0603, LED verde, R9 de 3 kΩ: sin código LCSC todavía (guía, sección 10).
 - VL53L1X (ST): el sensor va en su módulo, fuera de la placa; st.com bloqueó la descarga automática. Bajarla a mano si se necesita.

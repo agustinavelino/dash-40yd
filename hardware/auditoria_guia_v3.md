@@ -93,6 +93,14 @@ Cada pieza se comparó contra la hoja de datos **del fabricante del código LCSC
 | TPS63021 (C202140, TI) | SLVS916I y SLVU365 | Pinout y almohadilla térmica (pad 15 en la huella importada); VINA; capacitores | Bien con la corrección de VINA de la v4.2 |
 | CKCS5040-1.5uH (C5120877, CENKER) | CENKER CKCS | 1.5 µH, Isat 6.3 A, Irms 4.0 A, DCR 18 mΩ | Bien. La hoja lista el 1.5 µH como /N (±30 %); LCSC lo vende como /M. Con la ecuación 2 de TI (2.4 V de entrada, 0.6 A de salida) el pico es ~1.1 A |
 
+### C19: de cerámico a polímero (23-nov-2026, guía v4.4)
+
+La v4.3 ponía el bulk de 47 µF de entrada del TPS63021 como cerámico de 1206, sin justificarlo. La hoja de TI (8.2.2.4) lo pide *"electrolytic or tantalum"*. Con resistencia interna (ESR), el bulk amortigua el rebote LC entre los cables y los cerámicos al cerrar el interruptor o enchufar el USB; además, un cerámico de 47 µF en 1206 pierde más de la mitad de su capacidad a 4–5 V y el polímero no.
+
+- **Tántalo común (MnO2), descartado:** la hoja del CA45 (C136751, sección 9.2.2) pide trabajar a 1/3 del nominal en circuitos de baja impedancia (carga instantánea > 300 mA o subida < 1 ms, como una batería con interruptor) y dice que ~90 % de sus fallas son cortos o fuga. Para 5.5 V harían falta ≥ 16.5 V de nominal, y un corto quedaría directo sobre la celda.
+- **Polímero de tántalo, elegido:** Panasonic 10TPE47MAZB (C147768): 47 µF, 10 V, ESR 35 mΩ, caja B (3528), 7 532 piezas en stock el 23-nov, la mayor existencia entre los polímeros de 47 µF / 10 V. Alternativa: KEMET T520B476M010ATE035 (C141441, 4 440 en stock), misma huella y ESR. La hoja del T520 recomienda usarlo hasta el 90 % del nominal (≤ 10 V): 9 V contra 5.5 V como máximo aquí.
+- **Lo que no resuelve:** el sobretiro al enchufar el USB con el interruptor apagado depende de C7 (10 µF cerámico en VCC del TP4056) y del cable. Se revisa con la hoja 2 y se mide en la primera placa.
+
 ### Hallazgo retirado: "TD del DW01A va conectado a OD"
 
 Otra revisión leyó en la página 3 de la hoja de PUOLOP que TD va unido a OD. No es así: la línea horizontal que pasa por TD, OD, OC y VM es el **contorno del integrado** (sigue por arriba hasta VCC y cierra el rectángulo con la leyenda "DW01A"). Los cables salen hacia afuera: VCC y GND a la izquierda, VM a la derecha, OD y OC hacia abajo. De TD no sale ninguno. Si esa línea fuera un cable, OD, OC y VM estarían en corto y no podrían controlar los dos MOSFET por separado. La tabla de pines describe TD como *"Test pin for reduce delay time"*. El símbolo de KiCad lo marca como `no_connect`. **TD se queda sin conectar.**

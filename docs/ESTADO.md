@@ -4,13 +4,23 @@
 > El Documento Maestro manda sobre la arquitectura; este archivo solo dice en qué paso vamos.
 > Cada tarea tiene un **criterio de cierre** medible: si no se cumple, la tarea no está cerrada.
 
-**Última actualización:** 15-nov-2026 (Exp. 1 preparado: sketches, análisis y procedimiento)
+**Última actualización:** 23-nov-2026 (hoja de energía del esquemático revisada contra los datasheets; guía v4.4)
 
 ## Cómo retomar (leer primero en un chat nuevo)
 
+**Para el siguiente chat (23-nov-2026): revisar la hoja 2 (`usb_charging`) del esquemático contra sus datasheets.** Así se hizo la hoja de energía y así se repite:
+1. Leer la sección 5 de la guía (`hardware/guia_esquematico/guia_esquematico.html`) y `hardware/datasheets/README.md`.
+2. Exportar la netlist del archivo del usuario (solo lectura; KiCad puede estar abierto):
+   `"/mnt/c/Users/aagus/AppData/Local/Programs/KiCad/10.0/bin/kicad-cli.exe" sch export netlist --format kicadxml -o "$(wslpath -w <scratchpad>/net.xml)" "$(wslpath -w hardware/dash_nodo/dash_nodo.kicad_sch)"`
+   Las hojas son `energy.kicad_sch` y `usb_charging.kicad_sch`; al 22-nov, `usb_charging` estaba vacía.
+3. Comparar cada pieza contra la hoja **del fabricante de su código LCSC** (ya están en `hardware/datasheets/2_usb_carga/`: USB-C HRO, USBLC6-2SC6, TP4056 Top Power, CH340C, MMBT3904, LED). Revisar la revisión de cada hoja: la copia de LCSC puede ser vieja (pasó con el TPS63021).
+4. Registrar el resultado como en `hardware/auditoria_guia_v3.md`, sección 7 (tabla pieza por pieza, hallazgos retirados, lo que no resuelven las hojas), corregir la guía, subir la versión y regenerar el PDF. El usuario hace los commits.
+   Puntos ya conocidos para la hoja 2: el TP4056 ya se revisó (16-nov: 3 kΩ dan ~370 mA, I = 1100 V / R); el sobretiro al enchufar el USB con C7 cerámico (máximo absoluto de VCC del TP4056: 8 V; ver qué sujeta el USBLC6 en VBUS); el pin R232 del CH340C; CC1/CC2 con 5.1 kΩ.
+   **La hoja de energía no está terminada de cablear** (usuario, 23-nov): faltan R4/J7 (VSYS → VBB; sin ellos VBB no tiene fuente), el divisor de batería, el NTC de placa, C5, y cambiar C19 a `C_Polarized` (v4.4). El usuario la termina después; volver a exportar la netlist cuando lo diga.
+
 Dónde quedó todo al 26-oct-2026:
 - **Hecho y documentado:** Exp. 0 y 0b, sensor (barridos, corrida larga con vidrio y **al cielo abierto, S2b**), Documento Maestro **v2.3**, página del coach (W1), guía del esquemático v2, ADR-013.
-- **El usuario está haciendo:** el esquemático en KiCad (H1) con `hardware/guia_esquematico/guia_esquematico.pdf`, ya en la **v4** (12-nov-2026: correcciones de la auditoría `hardware/auditoria_guia_v3.md` y carga compartida del ADR-014). La PCB no se manda a fabricar antes del Experimento 1.
+- **El usuario está haciendo:** el esquemático en KiCad (H1) con `hardware/guia_esquematico/guia_esquematico.pdf`, ya en la **v4.4** (23-nov-2026; v4 del 12-nov: auditoría y ADR-014; v4.2: VINA sin unir a VIN; v4.3: hoja de energía contra datasheets, R3 = 1 kΩ; v4.4: C19 de polímero). La PCB no se manda a fabricar antes del Experimento 1.
 - **Lo siguiente en banco, en este orden:**
   1. **E1**: riel de 3.3 V con osciloscopio.
   2. **Experimento 1**: necesita un segundo sensor cableado al nodo. Ahora tiene una pregunta concreta: el cambio de fase de ~9.9 ms en cada cruce (sensor, sección 12.5).
@@ -29,14 +39,14 @@ Cómo correr lo que ya existe:
 |---|---|---|---|
 | E1 | Riel de 3.3 V del hub con osciloscopio bajo carga S3 (guía, sección 8) (requiere: Hub del 0b en modo ráfagas + teléfonos; batería y módulo buck-boost para la corrida 4) | Vmin de 3V3 medido en las 4 corridas; criterio propuesto ≥ 3.1 V con batería; predicción escrita antes | Siguiente en banco |
 | S3 | Experimento 1 (dos sensores, misma puerta). Sketches, análisis y procedimiento en `experimentos/exp1/` (15-nov-2026). Predicción: la del Maestro 16.3; el usuario no agrega. Lugar: cielo abierto, como S2b | σ_exp1 medida contra la predicción escrita (9.5 / 10.7 ms), con el control de interferencia hecho antes y la corrida válida según `procedimiento.md` | Siguiente en banco: falta cableado y montaje (usuario) |
-| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la **guía v4** para KiCad 10, con hoja de referencia rápida (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013, ADR-014) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario); el proyecto de KiCad sigue vacío al 12-nov |
+| H1 | Esquemático de la placa de nodo en KiCad (`hardware/dash_nodo/`); lo dibuja el usuario con la **guía v4** para KiCad 10, con hoja de referencia rápida (`hardware/guia_esquematico/guia_esquematico.pdf`, ADR-013, ADR-014) | ERC sin errores y revisión contra "Cómo lo revisamos" (sección 9 de la guía) | En curso (usuario). Hoja de energía: buck-boost, protección y carga compartida cableados y verificados contra la netlist (22-nov); faltan R4/J7, divisor, NTC, C5 y el cambio de C19. Siguiente: revisar la hoja 2 contra sus datasheets |
 
 ## Siguiente
 
 | # | Tarea | Depende de | Criterio de cierre |
 |---|---|---|---|
 | W2 | Embeber `webapp/index.html` en el hub (gzip en PROGMEM o LittleFS) e implementar PROTOCOLO.md en el firmware | Firmware de producto (o el hub del 0b como banco) | La página carga desde el teléfono en el SoftAP sin datos móviles; `probar.py` adaptado contra el hub real pasa |
-| H2 | Códigos LCSC de cada pieza y cotización de 5 placas ensambladas (JLCPCB) | H1 | Costo real contra los $600 MXN del Maestro 15.2; piezas sin stock sustituidas. Incluye las piezas que la v4 dejó sin código: D6 (C8598 a verificar), 22 µF 0805, 47 µF 1206, R9 de 3 kΩ, NTC de 100 kΩ en 0603 y el buzzer de ≥ 12 mm; y el precio del módulo N4 contra el N8 |
+| H2 | Códigos LCSC de cada pieza y cotización de 5 placas ensambladas (JLCPCB) | H1 | Costo real contra los $600 MXN del Maestro 15.2; piezas sin stock sustituidas. Incluye las piezas que la v4 dejó sin código: D6 (C8598, hoja verificada el 16-nov), 22 µF 0805, R9 de 3 kΩ, NTC de 100 kΩ en 0603 y el buzzer de ≥ 12 mm; y el precio del módulo N4 contra el N8 |
 
 ## Después
 
@@ -72,6 +82,9 @@ Experimento 1 → Experimento 2 (sol y alcance) → ruteo y fabricación de la P
 
 | Fecha | Qué | Evidencia |
 |---|---|---|
+| 23-nov-2026 | **Guía v4.4: C19 de polímero.** El bulk de 47 µF de entrada del TPS63021 pasa de cerámico (sin justificar) a polímero de tántalo Panasonic 10TPE47MAZB (C147768), como pide TI (8.2.2.4). Tántalo MnO2 descartado: su hoja pide 1/3 del nominal en baja impedancia y falla en corto | `hardware/auditoria_guia_v3.md` sección 7; `hardware/datasheets/1_energia/` |
+| 22-nov-2026 | **Carpeta de datasheets** por hoja del esquemático, una hoja por código LCSC, con índice de qué se verificó. La copia de LCSC del TPS63021 es la rev. E (VINA unida a VIN); se guarda la rev. I de TI | `hardware/datasheets/README.md` |
+| 16-nov-2026 | **Hoja de energía contra datasheets (guía v4.2 y v4.3).** VINA del TPS63021 sin unir a VIN (tarjeta de evaluación SLVU365 y rev. I de la hoja). R3 del DW01A de 2 kΩ a 1 kΩ (PUOLOP y H&M). Retirado: "TD va a OD" (era el contorno del integrado). Corregidos en el texto: caída del B5819W (hasta 0.6 V) y carga con 3 kΩ (~370 mA) | `hardware/auditoria_guia_v3.md` sección 7; commit `a77928d` |
 | 12-nov-2026 | **Auditoría de la guía del esquemático v3 → guía v4 y ADR-014.** 8 hallazgos confirmados, entre ellos el TPS63021 incompleto según SLVS916I (PS/SYNC al aire, salida de 10 µF fuera de la tabla 1), R4/R14 incompatibles con el ensamblado de fábrica, R23/R24 duplicadas y la carga que no termina en el banco. 5 retirados o rebajados (entre ellos el del cable del sensor: todo va en un solo gabinete). Pull-ups del módulo medidos por el usuario: 10 kΩ de SDA a VIN, no se agregan | `hardware/auditoria_guia_v3.md`; `docs/adr/ADR-014-carga-compartida.md`; guía v4 (HTML y PDF) |
 | 26-oct-2026 | Documento Maestro v2.3: corridas largas del sensor (9.2 con el hallazgo de las dos fases, nota provisional cerrada), ADR-013 en 12, 15, 17 y 18, nota para el Exp. 1 en 16.3, pasos de 19 | `docs/DASH_Documento_Maestro_v2.3.docx` (0.4 lista los cambios) |
 | 26-oct-2026 | **S2b cerrada (S2 cerrada): corrida larga a IMP 25 al cielo abierto. ADR-011 se sostiene.** 5000/5000 muestras en 116.4 s, 30 cruces, sin predicción. Válido: 1022 intervalos, 0 saltos a 46.6 ms. Sin blanco: 3918 intervalos, 3.0 % anómalos (±9.9 ms; vidrio 3.3 %, ±9.5 ms). Fondo: 0/2471 válidas con LED apagado > 1 s. **Hallazgo:** dos fases del INT; en cada cruce la detección llega ~9.9 ms después de la fase sin blanco (29/29); los anómalos sin blanco son una sola interrupción tardía (par + −, 51/60), lo que corrige la lectura de la 11.4 | `experimentos/sensor_vl53l1x/sensor_vl53l1x_resultados.md` sección 12; `corrida_cielo_IMP25_2026-10-26.txt`; `fase_cruces.py` |

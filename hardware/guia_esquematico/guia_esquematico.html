@@ -66,10 +66,10 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
 <body>
 
 <h1>Guía del esquemático — placa de nodo DASH</h1>
-<div class="sub">Para dibujarlo en <b>KiCad 10</b> · versión 4.3, 16 de noviembre de 2026 · Fuente: Documento Maestro v2.3 (11.2, 12, 15.1), ADR-013 (módulo soldado, ensamblado por el fabricante), ADR-014 (carga compartida) y la auditoría de la v3 (<code>hardware/auditoria_guia_v3.md</code>)</div>
+<div class="sub">Para dibujarlo en <b>KiCad 10</b> · versión 4.4, 23 de noviembre de 2026 · Fuente: Documento Maestro v2.3 (11.2, 12, 15.1), ADR-013 (módulo soldado, ensamblado por el fabricante), ADR-014 (carga compartida) y la auditoría de la v3 (<code>hardware/auditoria_guia_v3.md</code>)</div>
 
 <div class="caja">
-  <h3>Qué cambió en la versión 4 (4.1 a 4.3)</h3>
+  <h3>Qué cambió en la versión 4 (4.1 a 4.4)</h3>
   <ul style="margin:0">
     <li><b>TPS63021 completo según su hoja de datos</b>: PS/SYNC, VINA y PG; salida de 3 × 22 µF y entrada de 2 × 10 µF + 47 µF (la v3 sugería 10 µF).</li>
     <li><b>Carga compartida</b> (ADR-014): con USB, el sistema se alimenta del USB y la carga termina bien. Se programa sin celda.</li>
@@ -80,6 +80,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
     <li><b>v4.1:</b> lo que se escribe en KiCad (hojas, redes, valores, cajetín, notas, serigrafía) va en <b>inglés</b>; la guía sigue en español (ver "Idioma", antes de la organización en KiCad).</li>
     <li><b>v4.2:</b> <code>VINA</code> del TPS63021 ya <b>no se une a <code>VIN</code></b>: solo lleva sus 100 nF a GND, como en la tarjeta de evaluación de TI (sección 4). Si ya dibujaste el cable VINA–VIN, bórralo.</li>
     <li><b>v4.3:</b> la hoja de energía se revisó contra la hoja de datos de cada pieza que se compra (código LCSC). <b>R3 del DW01A pasa de 2 kΩ a 1 kΩ</b>; TD sigue sin conectar. Se corrigieron la caída del diodo D6 (hasta 0.6 V) y la corriente de carga con 3 kΩ (~370 mA). El detalle está en <code>hardware/auditoria_guia_v3.md</code>, sección 7.</li>
+    <li><b>v4.4:</b> <b>C19 (47 µF de entrada del TPS63021) pasa de cerámico a polímero de tántalo</b> (C147768), como pide la hoja de TI. En KiCad cambia el símbolo a <code>Device:C_Polarized</code> con el + en <code>VBB</code> y la huella a <code>CP_EIA-3528-21_Kemet-B</code> (sección 4).</li>
   </ul>
 </div>
 
@@ -389,7 +390,9 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
       <li><code>VINA</code> (pin 1) <b>solo</b> a su capacitor de <b>100 nF</b> a GND (C4), <b>sin unirlo a <code>VIN</code></b> <span class="e f">DECIDIDO</span> (16-nov). Por dentro, el chip alimenta VINA desde VIN a través de una resistencia (figura 4 de la hoja); con C4 forma un filtro RC que le da al control un voltaje limpio del ruido de conmutación. Un cable externo de VINA a VIN se salta ese filtro. Así lo dibuja la tarjeta de evaluación de TI (SLVU365, figura 9: C8 de 0.1 µF solo de VINA a GND), y la revisión I de la hoja quitó esa unión de sus figuras (historial: <i>"removed the connection from VINA to VIN"</i>). No lleva resistencia externa; C4 no debe pasar de 0.22 µF. <code>EN</code> y <code>PS/SYNC</code> siguen a <code>VIN</code>, como en la tarjeta de evaluación (la figura 7 de la hoja los cuelga de VINA; las dos formas sirven porque son entradas lógicas que casi no toman corriente).</li>
       <li><code>PG</code> (power good) <b>al aire</b> (<kbd>Q</kbd>): la hoja de datos dice que puede quedar abierto.</li>
       <li>Salida: <b>3 × 22 µF</b> cerámicos pegados a <code>VOUT</code>/<code>PGND</code>. La tabla 1 de la hoja solo admite 2×22, 3×22, 4×22 o ≥ 100 µF con 1.5 µH; con 10 µF (lo que decía la v3) queda fuera.</li>
-      <li>Entrada: <b>2 × 10 µF</b> cerámicos pegados a <code>VIN</code>, más <b>47 µF</b> de bulk: la hoja lo pide si la fuente está a más de unos centímetros, y aquí la celda llega por cables y pasa por el interruptor.</li>
+      <li>Entrada: <b>2 × 10 µF</b> cerámicos pegados a <code>VIN</code> (figura 7 de la hoja, "C1 2×10 µF"), más <b>C19, 47 µF de polímero de tántalo</b> (Panasonic 10TPE47MAZB, 10 V, ESR 35 mΩ) <span class="e f">DECIDIDO</span> (23-nov). <b>Es polarizado:</b> en KiCad usa <code>Device:C_Polarized</code>, con el <b>+ a <code>VBB</code></b> y el − a <code>GND</code>; al revés se destruye.
+        <br>Por qué: la sección 8.2.2.4 de la hoja pide 47 µF adicionales <i>"if the input supply is located more than a few inches"</i> (aquí la celda llega por cables y pasa por el interruptor y las protecciones) y dice que sea <i>"electrolytic or tantalum"</i>, no cerámico. Un electrolítico tiene resistencia interna (ESR), y esa resistencia amortigua el rebote entre la inductancia de los cables y los cerámicos al cerrar el interruptor o enchufar el USB. Además, el polímero no pierde capacidad con el voltaje; un cerámico de 47 µF en 1206 conserva menos de la mitad a 4–5 V. La v4.3 decía cerámico sin justificarlo.
+        <br>Por qué polímero y no tántalo común (MnO2): la hoja del CA45 (C136751) pide, en circuitos de baja impedancia como una batería con interruptor, trabajar a <b>1/3 del voltaje nominal</b> (≥ 16.5 V de nominal para 5.5 V), y dice que ~90 % de sus fallas son cortos. El polímero de 10 V se puede usar hasta el 90 % de su nominal (hoja del KEMET T520): 9 V, contra 5.5 V como máximo aquí.</li>
     </ul>
     <b>Solo había 184 piezas en existencia</b> el 29-oct <span class="e x">PENDIENTE</span>.</li>
   <li><b>Bulk de 470 µF</b> en <code>3V3_MOD</code>, junto al pin <code>VDD</code> del módulo (después de R14) <span class="e f">MAESTRO</span>. Polímero o tántalo SMD. La hoja del TPS63021 dice que la capacidad de salida no tiene límite superior, así que no hay problema de estabilidad. Su valor final sale de la sección 8 <span class="e x">PENDIENTE</span>.</li>
@@ -423,7 +426,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td>U2</td><td>Buck-boost 3.3 V</td><td>dash:<wbr>TPS63021DSJR</td><td>dash:<wbr> (importada, VSON-14 3×4)</td><td>TPS63021</td><td>C202140 · 184 en stock <span class="e x">PENDIENTE</span></td></tr>
   <tr><td>L1</td><td>Inductor 1.5 µH</td><td>Device:<wbr>L</td><td>dash:<wbr> (importada, 5×5 mm)</td><td>1.5uH</td><td>C5120877 (Isat 6.3 A) <span class="e p">PROPUESTA</span></td></tr>
   <tr><td>C2 · C3</td><td>Entrada del TPS63021 (2 × 10 µF)</td><td>Device:<wbr>C</td><td>C_<wbr>0805</td><td>10uF</td><td>C15850 · Basic</td></tr>
-  <tr><td>C19</td><td>Bulk de entrada del TPS63021</td><td>Device:<wbr>C</td><td>C_<wbr>1206 (Capacitor_<wbr>SMD:<wbr>C_<wbr>1206_<wbr>3216Metric)</td><td>47uF 10V</td><td>busca "47uF 1206" en Basic <span class="e x">PENDIENTE</span></td></tr>
+  <tr><td>C19</td><td>Bulk de entrada del TPS63021 (polímero, + a VBB)</td><td>Device:<wbr>C_<wbr>Polarized</td><td>Capacitor_<wbr>Tantalum_<wbr>SMD:<wbr>CP_<wbr>EIA-3528-21_<wbr>Kemet-B</td><td>47uF 10V</td><td>C147768 (Panasonic 10TPE47MAZB; 7 532 en stock el 23-nov). Alternativa: C141441 (KEMET T520B476M010ATE035, misma huella y ESR)</td></tr>
   <tr><td>C4</td><td>VINA del TPS63021</td><td>Device:<wbr>C</td><td>C_<wbr>0603</td><td>100nF</td><td>C14663 · Basic</td></tr>
   <tr><td>C20–C22</td><td>Salida del TPS63021 (3 × 22 µF)</td><td>Device:<wbr>C</td><td>C_<wbr>0805</td><td>22uF</td><td>busca "22uF 0805" en Basic (X5R, ≥ 10 V) <span class="e x">PENDIENTE</span></td></tr>
   <tr><td>C5</td><td>Bulk del módulo (en 3V3_MOD)</td><td>Device:<wbr>C_<wbr>Polarized</td><td>dash:<wbr> o Capacitor_<wbr>Tantalum_<wbr>SMD:<wbr>CP_<wbr>EIA-7343-31_<wbr>Kemet-D</td><td>470uF 6.3V</td><td>C76438 (polímero, 35 mΩ) <span class="e x">PENDIENTE</span></td></tr>
@@ -577,7 +580,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <li><b>ERC</b> sin errores; cada GPIO de la sección 3, una sola vez y en su red.</li>
   <li><b>VBUS</b> solo llega al cargador, al ESD, a los LED de carga, al ánodo de D6 y al gate de Q7 (con R28 a GND); nunca a +3V3.</li>
   <li><b>Q7</b> con drain a <code>BATP</code> y source a <code>VPATH</code> (al revés, el USB carga la celda saltándose el TP4056).</li>
-  <li><b>TPS63021</b>: PS/SYNC y EN a VIN; VINA solo con sus 100 nF a GND, <b>sin cable a VIN</b>; PG al aire; 3 × 22 µF a la salida y 2 × 10 µF + 47 µF a la entrada.</li>
+  <li><b>TPS63021</b>: PS/SYNC y EN a VIN; VINA solo con sus 100 nF a GND, <b>sin cable a VIN</b>; PG al aire; 3 × 22 µF a la salida y 2 × 10 µF + 47 µF a la entrada; C19 es <code>C_Polarized</code> con el + en <code>VBB</code>.</li>
   <li><b>R4 y R14</b> marcados DNP; el bulk C5 en <code>3V3_MOD</code>.</li>
   <li><b>R27</b> entre el TXD del CH340C y <code>RXD0</code>; J6 con 3V3, GND, TXD0, RXD0, EN e IO0.</li>
   <li><b>BAT- y GND</b> son redes distintas, unidas solo por el FS8205A.</li>
@@ -596,7 +599,7 @@ pre { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.2pt; back
   <tr><td>Disponibilidad y costo en el catálogo del fabricante</td><td>Piezas equivalentes, presupuesto (Maestro 15.2)</td><td>Códigos LCSC y cotización de 5 placas ensambladas</td></tr>
   <tr><td>Huellas importadas (FS8205A, TPS63021, inductor, botones, DIP, buzzer)</td><td>Footprints</td><td>Compararlas con el dibujo de la hoja de datos antes de rutear</td></tr>
   <tr><td>I2C a 400 kHz</td><td>Poblar o no las resistencias DNP</td><td>Cerrado para la v0.1: el módulo trae 10 kΩ (medido) y basta a 100 kHz. Solo se reabre si se quiere 400 kHz</td></tr>
-  <tr><td>Piezas sin código LCSC todavía (D6 a verificar, 22 µF, 47 µF, R9 de 3 kΩ, NTC de 100 kΩ, buzzer)</td><td>BOM</td><td>H2. Si no hay NTC de 100 kΩ, usar el de 10 kΩ con el divisor alimentado desde un GPIO (sección 4)</td></tr>
+  <tr><td>Piezas sin código LCSC todavía (D6 a verificar, 22 µF, R9 de 3 kΩ, NTC de 100 kΩ, buzzer)</td><td>BOM</td><td>H2. Si no hay NTC de 100 kΩ, usar el de 10 kΩ con el divisor alimentado desde un GPIO (sección 4)</td></tr>
   <tr><td>Buzzer</td><td>Pieza, huella y orificio del gabinete</td><td>Elegir uno ≥ 12 mm; criterio propuesto: se escucha a 15 m con ruido de entrenamiento</td></tr>
   <tr><td>Flash N4 contra N8</td><td>Variante del módulo</td><td>Medir el binario del hub cuando esté definido su firmware y decidir la OTA</td></tr>
   <tr><td>Consumo con el interruptor apagado</td><td>TVS (D1) y diodo D6</td><td>Medirlo en la primera placa. El SMAJ5.0A especifica hasta 800 µA de fuga a 5 V (LCSC C10758); a 4.2 V debería ser mucho menor, pero no hay dato. Criterio propuesto: ≤ 20 µA <span class="e p">PROPUESTA</span></td></tr>
